@@ -43,7 +43,7 @@ int main( int argc, char* argv[] )
 	//obs2.fix();
 	//obs2.set_collision_group( "ground" );
 
-	//osg::Image* heightimage = osgDB::readImageFile( "../env_data/heightmap_rock_step_4.png" );
+	//osg::Image* heightimage = osgDB::readImageFile( "../env_data/heightmap_rock_step.png" );
 	osg::Image* heightimage = osgDB::readImageFile( "../env_data/heightmap_rock_groove.png" );
 	int nrow = heightimage->t();
 	int ncol = heightimage->s();

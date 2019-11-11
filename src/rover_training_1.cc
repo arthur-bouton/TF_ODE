@@ -51,7 +51,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 	//obs2.fix();
 	//obs2.set_collision_group( "ground" );
 
-	//osg::Image* heightimage = osgDB::readImageFile( "../env_data/heightmap_rock_step_4.png" );
+	//osg::Image* heightimage = osgDB::readImageFile( "../env_data/heightmap_rock_step.png" );
 	//osg::Image* heightimage = osgDB::readImageFile( "../env_data/heightmap_rock_groove.png" );
 	osg::Image* heightimage = osgDB::readImageFile( "../env_data/heightmap_rock_groove_large.png" );
 	int nrow = heightimage->t();
