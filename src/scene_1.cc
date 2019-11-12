@@ -95,6 +95,8 @@ int main( int argc, char* argv[] )
 		display_ptr = new renderer::OsgVisitor( 0, width, height, x, y, 20, 20, osg::Vec3( -0.7, -2, 0.6 ), osg::Vec3( 0, 0, -0.1 ) );
 		//display_ptr = new renderer::OsgVisitor( 0, width, height, x, y, 0, 0, osg::Vec3( -0.7, -2, 0.6 ), osg::Vec3( 0, 0, -0.1 ) );
 		display_ptr->set_ground_texture( "../env_data/mars_checker.tga" );
+		display_ptr->set_background_color( 179, 71, 0 );
+
 		display_ptr->set_window_name( "Scene 1" );
 		//display_ptr->disable_shadows();
 		display_ptr->set_pause();

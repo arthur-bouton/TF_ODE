@@ -117,6 +117,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 		//display_ptr = new renderer::OsgVisitor( 0, width, height, x, y, 20, 20, osg::Vec3( 0, 2.2, 0.4 ), osg::Vec3( -0.15, 0, -0.35 ),
 		                                        //renderer::OsgVisitor::TRACK, true, osg::Vec3( 1, 2, 3 ) );
 		display_ptr->set_ground_texture( "../env_data/mars_checker.tga" );
+		display_ptr->set_background_color( 179, 71, 0 );
 
 		display_ptr->set_window_name( "Rover training 1" );
 		//display_ptr->disable_shadows();

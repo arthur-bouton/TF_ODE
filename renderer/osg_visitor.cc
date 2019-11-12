@@ -156,9 +156,12 @@ OsgVisitor::OsgVisitor( unsigned int screen, int wwidth, int wheight, int wxpos,
 
 	//      _create_ground();
 	//      _hud = new OsgHud( _shadowed_scene.get() );
+}
 
-	//_viewer.getCamera()->setClearColor( Vec4( 204./255, 82./255, 0./255, 0 ) );
-	_viewer.getCamera()->setClearColor( Vec4( 179./255, 71./255, 0./255, 0 ) );
+
+void OsgVisitor::set_background_color( float R, float G, float B, float max )
+{
+	_viewer.getCamera()->setClearColor( Vec4( R/max, G/max, B/max, 0 ) );
 }
 
 

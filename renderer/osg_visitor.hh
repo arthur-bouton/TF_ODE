@@ -57,6 +57,8 @@ class OsgVisitor : public ode::ConstVisitor
 
 	void set_ground_texture( const char* const path_to_texture );
 
+	void set_background_color( float R, float G, float B, float max=255 );
+
 	osgViewer::Viewer* get_viewer();
 
 	KeyboardEventHandler* get_keh();
