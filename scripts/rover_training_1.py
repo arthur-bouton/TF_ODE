@@ -8,7 +8,7 @@ import random
 import sys
 import os
 from protect_loop import Protect_loop
-from DDPG_vanilla import DDPG
+from DDPG_PER import DDPG
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 sys.path.append( '../build' )
@@ -39,14 +39,16 @@ MINIBATCH_SIZE = 64 # Size of each minibatch
 #CRITIC_LR = 0.001 # Learning rate of the critic network
 ACTOR_LR = 1e-6 # Learning rate of the actor network
 CRITIC_LR = 1e-5 # Learning rate of the critic network
+BETA_L2 = 1e-6 # Ridge regularization coefficient
+ALPHA_SAMPLING = 1 # Exponent interpolating between uniform sampling (0) and greedy prioritization (1)
+BETA_IS = 0 # Exponent of the importance-sampling weights (if 0, no importance sampling)
 #SUMMARY_DIR = '/tmp/' + script_name + '/' + data_id # Directory where to save summaries
 SUMMARY_DIR = None # No summarie
 SEED = None # Random seed for the initialization of all random generators
 SINGLE_THREAD = False # Force the execution on a single core in order to have a deterministic behavior
 
-with DDPG( S_DIM, A_DIM, STATE_SCALE, ACTION_SCALE, GAMMA, TAU, BUFFER_SIZE, MINIBATCH_SIZE,
-		   ACTOR_LR, CRITIC_LR,
-		   #actor_network_def, critic_network_def,
+with DDPG( S_DIM, A_DIM, STATE_SCALE, ACTION_SCALE, GAMMA, TAU, BUFFER_SIZE, MINIBATCH_SIZE, ACTOR_LR, CRITIC_LR, BETA_L2,
+		   alpha_sampling=ALPHA_SAMPLING, beta_IS=BETA_IS,
 		   summary_dir=SUMMARY_DIR, seed=SEED, single_thread=SINGLE_THREAD ) as ddpg :
 
 
@@ -77,7 +79,10 @@ with DDPG( S_DIM, A_DIM, STATE_SCALE, ACTION_SCALE, GAMMA, TAU, BUFFER_SIZE, MIN
 				# Do one trial:
 				trial_experience = rover_training_1_module.trial( path_to_tf_model )
 
-				ddpg.replay_buffer.extend( trial_experience )
+				if interruption() :
+					break
+
+				ddpg.replay_buffer.add( trial_experience )
 
 				n_ep += 1
 
