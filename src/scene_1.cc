@@ -43,16 +43,8 @@ int main( int argc, char* argv[] )
 	//obs2.fix();
 	//obs2.set_collision_group( "ground" );
 
-	//osg::Image* heightimage = osgDB::readImageFile( "../env_data/heightmap_rock_step.png" );
-	osg::Image* heightimage = osgDB::readImageFile( "../env_data/heightmap_rock_groove.png" );
-	int nrow = heightimage->t();
-	int ncol = heightimage->s();
-	double* heightmap = (double*) calloc( nrow*ncol, sizeof( double ) );
-	for ( int r = 0 ; r < nrow ; r++ )
-		for ( int c = 0 ; c < ncol ; c++ )
-			heightmap[(nrow-r-1)*ncol+c] = ( *heightimage->data( c, r ) )*0.3/255;
-	//ode::HeightField field( env, Eigen::Vector3d( 2, 0, -0.02 ), heightmap, nrow, ncol, 3, 3, 0, -1, 1 );
-	ode::HeightField field( env, Eigen::Vector3d( 1, 0, -0.3 ), heightmap, nrow, ncol, 3, 3, 0, -1, 1 );
+	//ode::HeightField field( env, Eigen::Vector3d( 2, 0, -0.01 ), "../env_data/heightmap_rock_step.png", 0.3, 3, 3, 0, -1, 1 );
+	ode::HeightField field( env, Eigen::Vector3d( 1, 0, -0.3 ), "../env_data/heightmap_rock_groove.png", 0.3, 3, 3, 0, -1, 1 );
 	field.set_collision_group( "ground" );
 
 
@@ -102,7 +94,7 @@ int main( int argc, char* argv[] )
 		int x( 200 ), y( 200 ), width( 1024 ), height( 768 );
 		display_ptr = new renderer::OsgVisitor( 0, width, height, x, y, 20, 20, osg::Vec3( -0.7, -2, 0.6 ), osg::Vec3( 0, 0, -0.1 ) );
 		//display_ptr = new renderer::OsgVisitor( 0, width, height, x, y, 0, 0, osg::Vec3( -0.7, -2, 0.6 ), osg::Vec3( 0, 0, -0.1 ) );
-		//display_ptr->set_ground_texture( "../env_data/mars_checker.tga" );
+		display_ptr->set_ground_texture( "../env_data/mars_checker.tga" );
 		display_ptr->set_window_name( "Scene 1" );
 		//display_ptr->disable_shadows();
 		display_ptr->set_pause();

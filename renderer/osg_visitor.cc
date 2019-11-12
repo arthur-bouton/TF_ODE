@@ -345,8 +345,10 @@ void OsgVisitor::visit( const ode::HeightField& o )
 	//_set_object_color( drawable, o );
 	geode->addDrawable( drawable );
 
-	//osg::Texture2D* tex = new osg::Texture2D( osgDB::readImageFile( "../env_data/checker.tga" ) );
-	osg::Texture2D* tex = new osg::Texture2D( osgDB::readImageFile( "../env_data/mars_checker.tga" ) );
+	const char* path_to_texture = o.texture_path;
+	if ( path_to_texture == nullptr )
+		path_to_texture = _ground_texture_path;
+	osg::Texture2D* tex = new osg::Texture2D( osgDB::readImageFile( path_to_texture ) );
 	tex->setFilter( osg::Texture2D::MIN_FILTER, osg::Texture2D::LINEAR_MIPMAP_LINEAR );
 	tex->setFilter( osg::Texture2D::MAG_FILTER, osg::Texture2D::LINEAR );
 	tex->setWrap( osg::Texture::WRAP_S, osg::Texture::REPEAT );
@@ -479,9 +481,9 @@ ref_ptr<Geode> OsgVisitor::_create_sqr( double width, double length )
 }
 
 
-void OsgVisitor::set_ground_texture( const char* const texture_path )
+void OsgVisitor::set_ground_texture( const char* const path_to_texture )
 {
-	_ground_texture_path = texture_path;
+	_ground_texture_path = path_to_texture;
 }
 
 

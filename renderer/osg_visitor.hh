@@ -55,7 +55,7 @@ class OsgVisitor : public ode::ConstVisitor
 
 	void set_window_name( std::string name );
 
-	void set_ground_texture( const char* const texture_path );
+	void set_ground_texture( const char* const path_to_texture );
 
 	osgViewer::Viewer* get_viewer();
 
