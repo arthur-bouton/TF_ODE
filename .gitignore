@@ -1,2 +1,7 @@
-build
+.directory
+build/
 *.blend1
+*.mp4
+*.dat
+training_data/
+videos/data/
