@@ -124,7 +124,8 @@ OsgVisitor::OsgVisitor( unsigned int screen, int wwidth, int wheight, int wxpos,
 						_tm( NULL ),
 						_keh( new KeyboardEventHandler( &_viewer ) ),
 						_wwidth( wwidth ),
-						_wheight( wheight )
+						_wheight( wheight ),
+						_ground_texture_path( "../env_data/checker.tga" )
 {
 	if ( wwidth != 0 && wheight != 0 )
 		_viewer.setUpViewInWindow( wxpos, wypos, wwidth, wheight, screen );
@@ -478,17 +479,14 @@ ref_ptr<Geode> OsgVisitor::_create_sqr( double width, double length )
 }
 
 
+void OsgVisitor::set_ground_texture( const char* const texture_path )
+{
+	_ground_texture_path = texture_path;
+}
+
+
 void OsgVisitor::_create_ground( const ode::Environment &env )
 {
-    //std::string file_path = __FILE__;
-	//char actualpath [PATH_MAX+1];
-	//realpath( file_path.c_str(), actualpath );
-	//printf( "%s\n", actualpath );
-	//*strrchr( actualpath, '/' ) = '\0';
-	//printf( "%s\n", actualpath );
-
-	//const char* const checker_path = "../env_data/checker.tga";
-	const char* const checker_path = "../env_data/mars_checker.tga";
 	const double checker_length = 1;
 	const double checker_width = 1;
 
@@ -518,7 +516,7 @@ void OsgVisitor::_create_ground( const ode::Environment &env )
 			pat->addChild( geode_sqr.get() );
 
 			ref_ptr<StateSet> ss_checker( new StateSet() );
-			ss_checker->setTextureAttributeAndModes( 0, _load_texture( checker_path ) );
+			ss_checker->setTextureAttributeAndModes( 0, _load_texture( _ground_texture_path ) );
 			geode_sqr->setStateSet( ss_checker.get() );
 
 			_ground->addChild( pat.get() );

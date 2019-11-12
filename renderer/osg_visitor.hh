@@ -55,11 +55,13 @@ class OsgVisitor : public ode::ConstVisitor
 
 	void set_window_name( std::string name );
 
+	void set_ground_texture( const char* const texture_path );
+
 	osgViewer::Viewer* get_viewer();
 
 	KeyboardEventHandler* get_keh();
 
-	inline bool paused() { return _keh->paused(); }
+	inline bool paused() const { return _keh->paused(); }
 	inline void set_pause() { _keh->set_pause(); }
 	inline bool do_single_step() { return _keh->do_single_step(); }
 
@@ -79,8 +81,8 @@ class OsgVisitor : public ode::ConstVisitor
 
 	void enable_dump( const std::string& prefix );
 
-	inline int get_window_width() { return _wwidth; }
-	inline int get_window_height() { return _wheight; }
+	inline int get_window_width() const { return _wwidth; }
+	inline int get_window_height() const { return _wheight; }
 
 	protected:
 
@@ -114,6 +116,7 @@ class OsgVisitor : public ode::ConstVisitor
 	double _ground_length, _ground_width;
 	osg::Vec3 _prev_pos;
 	int _wwidth, _wheight;
+	const char* _ground_texture_path;
 };
 
 
