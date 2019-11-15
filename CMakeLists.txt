@@ -30,6 +30,13 @@ target_link_libraries( scene_1 robdyn
 							   ${OSGV_LIBRARIES}
 							   ${OSGS_LIBRARIES} )
 
+add_executable( ramp ${SRC_DIR}/ramp.cc
+						${SRC_DIR}/rover_1.cc )
+target_link_libraries( ramp robdyn
+							   ${ODE_LIBRARIES}
+							   ${OSGV_LIBRARIES}
+							   ${OSGS_LIBRARIES} )
+
 
 
 find_package( PythonLibs 3 REQUIRED )
