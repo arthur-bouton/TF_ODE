@@ -31,8 +31,6 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 	#define WHEELS_MAX_SPEED 7.6365 // rad/s
 	#define STEERING_SERVOS_K 0.8
 
-	//steering_max_vel = 10;
-	//boggie_max_torque = 20;
 	steering_max_vel = 15;
 	boggie_max_torque = 20;
 
@@ -73,7 +71,7 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 	boggie_length = 0.1;
 	boggie_height = sea_elev - belly_elev;
 	boggie_width = 0.1;
-	boggie_pos = Vector3d( -wheelbase/2 + 0.025, 0, belly_elev + boggie_height/2 );
+	boggie_pos = Vector3d( -wheelbase/2 + 0.035, 0, belly_elev + boggie_height/2 );
 
 	fork_mass = 0.2;
 	fork_length = 0.05;
