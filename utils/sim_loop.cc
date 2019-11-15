@@ -117,7 +117,7 @@ void Sim_loop::loop( std::function<bool(float,double)>& step_function )
 			{
 				if ( _utimestep*_step_counter_u < _ufperiod )
 				{
-					if ( step_function( _timestep, _time ) )
+					if ( step_function( _timestep, _time*_timestep ) )
 						break;
 
 					if ( _capture )
@@ -134,7 +134,7 @@ void Sim_loop::loop( std::function<bool(float,double)>& step_function )
 
 					_step_counter_u++;
 
-					_time += _timestep;
+					_time++;
 				}
 				else
 				{
@@ -159,10 +159,10 @@ void Sim_loop::loop( std::function<bool(float,double)>& step_function )
 	{
 		while( true )
 		{
-			if ( step_function( _timestep, _time ) )
+			if ( step_function( _timestep, _time*_timestep ) )
 				break;
 
-			_time += _timestep;
+			_time++;
 		}
 	}
 }
