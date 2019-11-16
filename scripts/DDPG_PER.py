@@ -14,6 +14,7 @@ import random
 import sys
 import os
 from protect_loop import Protect_loop
+from tqdm import trange
 
 
 def actor_network_def( name, states, a_dim, action_scale=None, summaries=False ) :
@@ -348,7 +349,7 @@ class DDPG() :
 
 		Lt = 0
 
-		for _ in range( iterations ) :
+		for _ in trange( iterations, desc='Training the networks', leave=False ) :
 
 			self.n_iter += 1
 
@@ -459,7 +460,7 @@ if __name__ == '__main__' :
 	MINIBATCH_SIZE = 64 # Size of each minibatch
 	ACTOR_LR = 0.0001 # Learning rate of the actor network
 	CRITIC_LR = 0.001 # Learning rate of the critic network
-	BETA_L2 = 0 # Ridge regularization coefficient
+	BETA_L2 = 1e-6 # Ridge regularization coefficient
 	ALPHA_SAMPLING = 1 # Exponent interpolating between uniform sampling (0) and greedy prioritization (1)
 	BETA_IS = 0 # Exponent of the importance-sampling weights (if 0, no importance sampling)
 	#SUMMARY_DIR = '/tmp/' + script_name + '/' + data_id # Directory where to save summaries

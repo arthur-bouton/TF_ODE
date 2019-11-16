@@ -14,6 +14,7 @@ import random
 import sys
 import os
 from protect_loop import Protect_loop
+from tqdm import trange
 
 
 def actor_network_def( name, states, a_dim, action_scale=None, summaries=False ) :
@@ -260,7 +261,7 @@ class DDPG() :
 
 		Lt = 0
 
-		for _ in range( iterations ) :
+		for _ in trange( iterations, desc='Training the networks', leave=False ) :
 
 			self.n_iter += 1
 
