@@ -445,6 +445,7 @@ if __name__ == '__main__' :
 							if done : break
 						print( 'It %i | Ep %i | Li %+8.4f | ' % ( ddpg.n_iter, n_ep, Li ), end='', flush=True )
 						eval_env.print_eval()
+						sys.stdout.flush()
 						ddpg.reward_summary( eval_env.get_Rt() )
 
 
