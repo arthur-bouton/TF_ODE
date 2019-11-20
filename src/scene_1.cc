@@ -17,9 +17,9 @@ int main( int argc, char* argv[] )
 
 	dInitODE();
 	//ode::Environment env( 0.7 );
-	//ode::Environment env( 0.5 );
+	ode::Environment env( 0.5 );
 	//ode::Environment env( false, 0.5 );
-	ode::Environment env( false, 0.7 );
+	//ode::Environment env( false, 0.7 );
 
 
 	// [ Robot ]
@@ -31,21 +31,14 @@ int main( int argc, char* argv[] )
 
 	// [ Obstacles ]
 
-	//ode::Box obs1( env, Eigen::Vector3d( 0.7, -0.5, 0.1/2 ), 1, 0.1, 1, 0.1, false );
-	//obs1.fix();
-	//obs1.set_collision_group( "ground" );
-
-	//ode::Box obs2( env, Eigen::Vector3d( 1.5, 0, 0.3/2 ), 1, 1, 2, 0.3, false );
-	//obs2.fix();
-	//obs2.set_collision_group( "ground" );
-
-	//ode::Box obs2( env, Eigen::Vector3d( 0, 0, 0.25/2 ), 1, 0.25, 2, 0.25, false );
-	//obs2.fix();
-	//obs2.set_collision_group( "ground" );
+	float step_height( 0.105*2 );
+	ode::Box step( env, Eigen::Vector3d( 1.5, 0, step_height/2 ), 1, 1, 2, step_height, false );
+	step.fix();
+	step.set_collision_group( "ground" );
 
 	//ode::HeightField field( env, Eigen::Vector3d( 2, 0, -0.01 ), "../env_data/heightmap_rock_step.png", 0.3, 3, 3, 0, -1, 1 );
-	ode::HeightField field( env, Eigen::Vector3d( 1, 0, -0.3 ), "../env_data/heightmap_rock_groove.png", 0.3, 3, 3, 0, -1, 1 );
-	field.set_collision_group( "ground" );
+	//ode::HeightField field( env, Eigen::Vector3d( 1, 0, -0.3 ), "../env_data/heightmap_rock_groove.png", 0.3, 3, 3, 0, -1, 1 );
+	//field.set_collision_group( "ground" );
 
 
 	// [ Simulation rules ]
@@ -94,17 +87,16 @@ int main( int argc, char* argv[] )
 		int x( 200 ), y( 200 ), width( 1024 ), height( 768 );
 		display_ptr = new renderer::OsgVisitor( 0, width, height, x, y, 20, 20, osg::Vec3( -0.7, -2, 0.6 ), osg::Vec3( 0, 0, -0.1 ) );
 		//display_ptr = new renderer::OsgVisitor( 0, width, height, x, y, 0, 0, osg::Vec3( -0.7, -2, 0.6 ), osg::Vec3( 0, 0, -0.1 ) );
-		display_ptr->set_ground_texture( "../env_data/mars_checker.tga" );
-		display_ptr->set_background_color( 179, 71, 0 );
+		//display_ptr->set_ground_texture( "../env_data/mars_checker.tga" );
+		//display_ptr->set_background_color( 179, 71, 0 );
 
 		display_ptr->set_window_name( "Scene 1" );
 		//display_ptr->disable_shadows();
 		display_ptr->set_pause();
 
 		robot.accept( *display_ptr );
-		//obs1.accept( *display_ptr );
-		//obs2.accept( *display_ptr );
-		field.accept( *display_ptr );
+		step.accept( *display_ptr );
+		//field.accept( *display_ptr );
 
 		robot::RoverControl* keycontrol = new robot::RoverControl( &robot, display_ptr->get_viewer() );
 	}

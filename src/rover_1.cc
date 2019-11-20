@@ -37,7 +37,7 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 	wheelbase = 0.58;
 	wheeltrack = 0.61;
 
-	wheel_mass = 0.5;
+	wheel_mass = 1.4 + 1; // Wheel + motor
 	wheel_radius[0] = 0.105;
 	wheel_radius[1] = 0.105;
 	wheel_radius[2] = 0.105;
@@ -47,14 +47,13 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 
 	belly_elev = 0.33;
 
-	//front_mass = 18;
-	front_mass = 5;
+	front_mass = 4.55 + 2.2; // Body + battery
 	front_length = 0.345;
 	front_height = 0.225;
 	front_width = 0.200;
 	front_pos = Vector3d( front_length/2, 0, belly_elev + front_height/2 );
 
-	rear_mass = 4;
+	rear_mass = 5;
 	rear_length = 0.312;
 	rear_height = 0.177;
 	rear_width = 0.126;
@@ -67,13 +66,13 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 	sea_pos = Vector3d( -wheelbase/2, 0, sea_elev );
 	boggie_angle_max = 45;
 
-	boggie_mass = 0.6;
+	boggie_mass = 1;
 	boggie_length = 0.1;
 	boggie_height = sea_elev - belly_elev;
 	boggie_width = 0.1;
 	boggie_pos = Vector3d( -wheelbase/2 + 0.035, 0, belly_elev + boggie_height/2 );
 
-	fork_mass = 0.2;
+	fork_mass = 1;
 	fork_length = 0.05;
 	fork_height = 0.1;
 	fork_width = 0.3;

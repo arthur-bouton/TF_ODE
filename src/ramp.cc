@@ -30,8 +30,8 @@ int main( int argc, char* argv[] )
 
 	float x( 1.2 );
 	float y( -0.61/2 );
-	float h( 0.15 );
-	float l( 0.15 );
+	float h( 0.16 );
+	float l( 0.21 );
 	float w( 0.30 );
 	float slope( 20 );
 
