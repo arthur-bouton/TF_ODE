@@ -55,10 +55,15 @@ int main( int argc, char* argv[] )
 	ramp_part3.set_collision_group( "ground" );
 
 
+	//ode::Box wall( env, Eigen::Vector3d( 0.8, 0, 0.21/2 ), 1, 0.1, 2, 0.21, false );
+	//wall.fix();
+	//wall.set_collision_group( "ground" );
+
+
 	// [ Simulation rules ]
 
 	// Cruise speed of the robot:
-	float speedf( 0.15 );
+	float speedf( 0.10 );
 	// Time to reach cruise speed:
 	float term( 0.5 );
 	// Maximum distance to travel ahead:
@@ -116,6 +121,7 @@ int main( int argc, char* argv[] )
 		ramp_part1.accept( *display_ptr );
 		ramp_part2.accept( *display_ptr );
 		ramp_part3.accept( *display_ptr );
+		//wall.accept( *display_ptr );
 
 		robot::RoverControl* keycontrol = new robot::RoverControl( &robot, display_ptr->get_viewer() );
 	}
