@@ -22,6 +22,7 @@ Rover_1_tf::Rover_1_tf( Environment& env, const Vector3d& pose, const char* path
 						_exploration( false )
 {
 	_last_pos = GetPosition();
+	_was_flipped = GetSteeringTrueAngle() < 0;
 
 
 	// Creation of the TensorFlow session:
@@ -55,18 +56,21 @@ Rover_1_tf::Rover_1_tf( Environment& env, const Vector3d& pose, const char* path
 }
 
 
-p::list Rover_1_tf::GetState() const
+p::list Rover_1_tf::GetState( const bool flip ) const
 {
+	// Flip or not left and right in order to speed up learning by taking into account the robot's symmetry:
+	int flip_coef = flip ? 1 : -1;
+
 	p::list state;
 
-	state.append( GetDirection() );
-	state.append( GetSteeringTrueAngle() );
-	state.append( GetRollAngle() );
-	state.append( GetPitchAngle() );
-	state.append( GetBoggieAngle() );
+	state.append( flip_coef*GetDirection() );
+	state.append( flip_coef*GetSteeringTrueAngle() );
+	state.append( flip_coef*GetRollAngle() );
+	state.append( flip_coef*GetPitchAngle() );
+	state.append( flip_coef*GetBoggieAngle() );
 	for ( int i = 0 ; i < 4 ; i++ )
 		for ( int j = 0 ; j < 3 ; j++ )
-			state.append( _fork_output[i][j] );
+			state.append( ( ( i + j )%2 == 0 ? 1 : flip_coef )*_fork_output[i][j] );
 	//for ( int i = 0 ; i < NBWHEELS ; i++ )
 		//state.append( _torque_output[i] );
 
@@ -74,7 +78,7 @@ p::list Rover_1_tf::GetState() const
 }
 
 
-void Rover_1_tf::InferAction( const p::list& state, double& steering_rate, double& boggie_torque ) const
+void Rover_1_tf::InferAction( const p::list& state, double& steering_rate, double& boggie_torque, const bool flip ) const
 {
 	// Setup the inputs and outputs:
 	tensorflow::Tensor state_tensor( tensorflow::DT_FLOAT, tensorflow::TensorShape( { 1, p::len( state ) } ) );
@@ -88,8 +92,8 @@ void Rover_1_tf::InferAction( const p::list& state, double& steering_rate, doubl
 	TF_CHECK_OK( _tf_session_ptr->Run( inputs, { "Actor_Output" }, {}, &outputs ) );
 
 	// Extract the outputs:
-	steering_rate = outputs[0].flat<float>()( 0 );
-	boggie_torque = outputs[0].flat<float>()( 1 );
+	steering_rate = ( flip ? -1 : 1 )*outputs[0].flat<float>()( 0 );
+	boggie_torque = ( flip ? -1 : 1 )*outputs[0].flat<float>()( 1 );
 }
 
 
@@ -115,39 +119,29 @@ double Rover_1_tf::_ComputeReward( double delta_t )
 
 void Rover_1_tf::_InternalControl( double delta_t )
 {
+	// Get the reward obtained since last call:
 	double reward = _ComputeReward( delta_t );
 	_total_reward += reward;
 	#ifdef PRINT
 		printf( "reward: %f\n", reward );
 	#endif
 
-	p::list new_state = GetState();
-	//for ( int i = 0 ; i < 12 ; i++ )
-		//printf( "%f ", double( p::extract<double>( new_state[i] ) ) );
-	//printf( "\n" );
-	//fflush( stdout );
+	// Flip the role of left and right if the steering angle is negative:
+	bool flip = GetSteeringTrueAngle() < 0;
 
+	// Get the current state of the robot:
+	p::list new_state = GetState( flip );
+
+	// Store the last experience, flip the actions according to the last state:
 	if ( p::len( _last_state ) > 0 )
-		_experience.append( p::make_tuple( _last_state, p::make_tuple( _steering_rate, _boggie_torque ), reward, false, new_state ) );
+		_experience.append( p::make_tuple( _last_state,
+		                                   p::make_tuple( ( _was_flipped ? -1 : 1 )*_steering_rate,( _was_flipped ? -1 : 1 )*_boggie_torque ),
+										   reward,
+										   false,
+										   new_state ) );
 
 
-	// e-greedy exploration:
-	//if ( _exploration && _expl_dist( _rd_gen ) > 0.7 )
-	//{
-		//_steering_rate = _ctrl_dist( _rd_gen )*steering_max_vel;
-		//_boggie_torque = _ctrl_dist( _rd_gen )*boggie_max_torque;
-		//#ifdef PRINT
-			//printf( "EXPLO: %f %f\n", _steering_rate, _boggie_torque );
-		//#endif
-	//}
-	//else
-	//{
-		//InferAction( new_state, _steering_rate, _boggie_torque );
-		//#ifdef PRINT
-			//printf( "INFER: %f %f\n", _steering_rate, _boggie_torque );
-		//#endif
-	//}
-
+	// Choose the next action:
 
 	static bool explore;
 
@@ -161,28 +155,28 @@ void Rover_1_tf::_InternalControl( double delta_t )
 			_steering_rate = _ctrl_dist( _rd_gen )*steering_max_vel;
 			_boggie_torque = _ctrl_dist( _rd_gen )*boggie_max_torque;
 			#ifdef PRINT
-				printf( "EXPLO: %f %f\n", _steering_rate, _boggie_torque );
+			printf( "EXPLO: %f %f\n", _steering_rate, _boggie_torque );
 			#endif
 		}
 	}
-	//else
 	if ( !_exploration || ! explore )
 	{
-		InferAction( new_state, _steering_rate, _boggie_torque );
+		InferAction( new_state, _steering_rate, _boggie_torque, flip );
 		#ifdef PRINT
-			printf( "INFER: %f %f\n", _steering_rate, _boggie_torque );
+		printf( "INFER: %f %f\n", _steering_rate, _boggie_torque );
 		#endif
 	}
 	#ifdef PRINT
-		else
-			printf( "EXPLO: %f %f (continue)\n", _steering_rate, _boggie_torque );
+	else
+		printf( "EXPLO: %f %f (continue)\n", _steering_rate, _boggie_torque );
 	#endif
 
 	#ifdef PRINT
-		fflush( stdout );
+	fflush( stdout );
 	#endif
 
 	_last_state = new_state;
+	_was_flipped = flip;
 }
 
 

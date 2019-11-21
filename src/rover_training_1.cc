@@ -24,8 +24,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 
 	dInitODE();
 	//ode::Environment env( 0.7 );
-	//ode::Environment env( 0.5 );
-	ode::Environment env( false, 0.5 );
+	ode::Environment env( 0.5 );
 
 
 	// [ Robot ]
@@ -42,19 +41,13 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 
 	// [ Obstacles ]
 
-	//ode::Box obs1( env, Eigen::Vector3d( 0.7, -0.5, 0.1/2 ), 1, 0.1, 1, 0.1, false );
-	//obs1.fix();
-	//obs1.set_collision_group( "ground" );
-
-	//ode::Box obs2( env, Eigen::Vector3d( 1.5, 0, 0.3/2 ), 1, 1, 2, 0.3, false );
-	//ode::Box obs2( env, Eigen::Vector3d( 2, 0, 0.3/2 ), 1, 2, 3, 0.3, false );
-	//obs2.fix();
-	//obs2.set_collision_group( "ground" );
-
-	//ode::HeightField field( env, Eigen::Vector3d( 2, 0, -0.01 ), "../env_data/heightmap_rock_step.png", 0.3, 3, 3, 0, -1, 1 );
-	//ode::HeightField field( env, Eigen::Vector3d( 1, 0, -0.3 ), "../env_data/heightmap_rock_groove.png", 0.3, 3, 3, 0, -1, 1 );
-	ode::HeightField field( env, Eigen::Vector3d( 1, 0, -0.3 ), "../env_data/heightmap_rock_large.png", 0.3, 6, 6, 0, -1, 1 );
-	field.set_collision_group( "ground" );
+	float step_height( 0.105*2 );
+	float rot( 10 );
+	//double rot = (double)rand()/(double)RAND_MAX*15;
+	ode::Box step( env, Eigen::Vector3d( 1.5, 0, step_height/2 ), 1, 1, 2, step_height, false );
+	step.set_rotation( 0, 0, rot*M_PI/180 );
+	step.fix();
+	step.set_collision_group( "ground" );
 
 
 	// [ Simulation rules ]
@@ -66,10 +59,8 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 	// Duration before starting the internal control:
 	float IC_start( 1 );
 	// Timeout of the simulation:
-	float timeout( 60 );
+	float timeout( 6 );
 	// Maximum distance to travel ahead:
-	//float x_goal( 1.5 );
-	//float x_goal( 2 );
 	float x_goal( 2.5 );
 	// Maximum lateral deviation permitted:
 	float y_max( 0.5 );
@@ -104,29 +95,16 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 
 	if ( strncmp( option, "display", 8 ) == 0 || strncmp( option, "capture", 8 ) == 0 || strncmp( option, "explore", 8 ) == 0 )
 	{
-		//int x( 200 ), y( 200 ), width( 1024 ), height( 768 );
-		int x( 200 ), y( 200 ), width( 1920 ), height( 1080 );
-		//display_ptr = new renderer::OsgVisitor( 0, width, height, x, y, 20, 20, osg::Vec3( -0.7, -2, 0.6 ), osg::Vec3( 0, 0, -0.1 ) );
-		//display_ptr = new renderer::OsgVisitor( 0, width, height, x, y, 0, 0, osg::Vec3( -0.7, -2, 0.6 ), osg::Vec3( 0, 0, -0.1 ) );
-		//display_ptr = new renderer::OsgVisitor( 0, width, height, x, y, 20, 20, osg::Vec3( -2.2, -2.4, 1.4 ), osg::Vec3( -0.2, 0, -0.6 ) );
-
-		// Point of view for the rock step:
-		//display_ptr = new renderer::OsgVisitor( 0, width, height, x, y, 20, 20, osg::Vec3( -2.2, -1.4, 0.5 ), osg::Vec3( -0.2, 0, -0.4 ) );
-		// Point of view for the groove:
-		display_ptr = new renderer::OsgVisitor( 0, width, height, x, y, 20, 20, osg::Vec3( 0, -2.2, 0.4 ), osg::Vec3( -0.15, 0, -0.35 ) );
-		//display_ptr = new renderer::OsgVisitor( 0, width, height, x, y, 20, 20, osg::Vec3( 0, 2.2, 0.4 ), osg::Vec3( -0.15, 0, -0.35 ),
-		                                        //renderer::OsgVisitor::TRACK, true, osg::Vec3( 1, 2, 3 ) );
-		display_ptr->set_ground_texture( "../env_data/mars_checker.tga" );
-		display_ptr->set_background_color( 179, 71, 0 );
+		int x( 200 ), y( 200 ), width( 1024 ), height( 768 );
+		//int x( 0 ), y( 0 ), width( 1920 ), height( 1080 );
+		display_ptr = new renderer::OsgVisitor( 0, width, height, x, y, 20, 20, osg::Vec3( -0.7, -2, 0.6 ), osg::Vec3( 0, 0, -0.1 ) );
 
 		display_ptr->set_window_name( "Rover training 1" );
 		//display_ptr->disable_shadows();
 		display_ptr->set_pause();
 
 		robot.accept( *display_ptr );
-		//obs1.accept( *display_ptr );
-		//obs2.accept( *display_ptr );
-		field.accept( *display_ptr );
+		step.accept( *display_ptr );
 
 		robot::RoverControl* keycontrol = new robot::RoverControl( &robot, display_ptr->get_viewer() );
 	}

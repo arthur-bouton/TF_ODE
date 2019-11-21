@@ -16,9 +16,9 @@ class Rover_1_tf : public Rover_1
 
 	Rover_1_tf( ode::Environment& env, const Eigen::Vector3d& pose, const char* path_to_tf_model, const int seed = -1 );
 
-	virtual boost::python::list GetState() const;
+	virtual boost::python::list GetState( const bool flip = false ) const;
 
-	virtual void InferAction( const boost::python::list& state, double& steering_rate, double& boggie_torque ) const;
+	virtual void InferAction( const boost::python::list& state, double& steering_rate, double& boggie_torque, const bool flip = false ) const;
 
 	inline void SetExploration( bool expl ) { _exploration = expl; }
 
@@ -37,6 +37,7 @@ class Rover_1_tf : public Rover_1
 	tensorflow::Session* _tf_session_ptr;
 	Eigen::Vector3d _last_pos;
 	boost::python::list _last_state;
+	bool _was_flipped;
 	boost::python::list _experience;
 	double _total_reward;
 	bool _exploration;
