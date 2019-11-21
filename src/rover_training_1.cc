@@ -6,6 +6,7 @@
 #include "ode/heightfield.hh"
 #include "utils/sim_loop.hh"
 #include <boost/python.hpp>
+#include <random>
 
 //#include <X11/Xlib.h>
 //#include <iostream>
@@ -32,7 +33,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 	robot::Rover_1_tf robot( env, Eigen::Vector3d( 0, 0, 0 ), path_to_tf_model );
 	robot.SetCmdPeriod( 0.5 );
 	#ifdef EXE
-		robot.SetCmdPeriod( 0.1 );
+	robot.SetCmdPeriod( 0.1 );
 	#endif
 	robot.DeactivateIC();
 	if ( strncmp( option, "trial", 6 ) == 0 || strncmp( option, "explore", 8 ) == 0 )
@@ -42,8 +43,15 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 	// [ Obstacles ]
 
 	float step_height( 0.105*2 );
-	float rot( 10 );
-	//double rot = (double)rand()/(double)RAND_MAX*15;
+	#ifdef EXE
+	double rot( 15 );
+	#else
+	float max_rot( 15 );
+	std::random_device rd;
+	std::mt19937 gen( rd() );
+    std::uniform_real_distribution<double> uniform( -1., 1. );
+	double rot = uniform( gen )*max_rot;
+	#endif
 	ode::Box step( env, Eigen::Vector3d( 1.5, 0, step_height/2 ), 1, 1, 2, step_height, false );
 	step.set_rotation( 0, 0, rot*M_PI/180 );
 	step.fix();
@@ -59,7 +67,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 	// Duration before starting the internal control:
 	float IC_start( 1 );
 	// Timeout of the simulation:
-	float timeout( 6 );
+	float timeout( 60 );
 	// Maximum distance to travel ahead:
 	float x_goal( 2.5 );
 	// Maximum lateral deviation permitted:
