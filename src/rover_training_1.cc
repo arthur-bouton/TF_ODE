@@ -32,9 +32,9 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 
 	robot::Rover_1_tf robot( env, Eigen::Vector3d( 0, 0, 0 ), path_to_tf_model );
 	robot.SetCmdPeriod( 0.5 );
-	#ifdef EXE
+#ifdef EXE
 	robot.SetCmdPeriod( 0.1 );
-	#endif
+#endif
 	robot.DeactivateIC();
 	if ( strncmp( option, "trial", 6 ) == 0 || strncmp( option, "explore", 8 ) == 0 )
 		robot.SetExploration( true );
@@ -43,15 +43,15 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 	// [ Obstacles ]
 
 	float step_height( 0.105*2 );
-	#ifdef EXE
+#ifdef EXE
 	double rot( 15 );
-	#else
+#else
 	float max_rot( 15 );
 	std::random_device rd;
 	std::mt19937 gen( rd() );
     std::uniform_real_distribution<double> uniform( -1., 1. );
 	double rot = uniform( gen )*max_rot;
-	#endif
+#endif
 	ode::Box step( env, Eigen::Vector3d( 1.5, 0, step_height/2 ), 1, 1, 2, step_height, false );
 	step.set_rotation( 0, 0, rot*M_PI/180 );
 	step.fix();

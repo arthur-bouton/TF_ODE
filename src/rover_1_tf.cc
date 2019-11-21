@@ -122,9 +122,9 @@ void Rover_1_tf::_InternalControl( double delta_t )
 	// Get the reward obtained since last call:
 	double reward = _ComputeReward( delta_t );
 	_total_reward += reward;
-	#ifdef PRINT
+#ifdef PRINT
 		printf( "reward: %f\n", reward );
-	#endif
+#endif
 
 	// Flip the role of left and right if the steering angle is negative:
 	bool flip = GetSteeringTrueAngle() < 0;
@@ -154,26 +154,26 @@ void Rover_1_tf::_InternalControl( double delta_t )
 			explore = true;
 			_steering_rate = _ctrl_dist( _rd_gen )*steering_max_vel;
 			_boggie_torque = _ctrl_dist( _rd_gen )*boggie_max_torque;
-			#ifdef PRINT
+#ifdef PRINT
 			printf( "EXPLO: %f %f\n", _steering_rate, _boggie_torque );
-			#endif
+#endif
 		}
 	}
 	if ( !_exploration || ! explore )
 	{
 		InferAction( new_state, _steering_rate, _boggie_torque, flip );
-		#ifdef PRINT
+#ifdef PRINT
 		printf( "INFER: %f %f\n", _steering_rate, _boggie_torque );
-		#endif
+#endif
 	}
-	#ifdef PRINT
+#ifdef PRINT
 	else
 		printf( "EXPLO: %f %f (continue)\n", _steering_rate, _boggie_torque );
-	#endif
+#endif
 
-	#ifdef PRINT
+#ifdef PRINT
 	fflush( stdout );
-	#endif
+#endif
 
 	_last_state = new_state;
 	_was_flipped = flip;
