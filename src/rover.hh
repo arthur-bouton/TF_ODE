@@ -2,7 +2,7 @@
 #define ROVER_HH 
 
 #include "ode/robot.hh"
-#include "utils/filters.hh"
+#include "utils/filters2.hh"
 #include <osgViewer/Viewer>
 
 
@@ -131,8 +131,8 @@ class Rover_1 : public Robot
 	dJointFeedback _rear_fork_feedback;
 	dJointFeedback _wheel_feedback[NBWHEELS];
 
-	filters::LP_second_order<double>::ptr_t _fork_filter[4][3];
-	filters::LP_second_order<double>::ptr_t _torque_filter[NBWHEELS];
+	filters::LP_second_order<double> _fork_filter[4][3];
+	filters::LP_second_order<double> _torque_filter[NBWHEELS];
 
 	dVector3 _fork_output[4];
 	double _torque_output[NBWHEELS];
