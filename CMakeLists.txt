@@ -62,6 +62,7 @@ add_executable( rover_training_1_exe ${ROVER_TRAINING_1_SOURCES} )
 target_link_libraries( rover_training_1_exe ${ROVER_TRAINING_1_LIBRARIES} )
 target_compile_definitions( rover_training_1_exe PRIVATE EXE )
 target_compile_definitions( rover_training_1_exe PRIVATE PRINT )
+#set_target_properties( rover_training_1_exe PROPERTIES COMPILE_FLAGS "-g" )
 
 add_library( rover_training_1_module SHARED ${ROVER_TRAINING_1_SOURCES} )
 target_link_libraries( rover_training_1_module ${ROVER_TRAINING_1_LIBRARIES} )

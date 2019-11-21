@@ -44,6 +44,8 @@ class HeightField : public Object
 	Object( env, pos ), length( l ), width( w ), skirt( skirt_height ), min( bound_min ), max( bound_max ), texture_path( nullptr )
 	{
 		osg::Image* heightimage = osgDB::readImageFile( heightimage_path );
+		if ( heightimage == nullptr )
+			throw std::runtime_error( std::string( "Can't open " ) + std::string( heightimage_path ) );
 		nrow = heightimage->t();
 		ncol = heightimage->s();
 		data = (double*) calloc( nrow*ncol, sizeof( double ) );
