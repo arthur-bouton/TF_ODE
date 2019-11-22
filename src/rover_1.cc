@@ -25,10 +25,12 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 {
 	// [ Rover's parameters ]
 
-	//#define WHEELS_MAX_TORQUE 0
-	//#define WHEELS_MAX_TORQUE 6.
-	#define WHEELS_MAX_TORQUE dInfinity
-	#define WHEELS_MAX_SPEED 7.6365 // rad/s
+	//#define WHEELS_MAX_TORQUE dInfinity
+	//#define WHEELS_MAX_TORQUE 3.38954 // N.m
+	#define WHEELS_MAX_TORQUE 25.4 // N.m
+	#define WHEELS_MAX_SPEED 7.4351 // rad/s
+	//#define WHEELS_TORQUE_SPEED_RATIO 0.45588357923901496
+	#define WHEELS_TORQUE_SPEED_RATIO 3.416228430014391
 	#define STEERING_SERVOS_K 0.8
 
 	steering_max_vel = 15;
@@ -345,6 +347,10 @@ void Rover_1::_ApplyWheelControl()
 	for ( int i = 0 ; i < NBWHEELS ; i++ )
 	{
 		_W[i] = std::min( std::max( -WHEELS_MAX_SPEED, _W[i] ), WHEELS_MAX_SPEED );
+
+		// Limit the torque according to the current wheel speed:
+		double max_torque = WHEELS_MAX_TORQUE - WHEELS_TORQUE_SPEED_RATIO*fabs( dJointGetHingeAngleRate( _wheel_joint[i] ) );
+		dJointSetHingeParam( _wheel_joint[i], dParamFMax, max_torque );
 		dJointSetHingeParam( _wheel_joint[i], dParamVel, _W[i] );
 	}
 }
