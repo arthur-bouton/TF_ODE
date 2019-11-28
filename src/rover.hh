@@ -4,6 +4,7 @@
 #include "ode/robot.hh"
 #include "utils/filters2.hh"
 #include <osgViewer/Viewer>
+#include "ode/ft_sensor.hh"
 
 
 #define NBWHEELS 4
@@ -49,10 +50,10 @@ class Rover_1 : public Robot
 	virtual double GetPitchAngle() const;
 	virtual void GetTiltRates( double& roll_rate, double& pitch_rate ) const;
 	virtual double GetBoggieAngle() const;
-	inline const dVector3* GetForkTorsors() const { return _fork_output; }
+	virtual Eigen::Matrix<double,4,3> GetFT300Torsors() const;
 	inline const double* GetWheelTorques() const { return _torque_output; }
 
-	virtual void PrintForkTorsors( bool endl = true ) const;
+	virtual void PrintFT300Torsors( bool endl = true ) const;
 	virtual void PrintWheelTorques( bool endl = true ) const;
 
 	virtual void next_step( double dt = ode::Environment::time_step );
@@ -68,7 +69,6 @@ class Rover_1 : public Robot
 	virtual void _ApplySteeringControl();
 	virtual void _ApplyBoggieControl();
 
-	virtual void _UpdateForkFilters();
 	virtual void _UpdateTorqueFilters();
 	
 	double _robot_speed;
@@ -127,15 +127,12 @@ class Rover_1 : public Robot
 	dJointID _boggie_hinge;
 	dJointID _wheel_joint[NBWHEELS];
 
-	dJointFeedback _front_fork_feedback;
-	dJointFeedback _rear_fork_feedback;
 	dJointFeedback _wheel_feedback[NBWHEELS];
-
-	filters::LP_second_order<double> _fork_filter[4][3];
 	filters::LP_second_order<double> _torque_filter[NBWHEELS];
-
-	dVector3 _fork_output[4];
 	double _torque_output[NBWHEELS];
+
+	FT_sensor _front_ft_sensor;
+	FT_sensor _rear_ft_sensor;
 
 	double _W[NBWHEELS];
 
@@ -150,8 +147,7 @@ class RoverControl : public osgGA::GUIEventHandler
 	public:
 
 	RoverControl( robot::Rover_1* robot, osgViewer::Viewer* viewer, double speed_sensi = 0.01, double turn_sensi = 1., double torque_sensi = 1. ) :
-					 _robot_ptr( robot ), _viewer( viewer ),
-					 _speed_sensi( speed_sensi ), _turn_sensi( turn_sensi ), _torque_sensi( torque_sensi )
+				  _robot_ptr( robot ), _viewer( viewer ), _speed_sensi( speed_sensi ), _turn_sensi( turn_sensi ), _torque_sensi( torque_sensi )
 	{
 		_viewer->addEventHandler( this );
 	}

@@ -68,9 +68,10 @@ p::list Rover_1_tf::GetState( const bool flip ) const
 	state.append( flip_coef*GetRollAngle() );
 	state.append( flip_coef*GetPitchAngle() );
 	state.append( flip_coef*GetBoggieAngle() );
+	Matrix<double,4,3> ft_torsors;
 	for ( int i = 0 ; i < 4 ; i++ )
 		for ( int j = 0 ; j < 3 ; j++ )
-			state.append( ( ( i + j )%2 == 0 ? 1 : flip_coef )*_fork_output[i][j] );
+			state.append( ( ( i + j )%2 == 0 ? 1 : flip_coef )*ft_torsors( i, j ) );
 	//for ( int i = 0 ; i < NBWHEELS ; i++ )
 		//state.append( _torque_output[i] );
 

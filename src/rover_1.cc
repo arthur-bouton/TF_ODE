@@ -33,6 +33,16 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 	#define WHEELS_TORQUE_SPEED_RATIO 3.416228430014391
 	#define STEERING_SERVOS_K 0.8
 
+	// Stiffness and damping of force-torque sensors:
+	//#define FORK_K_LIN 2e4
+	//#define FORK_K_ANG 1e3
+	//#define FORK_C_LIN 5e2
+	//#define FORK_C_ANG 1.
+	#define FORK_K_LIN Vector3d( 2e4, 2e4, 1e5 )
+	#define FORK_K_ANG Vector3d( 1e3, 1e3, 1e3 )
+	#define FORK_C_LIN Vector3d( 5e2, 5e2, 5e2 )
+	#define FORK_C_ANG Vector3d( 1., 1., 1. )
+
 	steering_max_vel = 15;
 	boggie_max_torque = 20;
 
@@ -112,9 +122,9 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 	//rear_body->set_contact_type( DISABLED );
 
 	ode::Object::ptr_t boggie = Object::ptr_t( new Box( env,
-							                            pose + boggie_pos,
-							                            boggie_mass,
-							                            boggie_length, boggie_width, boggie_height ) );
+							          pose + boggie_pos,
+							          boggie_mass,
+							          boggie_length, boggie_width, boggie_height ) );
 	boggie->set_mesh( "../meshes/sea.obj" );
 	_bodies.push_back( boggie );
 	//boggie->set_contact_type( DISABLED );
@@ -160,25 +170,10 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 	dJointSetHingeParam( _boggie_hinge, dParamHiStop, boggie_angle_max*DEG_TO_RAD );
 
 
-	// [ Forks joints ]
+	// [ Force-torque sensors ]
 
-	dJointID front_joint = dJointCreateHinge( env.get_world(), 0 );
-	dJointAttach( front_joint, _front_fork->get_body(), _main_body->get_body() );
-	dJointSetHingeAxis( front_joint, 0, 0, 1 );
-	dJointSetHingeAnchor( front_joint, front_fork_pos.x(), front_fork_pos.y(), front_fork_pos.z() );
-	dJointSetHingeParam( front_joint, dParamLoStop, 0 );
-	dJointSetHingeParam( front_joint, dParamHiStop, 0 );
-	dJointSetHingeParam( front_joint, dParamFMax, dInfinity );
-	dJointSetFeedback( front_joint, &_front_fork_feedback );
-
-	dJointID rear_joint = dJointCreateHinge( env.get_world(), 0 );
-	dJointAttach( rear_joint, _rear_fork->get_body(), boggie->get_body() );
-	dJointSetHingeAxis( rear_joint, 0, 0, 1 );
-	dJointSetHingeAnchor( rear_joint, rear_fork_pos.x(), rear_fork_pos.y(), rear_fork_pos.z() );
-	dJointSetHingeParam( rear_joint, dParamLoStop, 0 );
-	dJointSetHingeParam( rear_joint, dParamHiStop, 0 );
-	dJointSetHingeParam( rear_joint, dParamFMax, dInfinity );
-	dJointSetFeedback( rear_joint, &_rear_fork_feedback );
+	_front_ft_sensor = FT_sensor( _main_body.get(), _front_fork.get(), pose + Vector3d( wheelbase/2, 0, belly_elev ), FORK_K_LIN, FORK_K_ANG, FORK_C_LIN, FORK_C_ANG );
+	_rear_ft_sensor = FT_sensor( boggie.get(), _rear_fork.get(), pose + Vector3d( -wheelbase/2, 0, belly_elev ), FORK_K_LIN, FORK_K_ANG, FORK_C_LIN, FORK_C_ANG );
 
 
 	for ( int i = 0 ; i < NBWHEELS ; i++ )
@@ -212,10 +207,6 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 	
 	for ( int i = 0 ; i < NBWHEELS ; i++ )
 		_torque_filter[i].init_bilinear( 0.001, 2*M_PI, 0.5, nullptr, _torque_output + i );
-
-	for ( int i = 0 ; i < 4 ; i++ )
-		for ( int j = 0 ; j < 3 ; j++ )
-			_fork_filter[i][j].init_bilinear( 0.001, 2*M_PI, 0.5, nullptr, &_fork_output[i][j] );
 }
 
 
@@ -384,34 +375,24 @@ void Rover_1::_UpdateTorqueFilters()
 }
 
 
-void Rover_1::_UpdateForkFilters()
+Matrix<double,4,3> Rover_1::GetFT300Torsors() const
 {
-	dVector3* fb_abs;
-	dVector3 fork_fb[4];
+	Matrix<double,4,3> ft_torsors;
+	ft_torsors.row( 0 ) = *_front_ft_sensor.GetForces();
+	ft_torsors.row( 1 ) = *_front_ft_sensor.GetTorques();
+	ft_torsors.row( 2 ) = *_rear_ft_sensor.GetForces();
+	ft_torsors.row( 3 ) = *_rear_ft_sensor.GetTorques();
 
-	fb_abs = &_front_fork_feedback.f1;
-	dBodyVectorFromWorld( _front_fork->get_body(), -*fb_abs[0], -*fb_abs[1], -*fb_abs[2], fork_fb[0] );
-
-	fb_abs = &_front_fork_feedback.t1;
-	dBodyVectorFromWorld( _front_fork->get_body(), -*fb_abs[0], -*fb_abs[1], -*fb_abs[2], fork_fb[1] );
-
-	fb_abs = &_rear_fork_feedback.f1;
-	dBodyVectorFromWorld( _rear_fork->get_body(), -*fb_abs[0], -*fb_abs[1], -*fb_abs[2], fork_fb[2] );
-
-	fb_abs = &_rear_fork_feedback.t1;
-	dBodyVectorFromWorld( _rear_fork->get_body(), -*fb_abs[0], -*fb_abs[1], -*fb_abs[2], fork_fb[3] );
-
-	for ( int i = 0 ; i < 4 ; i++ )
-		for ( int j = 0 ; j < 3 ; j++ )
-			_fork_filter[i][j].update( fork_fb[i][j] );
+	return ft_torsors;
 }
 
 
-void Rover_1::PrintForkTorsors( bool endl ) const
+void Rover_1::PrintFT300Torsors( bool endl ) const
 {
-	for ( int i = 0 ; i < 4 ; i++ )
+	const Vector3d* list[] = { _front_ft_sensor.GetForces(), _front_ft_sensor.GetTorques(), _rear_ft_sensor.GetForces(), _rear_ft_sensor.GetTorques() };
+	for ( const Vector3d* vec : list )
 		for ( int j = 0 ; j < 3 ; j++ )
-			printf( "%f ", _fork_output[i][j] );
+			printf( "%f ", vec->coeff( j ) );
 
 	if ( endl )
 	{
@@ -436,7 +417,8 @@ void Rover_1::PrintWheelTorques( bool endl ) const
 
 void Rover_1::next_step( double dt )
 {
-	_UpdateForkFilters();
+	_front_ft_sensor.Update();
+	_rear_ft_sensor.Update();
 	_UpdateTorqueFilters();
 
 	_ic_clock += dt;
@@ -459,7 +441,7 @@ void Rover_1::next_step( double dt )
 
 void Rover_1::_InternalControl( double delta_t )
 {
-	//PrintForkTorsors();
+	//PrintFT300Torsors();
 	//PrintWheelTorques();
 
 	//printf( "%f ", GetDirection() );

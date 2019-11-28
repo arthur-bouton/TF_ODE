@@ -16,7 +16,7 @@ int main( int argc, char* argv[] )
 	// [ Dynamic environment ]
 
 	dInitODE();
-	ode::Environment env( 0.5 );
+	ode::Environment env( 0.3 );
 
 
 	// [ Robot ]
@@ -28,48 +28,57 @@ int main( int argc, char* argv[] )
 
 	// [ Obstacles ]
 
-	float x( 1.2 );
-	float y( -0.61/2 );
-	float h( 0.16 );
-	float l( 0.21 );
-	float w( 0.30 );
-	float slope( 20 );
+	//float x( 1.2 );
+	//float y( 0.61/2 + 0.1 );
+	//float h( 0.16 );
+	//float l( 0.21 );
+	//float w( 0.50 );
+	//float slope( 20 );
 
-	float l2 = h/sin( slope*M_PI/180 );
-	float h2 = h/cos( slope*M_PI/180 );
-	float x2 = l/2 + sqrt( l2*l2 + h2*h2 )/2 - h*tan( slope*M_PI/180 );
+	//float l2 = h/sin( slope*M_PI/180 );
+	//float h2 = h/cos( slope*M_PI/180 );
+	//float x2 = l/2 + sqrt( l2*l2 + h2*h2 )/2 - h*tan( slope*M_PI/180 );
 
-	ode::Box ramp_part1( env, Eigen::Vector3d( x, y, 0 ), 1, l, w, h*2, false );
+	//ode::Box ramp_part1( env, Eigen::Vector3d( x, y, 0 ), 1, l, w, h*2, false );
 
-	ode::Box ramp_part2( env, Eigen::Vector3d( x + x2, y, 0 ), 1, l2, w, h2, false );
-	ramp_part2.set_rotation( 0, -slope*M_PI/180, 0 );
+	//ode::Box ramp_part2( env, Eigen::Vector3d( x + x2, y, 0 ), 1, l2, w, h2, false );
+	//ramp_part2.set_rotation( 0, -slope*M_PI/180, 0 );
 
-	ode::Box ramp_part3( env, Eigen::Vector3d( x - x2, y, 0 ), 1, l2, w, h2, false );
-	ramp_part3.set_rotation( 0, slope*M_PI/180, 0 );
+	//ode::Box ramp_part3( env, Eigen::Vector3d( x - x2, y, 0 ), 1, l2, w, h2, false );
+	//ramp_part3.set_rotation( 0, slope*M_PI/180, 0 );
 
-	ramp_part1.fix();
-	ramp_part2.fix();
-	ramp_part3.fix();
-	ramp_part1.set_collision_group( "ground" );
-	ramp_part2.set_collision_group( "ground" );
-	ramp_part3.set_collision_group( "ground" );
+	//ramp_part1.fix();
+	//ramp_part2.fix();
+	//ramp_part3.fix();
+	//ramp_part1.set_collision_group( "ground" );
+	//ramp_part2.set_collision_group( "ground" );
+	//ramp_part3.set_collision_group( "ground" );
 
 
-	//ode::Box wall( env, Eigen::Vector3d( 0.8, 0, 0.21/2 ), 1, 0.1, 2, 0.21, false );
-	//wall.fix();
-	//wall.set_collision_group( "ground" );
+	ode::Box wall( env, Eigen::Vector3d( 0.5, 0, 0.21/2 ), 1, 0.1, 2, 0.21, false );
+	//ode::Box wall( env, Eigen::Vector3d( 0.5, -0.5, 0.21/2 ), 1, 0.1, 1, 0.21, false );
+	wall.fix();
+	wall.set_collision_group( "ground" );
+
+
+	//ode::Box box1( env, Eigen::Vector3d( -0.58/2, 0, 10 ), 1, 0.1, 0.1, 0.1, false );
+	//box1.set_collision_group( "weight" );
+
+	//ode::Box box2( env, Eigen::Vector3d( 0.58/2, 0, 50 ), 1, 0.1, 0.1, 0.1, false );
+	//box2.set_collision_group( "weight" );
 
 
 	// [ Simulation rules ]
 
 	// Cruise speed of the robot:
-	float speedf( 0.10 );
+	float speedf( 0.1 );
+	//float speedf( 0.02 );
 	// Time to reach cruise speed:
 	float term( 0.5 );
 	// Maximum distance to travel ahead:
 	float x_goal( 2.5 );
 	// Period with which to print the rover state:
-	float print_period( 0.1 );
+	float print_period( 0.01 );
 
 	float speed = 0;
 	float print_clock = 0;
@@ -89,7 +98,7 @@ int main( int argc, char* argv[] )
 		if ( print_clock >= print_period )
 		{
 			printf( "%f %f %f ", time, robot.GetRollAngle(), robot.GetPitchAngle() );
-			robot.PrintForkTorsors();
+			robot.PrintFT300Torsors();
 
 			print_clock = 0;
 		}
@@ -118,10 +127,12 @@ int main( int argc, char* argv[] )
 		display_ptr->set_pause();
 
 		robot.accept( *display_ptr );
-		ramp_part1.accept( *display_ptr );
-		ramp_part2.accept( *display_ptr );
-		ramp_part3.accept( *display_ptr );
-		//wall.accept( *display_ptr );
+		//ramp_part1.accept( *display_ptr );
+		//ramp_part2.accept( *display_ptr );
+		//ramp_part3.accept( *display_ptr );
+		wall.accept( *display_ptr );
+		//box1.accept( *display_ptr );
+		//box2.accept( *display_ptr );
 
 		robot::RoverControl* keycontrol = new robot::RoverControl( &robot, display_ptr->get_viewer() );
 	}

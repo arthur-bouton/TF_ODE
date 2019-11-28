@@ -34,7 +34,7 @@ namespace ode
   /// store the matrix by rows, and each row is rounded up to
   /// a multiple of 4 elements. The extra "padding" elements at the
   /// end of each row/column must be set to 0. 
-  inline Eigen::Matrix3d ode_to_matrixf(const dReal* dm)
+  inline Eigen::Matrix3d ode_to_matrixd(const dReal* dm)
   {
     assert(dm);
     Eigen::Matrix3d mat(3, 3);
@@ -50,7 +50,7 @@ namespace ode
     return mat;
   }
 
-  inline Eigen::Vector3d ode_to_vectorf(const dReal* v)
+  inline Eigen::Vector3d ode_to_vectord(const dReal* v)
   {
     assert(v);
     return Eigen::Vector3d(v[0], v[1], v[2]);

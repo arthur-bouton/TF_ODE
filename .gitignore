@@ -5,3 +5,4 @@ build/
 *.dat
 training_data/
 videos/data/
+__pycache__

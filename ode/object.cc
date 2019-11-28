@@ -100,13 +100,13 @@ Eigen::Vector3d Object::get_rot() const
 Eigen::Vector3d Object::get_vel() const
 {
 	const dReal* vel = dBodyGetLinearVel( get_body() );
-	return ode_to_vectorf( vel );
+	return ode_to_vectord( vel );
 }
 
 Eigen::Vector3d Object::get_angvel() const
 {
 	const dReal* angvel = dBodyGetAngularVel( get_body() );
-	return ode_to_vectorf( angvel );
+	return ode_to_vectord( angvel );
 }
 
 
@@ -145,7 +145,7 @@ Eigen::Vector3d Object::get_vground( const Eigen::Vector3d& v ) const
 {
 	dReal res[3];
 	dBodyGetPointVel( get_body(), v.x(), v.y(), v.z(), res );
-	return ode_to_vectorf( res );
+	return ode_to_vectord( res );
 }
 
 
