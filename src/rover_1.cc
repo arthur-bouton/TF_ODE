@@ -199,7 +199,7 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 		dJointSetHingeParam( _wheel_joint[i], dParamFMax, WHEELS_MAX_TORQUE );
 		//dJointSetHingeParam( _wheel_joint[i], dParamFMax, 0 );
 
-		dJointSetFeedback( _wheel_joint[i], &_wheel_feedback[i] );
+		//dJointSetFeedback( _wheel_joint[i], &_wheel_feedback[i] );
 	}
 
 
@@ -419,7 +419,7 @@ void Rover_1::next_step( double dt )
 {
 	_front_ft_sensor.Update();
 	_rear_ft_sensor.Update();
-	_UpdateTorqueFilters();
+	//_UpdateTorqueFilters();
 
 	_ic_clock += dt;
 	if ( _ic_activated && _ic_clock >= _ic_period )

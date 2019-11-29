@@ -22,6 +22,8 @@ int main( int argc, char* argv[] )
 	// [ Robot ]
 
 	robot::Rover_1 robot( env, Eigen::Vector3d( 0, 0, 0 ) );
+	//robot::Rover_1 robot( env, Eigen::Vector3d( 0, 0, 1 ) );
+	//robot::Rover_1 robot( env, Eigen::Vector3d( 0, 0, 0.31 ) );
 	//robot.SetCmdPeriod( 0.5 );
 	robot.DeactivateIC();
 
@@ -55,24 +57,35 @@ int main( int argc, char* argv[] )
 	//ramp_part3.set_collision_group( "ground" );
 
 
-	ode::Box wall( env, Eigen::Vector3d( 0.5, 0, 0.21/2 ), 1, 0.1, 2, 0.21, false );
+	//ode::Box wall( env, Eigen::Vector3d( 0.5, 0, 0.21/2 ), 1, 0.1, 2, 0.21, false );
 	//ode::Box wall( env, Eigen::Vector3d( 0.5, -0.5, 0.21/2 ), 1, 0.1, 1, 0.21, false );
-	wall.fix();
-	wall.set_collision_group( "ground" );
+	//wall.fix();
+	//wall.set_collision_group( "ground" );
 
 
-	//ode::Box box1( env, Eigen::Vector3d( -0.58/2, 0, 10 ), 1, 0.1, 0.1, 0.1, false );
-	//box1.set_collision_group( "weight" );
+	//ode::Box box( env, Eigen::Vector3d( 0, 0, 0.5 ), 1, 0.1, 0.1, 1, false );
+	//box.fix();
+	//box.set_collision_group( "ground" );
 
-	//ode::Box box2( env, Eigen::Vector3d( 0.58/2, 0, 50 ), 1, 0.1, 0.1, 0.1, false );
-	//box2.set_collision_group( "weight" );
+
+	//float h( 0.31 );
+	//float w( 0.70 );
+	//float x( -0.58/2 );
+	//float l( 0.3 );
+	//ode::Box box( env, Eigen::Vector3d( x, 0, h/2 ), 1, l, w, h, false );
+	//box.fix();
+	//box.set_collision_group( "ground" );
+
+	//ode::Box help( env, Eigen::Vector3d( 0.6, 0, 0 ), 1, 0.1, 0.1, 1, false );
+	//help.fix();
+	//help.set_collision_group( "ground" );
 
 
 	// [ Simulation rules ]
 
 	// Cruise speed of the robot:
-	float speedf( 0.1 );
-	//float speedf( 0.02 );
+	//float speedf( 0.1 );
+	float speedf( 0.02 );
 	// Time to reach cruise speed:
 	float term( 0.5 );
 	// Maximum distance to travel ahead:
@@ -85,11 +98,11 @@ int main( int argc, char* argv[] )
 
 	std::function<bool(float,double)>  step_function = [&]( float timestep, double time )
 	{
-		if ( speed <= speedf )
-		{
-			speed += speedf/term*timestep;
-			robot.SetRobotSpeed( speed );
-		}
+		//if ( speed <= speedf )
+		//{
+			//speed += speedf/term*timestep;
+			//robot.SetRobotSpeed( speed );
+		//}
 
 		env.next_step( timestep );
 		robot.next_step( timestep );
@@ -130,9 +143,9 @@ int main( int argc, char* argv[] )
 		//ramp_part1.accept( *display_ptr );
 		//ramp_part2.accept( *display_ptr );
 		//ramp_part3.accept( *display_ptr );
-		wall.accept( *display_ptr );
-		//box1.accept( *display_ptr );
-		//box2.accept( *display_ptr );
+		//wall.accept( *display_ptr );
+		//box.accept( *display_ptr );
+		//help.accept( *display_ptr );
 
 		robot::RoverControl* keycontrol = new robot::RoverControl( &robot, display_ptr->get_viewer() );
 	}
