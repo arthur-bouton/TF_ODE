@@ -18,9 +18,18 @@ file_list+=" $dataset_name.meta"
 export TF_CPP_MIN_LOG_LEVEL=1
 
 
+# Do not write in files, only print results in the terminal:
 if [ "$1" == 'display_only' ] || [ "$1" == '-d' ]; then
 	echo "-- Display only --"
 	display_only=true
+fi
+
+# Skip evaluations:
+if [[ $1 =~ ^[0-9]+$ ]]; then
+	skip=$1
+	skip_count=$skip
+else
+	skip=0
 fi
 
 
@@ -78,23 +87,27 @@ extract_data()
 
 # Synchronous updates:
 while inotifywait -qqe modify $watched_file; do
-	log=($( tail -1 $watched_file ))
+	if [ $((++skip_count)) -ge $skip ]; then
+		skip_count=0
 
-	for file in $file_list; do
-		cp $data_dir/$file $tmp_storage_dir
-	done
-	echo -ne "> Evaluating ${log[*]::2}...\r"
-	result=($(../build/rover_training_1_exe eval $tmp_storage_dir/$dataset_name))
-	stat="${log[*]} => ${result[*]}"
+		log=($( tail -1 $watched_file ))
 
-	if [ "$display_only" == true ]; then
-		echo $stat
-	else
-		echo $stat | tee -a $data_dir/$dataset_name'_stat.txt'
-		if [[ ${result[*]} == *'[Success]'* ]]; then
-			if (( $( echo "${result[$time_pos]} < $time_max" | bc -l ) )); then
-				extract_data
-				echo "Dataset $file_number extracted (time: ${result[$time_pos]})"
+		for file in $file_list; do
+			cp $data_dir/$file $tmp_storage_dir
+		done
+		echo -ne "> Evaluating ${log[*]::2}...\r"
+		result=($(../build/rover_training_1_exe eval $tmp_storage_dir/$dataset_name))
+		stat="${log[*]} => ${result[*]}"
+
+		if [ "$display_only" == true ]; then
+			echo $stat
+		else
+			echo $stat | tee -a $data_dir/$dataset_name'_stat.txt'
+			if [[ ${result[*]} == *'[Success]'* ]]; then
+				if (( $( echo "${result[$time_pos]} < $time_max" | bc -l ) )); then
+					extract_data
+					echo "Dataset $file_number extracted (time: ${result[$time_pos]})"
+				fi
 			fi
 		fi
 	fi
