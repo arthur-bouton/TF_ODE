@@ -22,7 +22,7 @@ script_name = os.path.splitext( os.path.basename( __file__ ) )[0]
 
 # Name of the file where to store network parameters:
 #path_to_tf_model = '../training_data/' + script_name + '_' + data_id
-path_to_tf_model = '../training_data/run_10/rover_training_1'
+path_to_tf_model = '../training_data/step_1/rover_training_1'
 
 # Parameters for the training:
 EP_MAX = 100000 # Maximal number of episodes for the training
@@ -82,7 +82,8 @@ with DDPG( S_DIM, A_DIM, STATE_SCALE, ACTION_SCALE, GAMMA, TAU, BUFFER_SIZE, MIN
 				if interruption() :
 					break
 
-				ddpg.replay_buffer.add( trial_experience )
+				for transition in trial_experience :
+					ddpg.replay_buffer.add( transition )
 
 				n_ep += 1
 

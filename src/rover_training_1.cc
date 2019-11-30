@@ -44,7 +44,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 
 	float step_height( 0.105*2 );
 #ifdef EXE
-	double rot( 15 );
+	double rot( 0 );
 #else
 	float max_rot( 15 );
 	std::random_device rd;

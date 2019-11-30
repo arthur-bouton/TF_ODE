@@ -1,12 +1,12 @@
 #!/bin/bash
 
-data_dir=../training_data/run_10
+data_dir=../training_data/step_1
 dataset_name=rover_training_1
 #watched_file=$data_dir/$dataset_name.data-00000-of-00001
 watched_file=$data_dir/$dataset_name'_log.txt'
 time_pos=2
-time_max=24
-extraction_dir=$data_dir/selected2
+time_max=20
+extraction_dir=$data_dir/selected
 tmp_storage_dir=/tmp/$dataset_name"_tmp_graph_data"
 n_digits=4
 
