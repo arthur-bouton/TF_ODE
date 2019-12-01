@@ -31,10 +31,16 @@ int main( int argc, char* argv[] )
 
 	// [ Obstacles ]
 
+	double rot( 0 );
 	float step_height( 0.105*2 );
-	ode::Box step( env, Eigen::Vector3d( 1.5, 0, step_height/2 ), 1, 1, 2, step_height, false );
+	ode::Box step( env, Eigen::Vector3d( 1.5, 0, step_height/2 ), 1, 1, 3, step_height, false );
+	step.set_rotation( 0, 0, rot*M_PI/180 );
 	step.fix();
 	step.set_collision_group( "ground" );
+
+	ode::Box step_c( env, Eigen::Vector3d( 2.5, 0, step_height/2 ), 1, 2, 3, step_height, false );
+	step_c.fix();
+	step_c.set_collision_group( "ground" );
 
 	//ode::HeightField field( env, Eigen::Vector3d( 2, 0, -0.01 ), "../env_data/heightmap_rock_step.png", 0.3, 3, 3, 0, -1, 1 );
 	//ode::HeightField field( env, Eigen::Vector3d( 1, 0, -0.3 ), "../env_data/heightmap_rock_groove.png", 0.3, 3, 3, 0, -1, 1 );
@@ -50,7 +56,7 @@ int main( int argc, char* argv[] )
 	// Timeout of the simulation:
 	float timeout( 60 );
 	// Maximum distance to travel ahead:
-	float x_goal( 3 );
+	float x_goal( 2 );
 	// Maximum lateral deviation permitted:
 	float y_max( 0.5 );
 
@@ -96,6 +102,7 @@ int main( int argc, char* argv[] )
 
 		robot.accept( *display_ptr );
 		step.accept( *display_ptr );
+		step_c.accept( *display_ptr );
 		//field.accept( *display_ptr );
 
 		robot::RoverControl* keycontrol = new robot::RoverControl( &robot, display_ptr->get_viewer() );

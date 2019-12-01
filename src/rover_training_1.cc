@@ -42,20 +42,24 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 
 	// [ Obstacles ]
 
-	float step_height( 0.105*2 );
 #ifdef EXE
 	double rot( 0 );
 #else
 	float max_rot( 15 );
 	std::random_device rd;
 	std::mt19937 gen( rd() );
-    std::uniform_real_distribution<double> uniform( -1., 1. );
+    std::uniform_real_distribution<double> uniform( 0., 1. );
 	double rot = uniform( gen )*max_rot;
 #endif
-	ode::Box step( env, Eigen::Vector3d( 1.5, 0, step_height/2 ), 1, 1, 2, step_height, false );
+	float step_height( 0.105*2 );
+	ode::Box step( env, Eigen::Vector3d( 1.5, 0, step_height/2 ), 1, 1, 3, step_height, false );
 	step.set_rotation( 0, 0, rot*M_PI/180 );
 	step.fix();
 	step.set_collision_group( "ground" );
+
+	ode::Box step_c( env, Eigen::Vector3d( 2.5, 0, step_height/2 ), 1, 2, 3, step_height, false );
+	step_c.fix();
+	step_c.set_collision_group( "ground" );
 
 
 	// [ Simulation rules ]
@@ -69,7 +73,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 	// Timeout of the simulation:
 	float timeout( 60 );
 	// Maximum distance to travel ahead:
-	float x_goal( 2.5 );
+	float x_goal( 2 );
 	// Maximum lateral deviation permitted:
 	float y_max( 0.5 );
 
@@ -113,6 +117,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 
 		robot.accept( *display_ptr );
 		step.accept( *display_ptr );
+		step_c.accept( *display_ptr );
 
 		robot::RoverControl* keycontrol = new robot::RoverControl( &robot, display_ptr->get_viewer() );
 	}
