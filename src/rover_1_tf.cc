@@ -59,14 +59,14 @@ Rover_1_tf::Rover_1_tf( Environment& env, const Vector3d& pose, const char* path
 p::list Rover_1_tf::GetState( const bool flip ) const
 {
 	// Flip or not left and right in order to speed up learning by taking into account the robot's symmetry:
-	int flip_coef = flip ? 1 : -1;
+	int flip_coef = flip ? -1 : 1;
 
 	p::list state;
 
 	state.append( flip_coef*GetDirection() );
 	state.append( flip_coef*GetSteeringTrueAngle() );
 	state.append( flip_coef*GetRollAngle() );
-	state.append( flip_coef*GetPitchAngle() );
+	state.append( GetPitchAngle() );
 	state.append( flip_coef*GetBoggieAngle() );
 	const Vector3d* list[] = { _front_ft_sensor.GetForces(), _front_ft_sensor.GetTorques(), _rear_ft_sensor.GetForces(), _rear_ft_sensor.GetTorques() };
 	for ( int i = 0 ; i < 4 ; i++ )
@@ -123,15 +123,15 @@ void Rover_1_tf::_InternalControl( double delta_t )
 	// Get the reward obtained since last call:
 	double reward = _ComputeReward( delta_t );
 	_total_reward += reward;
-#ifdef PRINT
-		printf( "reward: %f\n", reward );
-#endif
+//#ifdef PRINT
+		//printf( "reward: %f\n", reward );
+//#endif
 
 	// Flip the role of left and right if the steering angle is negative:
 	bool flip = GetSteeringTrueAngle() < 0;
 
 	// Get the current state of the robot:
-	p::list new_state = GetState( flip );
+	p::list current_state = GetState( flip );
 
 	// Store the last experience, flip the actions according to the last state:
 	if ( p::len( _last_state ) > 0 )
@@ -139,7 +139,7 @@ void Rover_1_tf::_InternalControl( double delta_t )
 		                                   p::make_tuple( ( _was_flipped ? -1 : 1 )*_steering_rate,( _was_flipped ? -1 : 1 )*_boggie_torque ),
 										   reward,
 										   false,
-										   new_state ) );
+										   current_state ) );
 
 
 	// Choose the next action:
@@ -162,7 +162,7 @@ void Rover_1_tf::_InternalControl( double delta_t )
 	}
 	if ( !_exploration || ! explore )
 	{
-		InferAction( new_state, _steering_rate, _boggie_torque, flip );
+		InferAction( current_state, _steering_rate, _boggie_torque, flip );
 #ifdef PRINT
 		printf( "INFER: %f %f\n", _steering_rate, _boggie_torque );
 #endif
@@ -176,7 +176,7 @@ void Rover_1_tf::_InternalControl( double delta_t )
 	fflush( stdout );
 #endif
 
-	_last_state = new_state;
+	_last_state = current_state;
 	_was_flipped = flip;
 }
 
