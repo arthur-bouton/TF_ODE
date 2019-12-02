@@ -3,6 +3,10 @@
 Deep Deterministic Policy Gradient (DDPG) [cf. http://arxiv.org/pdf/1509.02971v2.pdf (DeepMind)]
 with Prioritized Experience Replay (PER) [cf. https://arxiv.org/pdf/1511.05952v3.pdf (DeepMind)]
 
+Run a test with a simple pendulum by calling this script without argument.
+When the algorithm has converged, send SIGINT to stop it and save the model by answering "y" when prompted to.
+Then run the script with the word "eval" as an argument in order to evaluate the obtained policy.
+
 Author: Arthur Bouton [arthur.bouton@gadz.org]
 """
 #import warnings
@@ -18,6 +22,7 @@ from tqdm import trange
 
 
 def actor_network_def( name, states, a_dim, action_scale=None, summaries=False ) :
+	""" A feedforward neural network for the synthesis of the policy """
 
 	s_dim = states.get_shape().as_list()[1]
 
@@ -67,6 +72,7 @@ def actor_network_def( name, states, a_dim, action_scale=None, summaries=False )
 
 
 def critic_network_def( name, states, actions, action_scale=None, summaries=False ) :
+	""" A feedforward neural network for the approximation of the Q-value """
 
 	s_dim = states.get_shape().as_list()[1]
 	a_dim = actions.get_shape().as_list()[1]
@@ -114,6 +120,10 @@ def critic_network_def( name, states, actions, action_scale=None, summaries=Fals
 
 
 class Sumtree_sampler :
+	"""
+	A sum tree structure to efficiently sample items according to their relative priorities
+	"capacity" is the maximum amount of items that will be possibly stored
+	"""
 
 	def __init__( self, capacity ) :
 		self.capacity = capacity
@@ -124,6 +134,7 @@ class Sumtree_sampler :
 		self.max_p_seen = 1
 
 	def __len__( self ) :
+		""" Get the current number of items stored so far """
 		if not self.full :
 			return self.next_index
 		else :
@@ -150,6 +161,7 @@ class Sumtree_sampler :
 			return self._retrieve( value - self.tree[left], right )
 
 	def add( self, data, p=None ) :
+		""" Add a new item """
 
 		if p is None :
 			p = self.max_p_seen
@@ -165,6 +177,7 @@ class Sumtree_sampler :
 			self.full = True
 
 	def update( self, index, p ) :
+		""" Update item's priority by referring to its index """
 		leaf_index = index + self.capacity - 1
 
 		self._propagate( leaf_index, p - self.tree[leaf_index] )
@@ -173,9 +186,11 @@ class Sumtree_sampler :
 		self.max_p_seen = max( self.max_p_seen, p )
 
 	def sum( self ) :
+		""" The total sum of the priorities from all the items stored """
 		return self.tree[0]
 
 	def sample( self, length=1 ) :
+		""" Sample a list of items according to their priorities """
 		data, indices, priorities = [], [], []
 		for _ in range( length ) :
 			leaf_index = self._retrieve( random.uniform( 0, self.tree[0] ) )
@@ -520,10 +535,6 @@ if __name__ == '__main__' :
 
 						# Store the experience in the replay buffer:
 						ddpg.replay_buffer.add( ( s, a, r, terminal, s2 ) )
-
-						# When there is enough samples, train the networks (on-line):
-						#if len( ddpg.replay_buffer ) > ddpg.minibatch_size :
-							#Li = ddpg.train()
 						
 						if terminal or interruption() :
 							break

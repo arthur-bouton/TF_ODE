@@ -15,14 +15,13 @@ sys.path.append( '../build' )
 import rover_training_1_module
 
 
-# Identifier name for the data:
-#data_id = 'test1'
+# Identifier name for the training data:
+run_id = 'step_3'
 
 script_name = os.path.splitext( os.path.basename( __file__ ) )[0]
 
 # Name of the file where to store network parameters:
-#path_to_tf_model = '../training_data/' + script_name + '_' + data_id
-path_to_tf_model = '../training_data/step_1/rover_training_1'
+path_to_tf_model = '../training_data/' run_id + '/' + script_name
 
 # Parameters for the training:
 EP_MAX = 100000 # Maximal number of episodes for the training

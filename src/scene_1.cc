@@ -29,7 +29,7 @@ int main( int argc, char* argv[] )
 	//robot.DeactivateIC();
 
 
-	// [ Obstacles ]
+	// [ Terrain ]
 
 	double rot( 0 );
 	float step_height( 0.105*2 );

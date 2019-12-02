@@ -1,14 +1,22 @@
 #!/bin/bash
 
-data_dir=../training_data/step_1
+# Identifier name for the training data:
+run_id=step_3
+
+# Maximum duration of a successful run for it to be extracted:
+target_duration=20
+
+# Number of digits for the identifiers of extracted models:
+n_digits=4
+
+# Position of the trial duration in the string returned from the evaluation:
+duration_pos=2
+
+data_dir=../training_data/$run_id
 dataset_name=rover_training_1
-#watched_file=$data_dir/$dataset_name.data-00000-of-00001
 watched_file=$data_dir/$dataset_name'_log.txt'
-time_pos=2
-time_max=20
 extraction_dir=$data_dir/selected
 tmp_storage_dir=/tmp/$dataset_name"_tmp_graph_data"
-n_digits=4
 
 file_list+=" checkpoint"
 file_list+=" $dataset_name.data-00000-of-00001"
@@ -19,7 +27,7 @@ export TF_CPP_MIN_LOG_LEVEL=1
 
 
 # Do not write in files, only print results in the terminal:
-if [ "$1" == 'display_only' ] || [ "$1" == '-d' ]; then
+if [ "$1" == '--display-only' ] || [ "$1" == '-d' ]; then
 	echo "-- Display only --"
 	display_only=true
 fi
@@ -104,9 +112,9 @@ while inotifywait -qqe modify $watched_file; do
 		else
 			echo $stat | tee -a $data_dir/$dataset_name'_stat.txt'
 			if [[ ${result[*]} == *'[Success]'* ]]; then
-				if (( $( echo "${result[$time_pos]} < $time_max" | bc -l ) )); then
+				if (( $( echo "${result[$duration_pos]} <= $target_duration" | bc -l ) )); then
 					extract_data
-					echo "Dataset $file_number extracted (time: ${result[$time_pos]})"
+					echo "Dataset $file_number extracted (time: ${result[$duration_pos]})"
 				fi
 			fi
 		fi
@@ -126,9 +134,9 @@ done
 	#else
 		#echo $stat | tee -a $data_dir/$dataset_name'_stat.txt'
 		#if [[ ${result[*]} == *'[Success]'* ]]; then
-			#if (( $( echo "${result[$time_pos]} < $time_max" | bc -l ) )); then
+			#if (( $( echo "${result[$duration_pos]} <= $target_duration" | bc -l ) )); then
 				#extract_data
-				#echo "Dataset $file_number extracted (time: ${result[$time_pos]})"
+				#echo "Dataset $file_number extracted (time: ${result[$duration_pos]})"
 			#fi
 		#fi
 	#fi

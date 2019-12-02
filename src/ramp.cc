@@ -28,7 +28,7 @@ int main( int argc, char* argv[] )
 	robot.DeactivateIC();
 
 
-	// [ Obstacles ]
+	// [ Terrain ]
 
 	//float x( 1.2 );
 	//float y( 0.61/2 + 0.1 );

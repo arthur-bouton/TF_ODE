@@ -3,8 +3,9 @@
 
 #include "ode/robot.hh"
 #include "utils/filters2.hh"
-#include <osgViewer/Viewer>
 #include "ode/ft_sensor.hh"
+
+#include <osgViewer/Viewer>
 
 
 #define NBWHEELS 4
