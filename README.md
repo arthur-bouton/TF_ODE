@@ -16,7 +16,7 @@ Reinforcement learning with TensorFlow and Open Dynamics Engine
 
 * Set the identifier directory name for the training data in both *rover_training_1.py* and *eval_and_extract_policies.sh*, for example:
 
-`run_id=run_1`
+`run_id = 'run_1'` and `run_id=run_1`
 
 * If the directory doesn't exist yet, make it so that tee can start writing in it:
 
