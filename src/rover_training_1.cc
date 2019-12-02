@@ -1,3 +1,19 @@
+/* 
+** Program to be compiled both as a module to be called by the python script
+** in charge of the training of a rover controlled by a TensorFlow model
+** and a standalone executable to evaluate the learned policy.
+**
+** First arguments accepted:
+** display: Create a window with a graphical rendering of the simulation.
+** capture: Record screenshots of the simulation (in /tmp and at 25 fps by default).
+** explore: Enable the exploration together with the graphical rendering.
+** trial:   Do a training trial with exploration and no rendering.
+** eval:    Evaluate the policy without rendering.
+**
+** Second argument:
+** path to the TensorFlow model to be used.
+*/
+
 #include "ode/environment.hh"
 #include "renderer/osg_visitor.hh"
 #include "rover_tf.hh"
@@ -7,10 +23,6 @@
 #include "utils/sim_loop.hh"
 #include <boost/python.hpp>
 #include <random>
-
-//#include <X11/Xlib.h>
-//#include <iostream>
-//#include <fstream>
 
 
 #define DEFAULT_PATH_TO_TF_MODEL "../training_data/rover_training_1"
@@ -24,6 +36,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 	// [ Dynamic environment ]
 
 	dInitODE();
+	// Set the global friction coefficient:
 	//ode::Environment env( 0.7 );
 	ode::Environment env( 0.5 );
 
@@ -40,7 +53,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 		robot.SetExploration( true );
 
 
-	// [ Obstacles ]
+	// [ Terrain ]
 
 #ifdef EXE
 	double rot( 0 );
@@ -94,6 +107,8 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 		robot.next_step( timestep );
 
 		//printf( "x: %f y: %f\n", robot.GetPosition().x(), robot.GetPosition().y() );
+
+		// If the robot has reached the goal, is out of track or has tipped over, end the simulation:
 		if ( time >= timeout || fabs( robot.GetPosition().y() ) >= y_max || robot.GetPosition().x() >= x_goal || robot.IsUpsideDown() )
 			return true;
 
@@ -107,6 +122,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 
 	if ( strncmp( option, "display", 8 ) == 0 || strncmp( option, "capture", 8 ) == 0 || strncmp( option, "explore", 8 ) == 0 )
 	{
+		// Parameters of the window:
 		int x( 200 ), y( 200 ), width( 1024 ), height( 768 );
 		//int x( 0 ), y( 0 ), width( 1920 ), height( 1080 );
 		display_ptr = new renderer::OsgVisitor( 0, width, height, x, y, 20, 20, osg::Vec3( -0.7, -2, 0.6 ), osg::Vec3( 0, 0, -0.1 ) );
@@ -129,12 +145,14 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 
 	Sim_loop sim( 0.001, display_ptr, 0 );
 
+	// Record screenshots of the simulation:
 	if ( strncmp( option, "capture", 8 ) == 0 )
 		sim.start_captures();
 
 	sim.loop( step_function );
 
 
+	// Print the result of the trial:
 	if ( strncmp( option, "trial", 6 ) != 0 )
 	{
 		printf( "%s t %6.3f | x %5.3f | y %+6.3f | Rmoy %7.3f\n",
@@ -144,6 +162,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 	}
 
 
+	// Fetch the stored experience from the trial:
 	p::list experience = robot.GetExperience();
 
 	// Penalise if the rover has gone too far sideway:
