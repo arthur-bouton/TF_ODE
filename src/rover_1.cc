@@ -25,13 +25,15 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 {
 	// [ Rover's parameters ]
 
+	#define WHEELS_MAX_SPEED 7.4351 // rad/s
 	//#define WHEELS_MAX_TORQUE dInfinity
 	//#define WHEELS_MAX_TORQUE 3.38954 // N.m
 	#define WHEELS_MAX_TORQUE 25.4 // N.m
-	#define WHEELS_MAX_SPEED 7.4351 // rad/s
 	//#define WHEELS_TORQUE_SPEED_RATIO 0.45588357923901496
 	#define WHEELS_TORQUE_SPEED_RATIO 3.416228430014391
+
 	#define STEERING_SERVOS_K 0.8
+	#define STEERING_MAX_TORQUE 180 // N.m
 
 	// Stiffness and damping of force-torque sensors:
 	//#define FORK_K_LIN 2e4
@@ -167,6 +169,7 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 					                            STEERING_SERVOS_K,
 					                            steering_max_vel*DEG_TO_RAD,
 					                            -steering_angle_max*DEG_TO_RAD, steering_angle_max*DEG_TO_RAD ) );
+	centre_hinge_servo->set_torque_max( STEERING_MAX_TORQUE );
 	_servos.push_back( centre_hinge_servo );
 
 
