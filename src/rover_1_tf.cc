@@ -64,7 +64,7 @@ p::list Rover_1_tf::GetState( const bool flip ) const
 	p::list state;
 
 	state.append( flip_coef*GetDirection() );
-	state.append( flip_coef*GetSteeringTrueAngle() );
+	state.append( 2*flip_coef*GetSteeringTrueAngle() - steering_angle_max );
 	state.append( flip_coef*GetRollAngle() );
 	state.append( GetPitchAngle() );
 	state.append( flip_coef*GetBoggieAngle() );
