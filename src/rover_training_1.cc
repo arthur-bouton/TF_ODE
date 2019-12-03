@@ -3,15 +3,18 @@
 ** in charge of the training of a rover controlled by a TensorFlow model
 ** and a standalone executable to evaluate the learned policy.
 **
-** First arguments accepted:
-** display: Create a window with a graphical rendering of the simulation.
+** First arguments accepted (optional):
+** display: Create a window with a graphical rendering of the simulation (default).
 ** capture: Record screenshots of the simulation (in /tmp and at 25 fps by default).
 ** explore: Enable the exploration together with the graphical rendering.
 ** trial:   Do a training trial with exploration and no rendering.
 ** eval:    Evaluate the policy without rendering.
 **
-** Second argument:
+** Second argument (optional):
 ** path to the TensorFlow model to be used.
+**
+** Third argument (optional):
+** Orientation of the step.
 */
 
 #include "ode/environment.hh"
@@ -31,7 +34,7 @@
 namespace p = boost::python;
 
 
-p::list simulation( const char* option = "", const char* path_to_tf_model = DEFAULT_PATH_TO_TF_MODEL )
+p::list simulation( const char* option = "", const char* path_to_tf_model = DEFAULT_PATH_TO_TF_MODEL, int argc = 0, char* argv[] = nullptr )
 {
 	// [ Dynamic environment ]
 
@@ -55,18 +58,29 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 
 	// [ Terrain ]
 
-#ifdef EXE
-	double rot( 0 );
-#else
-	float max_rot( 15 );
-	std::random_device rd;
-	std::mt19937 gen( rd() );
-    std::uniform_real_distribution<double> uniform( 0., 1. );
-	double rot = uniform( gen )*max_rot;
-#endif
+	// Orientation angle of the step:
+	double orientation;
+	if ( argc > 3 )
+	{
+		char* endptr;
+		orientation = strtod( argv[3], &endptr );
+		if ( *endptr != '\0' )
+		{
+			throw std::runtime_error( std::string( "Invalide argument " ) + std::string( argv[3] ) );
+		}
+	}
+	else
+	{
+		// Maximum angle to be chosen randomly when not specified:
+		float max_rot( 15 );
+		std::random_device rd;
+		std::mt19937 gen( rd() );
+		std::uniform_real_distribution<double> uniform( 0., 1. );
+		orientation = uniform( gen )*max_rot;
+	}
 	float step_height( 0.105*2 );
 	ode::Box step( env, Eigen::Vector3d( 1.5, 0, step_height/2 ), 1, 1, 3, step_height, false );
-	step.set_rotation( 0, 0, rot*M_PI/180 );
+	step.set_rotation( 0, 0, orientation*M_PI/180 );
 	step.fix();
 	step.set_collision_group( "ground" );
 
@@ -182,7 +196,7 @@ int main( int argc, char* argv[] )
 {
 	Py_Initialize();
 
-	simulation( argc > 1 ? argv[1] : "display", argc > 2 ? argv[2] : DEFAULT_PATH_TO_TF_MODEL );
+	simulation( argc > 1 ? argv[1] : "display", argc > 2 ? argv[2] : DEFAULT_PATH_TO_TF_MODEL, argc, argv );
 
 	return 0;
 }
