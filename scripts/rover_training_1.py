@@ -21,7 +21,7 @@ run_id = 'step_3'
 script_name = os.path.splitext( os.path.basename( __file__ ) )[0]
 
 # Name of the file where to store network parameters:
-path_to_tf_model = '../training_data/' run_id + '/' + script_name
+path_to_tf_model = '../training_data/' + run_id + '/' + script_name
 
 # Parameters for the training:
 EP_MAX = 100000 # Maximal number of episodes for the training
