@@ -45,6 +45,7 @@ class Servo
 	bool is_passive() const;
 	void set_passive();
 	void set_active();
+	void set_torque_max( double max );
 
 	double get_angle() const;
 	virtual double set_angle( double angle );

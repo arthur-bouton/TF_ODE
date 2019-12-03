@@ -101,6 +101,11 @@ void Servo::set_active()
 	_passive = false;
 	dJointSetHingeParam( _joint, dParamFMax, dInfinity );
 }
+void Servo::set_torque_max( double max )
+{
+	_passive = false;
+	dJointSetHingeParam( _joint, dParamFMax, max );
+}
 
 
 double Servo::get_angle() const { return _angle; }
