@@ -59,19 +59,19 @@ Rover_1_tf::Rover_1_tf( Environment& env, const Vector3d& pose, const char* path
 p::list Rover_1_tf::GetState( const bool flip ) const
 {
 	// Flip or not left and right in order to speed up learning by taking into account the robot's symmetry:
-	int flip_coef = flip ? -1 : 1;
+	int flip_coeff = flip ? -1 : 1;
 
 	p::list state;
 
-	state.append( flip_coef*GetDirection() );
-	state.append( 2*flip_coef*GetSteeringTrueAngle() - steering_angle_max );
-	state.append( flip_coef*GetRollAngle() );
+	state.append( flip_coeff*GetDirection() );
+	state.append( 2*flip_coeff*GetSteeringTrueAngle() - steering_angle_max );
+	state.append( flip_coeff*GetRollAngle() );
 	state.append( GetPitchAngle() );
-	state.append( flip_coef*GetBoggieAngle() );
+	state.append( flip_coeff*GetBoggieAngle() );
 	const Vector3d* list[] = { _front_ft_sensor.GetForces(), _front_ft_sensor.GetTorques(), _rear_ft_sensor.GetForces(), _rear_ft_sensor.GetTorques() };
 	for ( int i = 0 ; i < 4 ; i++ )
 		for ( int j = 0 ; j < 3 ; j++ )
-			state.append( ( ( i + j )%2 == 0 ? 1 : flip_coef )*list[i]->coeff( j ) );
+			state.append( ( ( i + j )%2 == 0 ? 1 : flip_coeff )*list[i]->coeff( j ) );
 	//for ( int i = 0 ; i < NBWHEELS ; i++ )
 		//state.append( _torque_output[i] );
 
@@ -136,7 +136,7 @@ void Rover_1_tf::_InternalControl( double delta_t )
 	// Store the last experience, flip the actions according to the last state:
 	if ( p::len( _last_state ) > 0 )
 		_experience.append( p::make_tuple( _last_state,
-		                                   p::make_tuple( ( _was_flipped ? -1 : 1 )*_steering_rate,( _was_flipped ? -1 : 1 )*_boggie_torque ),
+		                                   p::make_tuple( ( _was_flipped ? -1 : 1 )*_steering_rate, ( _was_flipped ? -1 : 1 )*_boggie_torque ),
 										   reward,
 										   false,
 										   current_state ) );
@@ -164,7 +164,7 @@ void Rover_1_tf::_InternalControl( double delta_t )
 	{
 		InferAction( current_state, _steering_rate, _boggie_torque, flip );
 #ifdef PRINT
-		printf( "INFER: %f %f\n", _steering_rate, _boggie_torque );
+		printf( "INFER: %f %f%s\n", _steering_rate, _boggie_torque, flip ? " (flipped)" : "" );
 #endif
 	}
 #ifdef PRINT
