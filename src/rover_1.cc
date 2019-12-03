@@ -206,7 +206,7 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 	// [ Initialisation of filters ]
 	
 	for ( int i = 0 ; i < NBWHEELS ; i++ )
-		_torque_filter[i].init_bilinear( 0.001, 2*M_PI, 0.5, nullptr, _torque_output + i );
+		_torque_filter[i] = filters::ptr_t<double>( new filters::LP_second_order_bilinear<double>( 0.001, 2*M_PI, 0.5, nullptr, _torque_output + i ) );
 }
 
 
@@ -370,7 +370,7 @@ void Rover_1::_UpdateTorqueFilters()
 		dVector3* t_abs = &_wheel_feedback[i].t1;
 		dVector3 t_rel;
 		dBodyVectorFromWorld( _wheel[i]->get_body(), *t_abs[0], *t_abs[1], *t_abs[2], t_rel );
-		_torque_filter[i].update( -t_rel[2] );
+		_torque_filter[i]->update( -t_rel[2] );
 	}
 }
 

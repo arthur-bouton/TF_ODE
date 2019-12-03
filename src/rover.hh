@@ -2,7 +2,7 @@
 #define ROVER_HH 
 
 #include "ode/robot.hh"
-#include "utils/filters2.hh"
+#include "utils/filters.hh"
 #include "ode/ft_sensor.hh"
 
 #include <osgViewer/Viewer>
@@ -129,7 +129,7 @@ class Rover_1 : public Robot
 	dJointID _wheel_joint[NBWHEELS];
 
 	dJointFeedback _wheel_feedback[NBWHEELS];
-	filters::LP_second_order<double> _torque_filter[NBWHEELS];
+	filters::ptr_t<double> _torque_filter[NBWHEELS];
 	double _torque_output[NBWHEELS];
 
 	FT_sensor _front_ft_sensor;
