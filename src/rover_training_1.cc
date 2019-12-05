@@ -75,7 +75,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 		float max_rot( 15 );
 		std::random_device rd;
 		std::mt19937 gen( rd() );
-		std::uniform_real_distribution<double> uniform( 0., 1. );
+		std::uniform_real_distribution<double> uniform( -1., 1. );
 		orientation = uniform( gen )*max_rot;
 	}
 	float step_height( 0.105*2 );
