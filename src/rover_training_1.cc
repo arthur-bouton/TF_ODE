@@ -60,7 +60,9 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 
 	// Orientation angle of the step:
 	double orientation;
-	if ( argc > 3 )
+	if ( strncmp( option, "eval", 5 ) == 0 )
+		orientation = 0;
+	else if ( argc > 3 )
 	{
 		char* endptr;
 		orientation = strtod( argv[3], &endptr );
@@ -157,7 +159,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 
 	// [ Simulation loop ]
 
-	Sim_loop sim( 0.001, display_ptr, 0 );
+	Sim_loop sim( 0.001, display_ptr, true, 0 );
 
 	// Record screenshots of the simulation:
 	if ( strncmp( option, "capture", 8 ) == 0 )

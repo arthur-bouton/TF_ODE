@@ -153,7 +153,7 @@ int main( int argc, char* argv[] )
 	
 	// [ Simulation loop ]
 
-	Sim_loop sim( 0.001, display_ptr, 1 );
+	Sim_loop sim( 0.001, display_ptr );
 	//sim.set_fps( 25 );
 
 	if ( argc > 1 && strncmp( argv[1], "capture", 8 ) == 0 )

@@ -105,7 +105,7 @@ with DDPG( S_DIM, A_DIM, STATE_SCALE, ACTION_SCALE, GAMMA, TAU, BUFFER_SIZE, MIN
 
 
 		end = time.time()
-		print( 'Elapsed time: %.3f' % ( end - start ) )
+		print( 'Elapsed time: %.3f' % ( end - start ), file=sys.stderr )
 
 		#answer = input( '\nSave network parameters as ' + path_to_tf_model + '? (y) ' )
 		#if answer.strip() == 'y' :

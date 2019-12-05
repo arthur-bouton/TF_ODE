@@ -104,7 +104,7 @@ while inotifywait -qqe modify $watched_file; do
 			cp $data_dir/$file $tmp_storage_dir
 		done
 		echo -ne "> Evaluating ${log[*]::2}...\r"
-		result=($(../build/rover_training_1_exe eval $tmp_storage_dir/$dataset_name))
+		result=($(../build/rover_training_1_exe eval $tmp_storage_dir/$dataset_name 2> /dev/null))
 		stat="${log[*]} => ${result[*]}"
 
 		if [ "$display_only" == true ]; then

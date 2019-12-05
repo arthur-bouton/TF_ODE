@@ -17,8 +17,9 @@
 #include "sim_loop.hh"
 
 
-Sim_loop::Sim_loop( float timestep, renderer::OsgVisitor* display_ptr, int log_level ) :
-                    _timestep( timestep ), _display_ptr( display_ptr ), _log_level( log_level ), _time( 0 )
+Sim_loop::Sim_loop( float timestep, renderer::OsgVisitor* display_ptr, bool print_time, int log_level ) :
+                    _timestep( timestep ), _display_ptr( display_ptr ), _log_level( log_level ), _time( 0 ),
+					_print_time( print_time ), _nsec( 0 )
 {
 	if ( _display_ptr != nullptr )
 	{
@@ -82,6 +83,17 @@ void Sim_loop::_update_chrono()
 }
 
 
+void Sim_loop::_do_print_time()
+{
+	if ( _time*_timestep > _nsec + 1 )
+	{
+		_nsec++;
+		fprintf( stderr, "> Simulation time: %lds\r", _nsec );
+		fflush( stderr );
+	}
+}
+
+
 void Sim_loop::loop( std::function<bool(float,double)>& step_function )
 {
 	if ( _display_ptr != nullptr )
@@ -117,6 +129,9 @@ void Sim_loop::loop( std::function<bool(float,double)>& step_function )
 			{
 				if ( _utimestep*_step_counter_u < _ufperiod )
 				{
+					if ( _print_time )
+						_do_print_time();
+
 					if ( step_function( _timestep, _time*_timestep ) )
 						break;
 
@@ -159,6 +174,9 @@ void Sim_loop::loop( std::function<bool(float,double)>& step_function )
 	{
 		while( true )
 		{
+			if ( _print_time )
+				_do_print_time();
+
 			if ( step_function( _timestep, _time*_timestep ) )
 				break;
 

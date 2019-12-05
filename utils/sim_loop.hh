@@ -33,7 +33,7 @@ class Sim_loop
 {
 	public:
 
-	Sim_loop( float timestep = DEFAULT_TIMESTEP, renderer::OsgVisitor* display_ptr = nullptr, int log_level = 0 );
+	Sim_loop( float timestep = DEFAULT_TIMESTEP, renderer::OsgVisitor* display_ptr = nullptr, bool print_time = false, int log_level = 0 );
 
 	virtual void loop( std::function<bool(float,double)>& step_function );
 
@@ -51,11 +51,14 @@ class Sim_loop
 	protected:
 
 	virtual void _update_chrono();
+	virtual void _do_print_time();
 
 	float _timestep;
 	long _time;
 	renderer::OsgVisitor* _display_ptr;
 	int _log_level;
+	bool _print_time;
+	long _nsec;
 
 	int _fps;
 	timeval _tv;
