@@ -95,6 +95,10 @@ void Rover_1_tf::InferAction( const p::list& state, double& steering_rate, doubl
 	// Extract the outputs:
 	steering_rate = ( flip ? -1 : 1 )*outputs[0].flat<float>()( 0 );
 	boggie_torque = ( flip ? -1 : 1 )*outputs[0].flat<float>()( 1 );
+
+	//for ( int i = 0 ; i < p::len( state ) ; i++ )
+		//printf( "%f ", state_tensor.flat<float>()( i ) );
+	//printf( "%f %f%s\n", _steering_rate, _boggie_torque, flip ? " (flipped)" : "" );
 }
 
 

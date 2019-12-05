@@ -16,7 +16,7 @@ import rover_training_1_module
 
 
 # Identifier name for the training data:
-run_id = 'step_3'
+run_id = 'step_4'
 
 script_name = os.path.splitext( os.path.basename( __file__ ) )[0]
 
@@ -28,7 +28,7 @@ EP_MAX = 100000 # Maximal number of episodes for the training
 ITER_PER_EP = 200 # Number of training iterations between each episode
 S_DIM = 17 # Dimension of the state space
 A_DIM = 2 # Dimension of the action space
-STATE_SCALE = [ 90, 45/2, 25, 25, 45 ] + [ 100 ]*12 #+ [ 100 ]*4  # A scalar or a vector to normalize the state
+STATE_SCALE = [ 90, 45, 25, 25, 45 ] + [ 100 ]*3 + [ 30 ]*3 + [ 100 ]*3 + [ 30 ]*3 #+ [ 100 ]*4  # A scalar or a vector to normalize the state
 ACTION_SCALE = [ 15, 20 ] # A scalar or a vector to scale the actions
 GAMMA = 0.99 # Discount factor of the reward
 TAU = 0.001 # Soft target update factor
