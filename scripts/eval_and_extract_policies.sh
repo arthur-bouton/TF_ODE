@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Identifier name for the training data:
-run_id=step_4
+run_id=step_5
 
 # Maximum duration of a successful run for it to be extracted:
 target_duration=20
