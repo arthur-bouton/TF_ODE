@@ -47,13 +47,12 @@ class Object
 
 	Object( Environment & env, const Eigen::Vector3d & pos );
 
-	virtual ptr_t clone( Environment& env ) const = 0;
 	virtual ~Object();
 
 	inline Eigen::Vector3d get_init_pos() const { return _init_pos; }
 
 	virtual dBodyID get_body() const;
-	virtual dGeomID get_geom() const;
+	virtual std::vector<dGeomID> get_geoms() const;
 
 	/// ask the current position to ode
 	Eigen::Vector3d get_pos() const;
@@ -65,7 +64,7 @@ class Object
 	void set_rotation( double phi, double theta, double psi );
 	/// set an absolute rotation ( axis and angle )
 	void set_rotation( double ax, double ay, double az, double angle );
-	void set_rotation( const Eigen::Vector3d& a1, const Eigen::Vector3d &a2 );
+	void set_rotation( const Eigen::Vector3d& a1, const Eigen::Vector3d& a2 );
 
 	/// const visitor, useful for example for a 3d renderer
 	virtual void accept( ConstVisitor& v ) const = 0;
@@ -121,6 +120,17 @@ class Object
 	inline void set_mesh( const char* path ) { _mesh_path = path; }
 	inline const char* get_mesh_path() const { return _mesh_path; }
 
+	Object* add_box_geom( double l, double w, double h );
+	Object* add_sphere_geom( double r );
+	Object* add_cylinder_geom( double r, double l );
+	Object* add_capcyl_geom( double r, double l );
+
+	Object* set_geom_abs_pos( const Eigen::Vector3d& pos, int index = -1 );
+	Object* set_geom_rel_pos( const Eigen::Vector3d& pos, int index = -1 );
+	Object* set_geom_rot( double phi, double theta, double psi, int index = -1 );
+	Object* set_geom_rot( double ax, double ay, double az, double angle, int index = -1 );
+	Object* set_geom_rot( const Eigen::Vector3d& a1, const Eigen::Vector3d& a2, int index = -1 );
+
 	protected:
 
 	void init();
@@ -130,7 +140,7 @@ class Object
 
 	dMass _m;
 	dBodyID _body;
-	dGeomID _geom;
+	std::vector<dGeomID> _geoms;
 	Eigen::Vector3d _init_pos;
 	Environment& _env;
 	Servo*_servo;

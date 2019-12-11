@@ -22,24 +22,24 @@ class Robot
 
 	Robot() {}
 
-	Robot( const Robot& o, ode::Environment& env )
-	{
-		using namespace ode;
+	//Robot( const Robot& o, ode::Environment& env )
+	//{
+		//using namespace ode;
 
-		std::map<const Object*, Object::ptr_t> old_to_new;
-		BOOST_FOREACH( Object::ptr_t b, o._bodies )
-		{
-			ode::Object::ptr_t b2 = b->clone( env );
-			old_to_new[b.get()] = b2;
-			_bodies.push_back( b2 );
-		}
-		BOOST_FOREACH( Servo::ptr_t s, o._servos )
-			_servos.push_back( s->clone( env, *old_to_new[&s->get_o1()], *old_to_new[&s->get_o2()] ) );
+		//std::map<const Object*, Object::ptr_t> old_to_new;
+		//BOOST_FOREACH( Object::ptr_t b, o._bodies )
+		//{
+			//ode::Object::ptr_t b2 = b->clone( env );
+			//old_to_new[b.get()] = b2;
+			//_bodies.push_back( b2 );
+		//}
+		//BOOST_FOREACH( Servo::ptr_t s, o._servos )
+			//_servos.push_back( s->clone( env, *old_to_new[&s->get_o1()], *old_to_new[&s->get_o2()] ) );
 
-		_main_body = old_to_new[o._main_body.get()];
-	}
+		//_main_body = old_to_new[o._main_body.get()];
+	//}
 
-	virtual ptr_t clone( ode::Environment& env ) const { return ptr_t( new Robot( *this, env ) ); }
+	//virtual ptr_t clone( ode::Environment& env ) const { return ptr_t( new Robot( *this, env ) ); }
 
 	const std::vector<ode::Object::ptr_t>& bodies() const { return _bodies; }
 	std::vector<ode::Object::ptr_t>& bodies() { return _bodies; }

@@ -63,20 +63,10 @@ class HeightField : public Object
 		texture_path = path_to_texture;
 	}
 
-	virtual Object::ptr_t clone(Environment& env) const 
-	{ return NULL; }
-
-	void init_again()
-	{
-	  if (_geom)
-		dGeomDestroy(_geom);
-	  init();
-	}
-
 	virtual void accept(ConstVisitor &v) const
 	{
-	  assert(_geom);
-	  v.visit(*this);
+		assert( !_geoms.empty() );
+		v.visit(*this);
 	}
 
 	virtual ~HeightField()
@@ -100,17 +90,18 @@ class HeightField : public Object
 
 	void init()
 	{
-	  //Object::init();
 		_id = dGeomHeightfieldDataCreate();
 		dGeomHeightfieldDataBuildDouble( _id, data, 0, length, width, ncol, nrow, 1, 0, skirt, 0 );
 		dGeomHeightfieldDataSetBounds( _id, min, max );
-		_geom = dCreateHeightfield( _env.get_space(), _id, 1 );
+		dGeomID g = dCreateHeightfield( _env.get_space(), _id, 1 );
 
-		dGeomSetPosition( _geom, _init_pos.x(), _init_pos.y(), _init_pos.z() );
+		dGeomSetPosition( g, _init_pos.x(), _init_pos.y(), _init_pos.z() );
 		dMatrix3 R;
 		dRSetIdentity( R );
 		dRFromAxisAndAngle( R, 1, 0, 0, 1.5707963267948966 );
-		dGeomSetRotation( _geom, R );
+		dGeomSetRotation( g, R );
+
+		_geoms.push_back( g );
 	}
 
 

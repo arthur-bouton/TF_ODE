@@ -23,73 +23,49 @@
 
 namespace ode
 {
-  /// a simple wrapper around the ODE's box class
-  class Box : public Object
-  {
-  public:
-    static constexpr double standard_mass = 1;
-    Box(Environment& env, 
-	const Eigen::Vector3d& pos, 
-	double mass, 
-	double l, double w, double h,
-	bool casts_shadow = true) :
-      Object(env, pos),
-      _w(w), _h(h), _l(l), _mass(mass)
-    {
-      _casts_shadow = casts_shadow;
-      init();
-    }
 
-    Box(const Box& o, Environment& env) :
-      Object(env, o.get_pos()),
-      _w(o._w), _h(o._h), _l(o._l),
-      _mass(o._mass)
-    {
-      _casts_shadow = o._casts_shadow;
-      _copy(o);
-      _geom = dCreateBox(_env.get_space(), _l , _w, _h);
-      dGeomSetBody(_geom, _body);
-    }
 
-    virtual Object::ptr_t clone(Environment& env) const 
-    { return Object::ptr_t(new Box(*this, env)); }
+/// a simple wrapper around the ODE's box class
+class Box : public Object
+{
+	public:
+	static constexpr double standard_mass = 1;
+	Box( Environment& env, const Eigen::Vector3d& pos, double mass, double l, double w, double h,
+		 bool casts_shadow = true, bool create_geom = true ) :
+		Object( env, pos ), _w( w ), _h( h ), _l( l ), _mass( mass )
+	{
+		_casts_shadow = casts_shadow;
+		init( create_geom );
+	}
 
-    double get_length()	const { return _l; }
-    double get_width()	const { return _w; }
-    double get_height()	const { return _h; }
- 
-    //set
-    void set_length(double l) { _l = l; init_again(); }
-    void set_width(double w) { _w = w; init_again(); }
-    void set_height(double h) { _h = h; init_again(); }
+	double get_length()	const { return _l; }
+	double get_width()	const { return _w; }
+	double get_height()	const { return _h; }
 
-    void init_again()
-    {
-      if (_body)
-	dBodyDestroy(_body);
-      if (_geom)
-	dGeomDestroy(_geom);
-      init();
-    }
-  
-    /// const visitor
-    virtual void accept (ConstVisitor &v) const
-    {
-      assert(_body); assert(_geom);
-      v.visit(*this);
-    }
-  protected:
-    void init()
-    {
-      Object::init();
-      dMassSetBoxTotal (&_m, _mass, _l, _w, _h);
-      dBodySetMass (_body, &_m);
-      _geom = dCreateBox(_env.get_space(), _l , _w, _h);
-      dGeomSetBody(_geom, _body);
-    }
-    double _w, _h, _l;
-    double _mass;
-  };
+	/// const visitor
+	virtual void accept( ConstVisitor &v ) const
+	{
+		assert( _body );
+		v.visit( *this );
+	}
+
+	protected:
+
+	void init( bool create_geom )
+	{
+		Object::init();
+		dMassSetBoxTotal( &_m, _mass, _l, _w, _h );
+		dBodySetMass( _body, &_m );
+
+		if ( create_geom )
+			add_box_geom( _l, _w, _h );
+	}
+
+	double _w, _h, _l;
+	double _mass;
+};
+
+
 }
 
 

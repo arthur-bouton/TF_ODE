@@ -129,11 +129,17 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 	_bodies.push_back( boggie );
 	//boggie->set_contact_type( DISABLED );
 
+	double motor_radius( 0.025 );
+	double motor_length( 0.1 );
 	Vector3d front_fork_pos = pose + Vector3d( wheelbase/2, 0, fork_elev );
 	_front_fork = Object::ptr_t( new Box( env,
 							              front_fork_pos,
 							              fork_mass,
-							              fork_length, fork_width, fork_height ) );
+							              fork_length, fork_width, fork_height, true, false ) );
+	_front_fork->add_cylinder_geom( motor_radius, motor_length )->set_geom_rot( M_PI/2, 0, 0 );
+	_front_fork->set_geom_abs_pos( Vector3d( wheelbase/2, ( wheeltrack - wheel_width - motor_length )/2, wheel_radius[0] ) );
+	_front_fork->add_cylinder_geom( motor_radius, motor_length )->set_geom_rot( M_PI/2, 0, 0 );
+	_front_fork->set_geom_abs_pos( Vector3d( wheelbase/2, -( wheeltrack - wheel_width - motor_length )/2, wheel_radius[1] ) );
 	_front_fork->set_mesh( "../meshes/front_fork.obj" );
 	_bodies.push_back( _front_fork );
 	//_front_fork->set_contact_type( DISABLED );
@@ -142,7 +148,11 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 	_rear_fork = Object::ptr_t( new Box( env,
 							             rear_fork_pos,
 							             fork_mass,
-							             fork_length, fork_width, fork_height ) );
+							             fork_length, fork_width, fork_height, true, false ) );
+	_rear_fork->add_cylinder_geom( motor_radius, motor_length )->set_geom_rot( M_PI/2, 0, 0 );
+	_rear_fork->set_geom_abs_pos( Vector3d( -wheelbase/2, ( wheeltrack - wheel_width - motor_length )/2, wheel_radius[2] ) );
+	_rear_fork->add_cylinder_geom( motor_radius, motor_length )->set_geom_rot( M_PI/2, 0, 0 );
+	_rear_fork->set_geom_abs_pos( Vector3d( -wheelbase/2, -( wheeltrack - wheel_width - motor_length )/2, wheel_radius[3] ) );
 	_rear_fork->set_mesh( "../meshes/rear_fork.obj" );
 	_bodies.push_back( _rear_fork );
 	//_rear_fork->set_contact_type( DISABLED );
