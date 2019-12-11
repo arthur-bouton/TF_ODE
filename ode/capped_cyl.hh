@@ -25,76 +25,52 @@ namespace ode
 {
   /// this class encapsulates the CappedCylinder class in ODE
   /// WARNING: length include the cap!
-  class CappedCyl : public Object
-  {
-  public:
-    CappedCyl(Environment& env,
-	      const Eigen::Vector3d& pos,
-	      double mass,
-	      double radius, double length,
-		  bool casts_shadow = true) :
-      Object(env, pos),
-      _mass(mass),
-      _radius(radius),
-      _length(length)
-    {
-      _casts_shadow = casts_shadow;
-      init();
-    }
-    CappedCyl(const CappedCyl& o, Environment& env) :
-      Object(env, o.get_pos()),
-      _mass(o._mass),
-      _radius(o._radius),
-      _length(o._length)
-    {
-      _casts_shadow = o._casts_shadow;
-      _copy(o);
-      _geom = dCreateCCylinder(_env.get_space(), _radius, _length - _radius * 2);
-      dGeomSetBody(_geom, _body);
-    }
+class CappedCyl : public Object
+{
+	public:
+	CappedCyl( Environment& env, const Eigen::Vector3d& pos, double mass, double radius, double length,
+			   bool casts_shadow = true, bool create_geom = true ) :
+	  Object( env, pos ), _mass( mass ), _radius( radius ), _length( length )
+	{
+		_casts_shadow = casts_shadow;
+		init( create_geom );
+	}
 
-    virtual Object::ptr_t clone(Environment& env) const
-    { return Object::ptr_t(new CappedCyl(*this, env)); }
+	double get_radius()	const { return _radius; }
+	double get_length()	const { return _length; }
 
-    double get_radius()	const
-    {
-      return _radius;
-    }
-    double get_length()	const
-    {
-      return _length;
-    }
-    /// const visitor
-    virtual void accept (ConstVisitor &v) const
-    {
-      assert(_geom);
-      assert(_body);
-      v.visit(*this);
-    }
-  protected:
-    void init()
-    {
-      Object::init();
-      _geom = dCreateCCylinder(_env.get_space(), _radius, _length - _radius * 2);
-      assert(_body);
-      assert(_geom);
-      /*dMassSetCylinderTotal(&_m, _mass,
+	/// const visitor
+	virtual void accept( ConstVisitor &v ) const
+	{
+		assert( _body );
+		v.visit( *this );
+	}
+
+	protected:
+
+	void init( bool create_geom )
+	{
+		Object::init();
+		/*dMassSetCylinderTotal(&_m, _mass,
 				  3, // direction = 3 (along z)
 				  _radius, _length - _radius * 2);*/
-       dMassSetCapsuleTotal(&_m, _mass,
+		dMassSetCapsuleTotal(&_m, _mass,
 				  3, // direction = 3 (along z)
 				  _radius, _length - _radius * 2);
-      dBodySetMass(_body, &_m);
-      dGeomSetBody(_geom, _body);
+		dBodySetMass(_body, &_m);
 
-    }
-    // atributes
-    double _mass;
-    double _radius;
-    double _length;
-  };
+		if ( create_geom )
+			add_capcyl_geom( _radius, _length );
+	}
+
+	// atributes
+	double _mass;
+	double _radius;
+	double _length;
+};
+
+
 }
-
 
 
 #endif	    /* !CAPPEDCYL_HH_ */

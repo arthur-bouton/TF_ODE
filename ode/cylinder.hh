@@ -30,65 +30,40 @@ class Cylinder : public Object
 
 	static constexpr double standard_mass = 1;
 
-	Cylinder( Environment& env, const Eigen::Vector3d& pos, double mass, double rad, double width, bool casts_shadow = true ) :
-	       Object( env, pos ), _mass( mass ), _rad( rad ), _width( width )
+	Cylinder( Environment& env, const Eigen::Vector3d& pos, double mass, double radius, double length,
+	          bool casts_shadow = true, bool create_geom = true ) :
+	       Object( env, pos ), _mass( mass ), _radius( radius ), _length( length )
 	{
 		_casts_shadow = casts_shadow;
-		init();
+		init( create_geom );
 	}
 
-	Cylinder( const Cylinder& o, Environment& env ) : Object( env, o.get_pos() ),
-													  _mass( o._mass ),
-													  _rad( o._rad ),
-													  _width( o._width )
-	{
-		_casts_shadow = o._casts_shadow;
-		_copy(o);
-		_geom = dCreateCylinder( _env.get_space(), _rad, _width );
-		dGeomSetBody(_geom, _body);
-	}
-
-	virtual Object::ptr_t clone( Environment& env ) const 
-	{
-		return Object::ptr_t( new Cylinder( *this, env ) );
-	}
-
-	double get_rad()	  const { return _rad;   }
-	double get_width() const { return _width; }
-
-	void init_again()
-	{
-		if (_body)
-			dBodyDestroy(_body);
-		if (_geom)
-			dGeomDestroy(_geom);
-		init();
-	}
+	double get_radius()	  const { return _radius;   }
+	double get_length() const { return _length; }
 
 	/// const visitor
-	virtual void accept ( ConstVisitor &v ) const
+	virtual void accept( ConstVisitor &v ) const
 	{
-		assert(_body); assert(_geom);
-		v.visit(*this);
+		assert( _body );
+		v.visit( *this );
 	}
 
 	protected:
 
-	void init()
+	void init( bool create_geom )
 	{
 		Object::init();
 	    assert(_body);
-		dMassSetCylinderTotal( &_m, _mass, 3, _rad, _width );
+		dMassSetCylinderTotal( &_m, _mass, 3, _radius, _length );
 		dBodySetMass( _body, &_m );
 
-		_geom = dCreateCylinder( _env.get_space(), _rad, _width );
-	    assert(_geom);
-		dGeomSetBody( _geom, _body );
+		if ( create_geom )
+			add_cylinder_geom( _radius, _length );
 	}
 
 	double _mass;
-	double _rad;
-	double _width;
+	double _radius;
+	double _length;
 };
 
 }

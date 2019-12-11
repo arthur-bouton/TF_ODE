@@ -21,67 +21,50 @@
 #include <iostream>
 #include "object.hh"
 
+
 namespace ode
 {
-  /// a simple wrapper around the ODE's sphere class
-  class Sphere : public Object
-  {
-  public:
-    static constexpr double standard_mass = 1;
-    Sphere(Environment& env, 
-	   const Eigen::Vector3d& pos, 
-	   double mass, 
-	   double rad,
-	   bool casts_shadow = true) :
-      Object(env, pos),
-      _rad(rad), _mass(mass)
-    {
-      _casts_shadow = casts_shadow;
-      init();
-    }
-    Sphere(const Sphere& o, Environment& env) :
-      Object(env, o.get_pos()),
-      _rad(o._rad),
-      _mass(o._mass)
-    {
-	  _casts_shadow = o._casts_shadow;
-      _copy(o);
-      _geom = dCreateSphere(_env.get_space(), _rad);
-      dGeomSetBody(_geom, _body);
-    }
 
-    virtual Object::ptr_t clone(Environment& env) const 
-    { return Object::ptr_t(new Sphere(*this, env)); }
+/// a simple wrapper around the ODE's sphere class
+class Sphere : public Object
+{
+	public:
+	static constexpr double standard_mass = 1;
+	Sphere( Environment& env, const Eigen::Vector3d& pos, double mass, double radius,
+		    bool casts_shadow = true, bool create_geom = true ) :
+		Object( env, pos ),
+		  _radius( radius ), _mass( mass )
+	{
+	  _casts_shadow = casts_shadow;
+	  init( create_geom );
+	}
 
-    double get_rad()	const { return _rad; }
+	double get_radius() const { return _radius; }
 
-    void init_again()
-    {
-      if (_body)
-	dBodyDestroy(_body);
-      if (_geom)
-	dGeomDestroy(_geom);
-      init();
-    }
-  
-    /// const visitor
-    virtual void accept (ConstVisitor &v) const
-    {
-      assert(_body); assert(_geom);
-      v.visit(*this);
-    }
-  protected:
-    void init()
-    {
-      Object::init();
-      dMassSetSphereTotal(&_m, _mass, _rad);
-      dBodySetMass(_body, &_m);
-      _geom = dCreateSphere(_env.get_space(), _rad);
-      dGeomSetBody(_geom, _body);
-    }
-    double _rad;
-    double _mass;
-  };
+	/// const visitor
+	virtual void accept( ConstVisitor &v ) const
+	{
+		assert( _body );
+		v.visit( *this );
+	}
+
+	protected:
+
+	void init( bool create_geom )
+	{
+		Object::init();
+		dMassSetSphereTotal( &_m, _mass, _radius );
+		dBodySetMass( _body, &_m );
+
+		if ( create_geom )
+			add_sphere_geom( _radius );
+	}
+
+	double _radius;
+	double _mass;
+};
+
+
 }
 
 

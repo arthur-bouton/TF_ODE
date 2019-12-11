@@ -23,9 +23,8 @@ namespace ode
 {
 
 
-Object::Object( Environment & env, const Eigen::Vector3d & pos ) :
+Object::Object( Environment & env, const Eigen::Vector3d& pos ) :
 				_body( 0x0 ),
-				_geom( 0x0 ),
 				_init_pos( pos ),
 				_env( env ),
 				_servo( 0x0 ),
@@ -42,17 +41,21 @@ Object::~Object()
 {
 	if ( _body )
 		dBodyDestroy( _body );
-	if ( _geom )
+	if ( ! _geoms.empty() )
 	{
-		delete ( collision_feature* ) dGeomGetData( _geom );
-		dGeomDestroy( _geom );
+		for ( dGeomID g : _geoms )
+		{
+			delete ( collision_feature* ) dGeomGetData( g );
+			dGeomDestroy( g );
+		}
+		_geoms.clear();
 	}
 	if ( _RGB != NULL )
 		delete _RGB;
 }
 
 dBodyID Object::get_body() const { return _body; }
-dGeomID Object::get_geom() const { return _geom; }
+std::vector<dGeomID> Object::get_geoms() const { return _geoms; }
 
 
 Eigen::Vector3d Object::get_pos() const
@@ -124,7 +127,7 @@ void Object::set_rotation( double ax, double ay, double az, double angle )
 	dBodySetRotation( get_body(), r );
 }
 
-void Object::set_rotation( const Eigen::Vector3d& a1, const Eigen::Vector3d &a2 )
+void Object::set_rotation( const Eigen::Vector3d& a1, const Eigen::Vector3d& a2 )
 {
 	dMatrix3 r;
 	dRFrom2Axes ( r, a1.x(), a1.y(), a1.z(), a2.x(), a2.y(), a2.z() );
@@ -219,37 +222,58 @@ void Object::set_inertia( double I11, double I22, double I33,
 
 const char* Object::get_collision_group() const
 {
-	collision_feature* feature = ( collision_feature* ) dGeomGetData( _geom );
-	if ( feature != NULL )
-		return feature->group;
+	if ( ! _geoms.empty() )
+	{
+		collision_feature* feature = ( collision_feature* ) dGeomGetData( _geoms[0] );
+		if ( feature != NULL )
+			return feature->group;
+	}
 	return NULL;
 }
 
 void Object::set_collision_group( const char* group )
 {
-	collision_feature* feature = ( collision_feature* ) dGeomGetData( _geom );
-	if ( feature != NULL )
-		feature->group = group;
-	else
-		dGeomSetData( _geom, new collision_feature( group ) );
+	if ( ! _geoms.empty() )
+	{
+		for ( dGeomID g : _geoms )
+		{
+			collision_feature* feature = ( collision_feature* ) dGeomGetData( g );
+			if ( feature != NULL )
+				feature->group = group;
+			else
+				dGeomSetData( g, new collision_feature( group ) );
+		}
+	}
 }
 
 
 contact_type Object::get_contact_type() const
 {
-	collision_feature* feature = ( collision_feature* ) dGeomGetData( _geom );
-	if ( feature != NULL )
-		return feature->type;
-	return HARD;
+	if ( ! _geoms.empty() )
+	{
+		collision_feature* feature = ( collision_feature* ) dGeomGetData( _geoms[0] );
+		if ( feature != NULL )
+			return feature->type;
+		else
+			return HARD;
+	}
+	else
+		return DISABLED;
 }
 
 void Object::set_contact_type( contact_type type )
 {
-	collision_feature* feature = ( collision_feature* ) dGeomGetData( _geom );
-	if ( feature != NULL )
-		feature->type = type;
-	else
-		dGeomSetData( _geom, new collision_feature( type ) );
+	if ( ! _geoms.empty() )
+	{
+		for ( dGeomID g : _geoms )
+		{
+			collision_feature* feature = ( collision_feature* ) dGeomGetData( g );
+			if ( feature != NULL )
+				feature->type = type;
+			else
+				dGeomSetData( g, new collision_feature( type ) );
+		}
+	}
 }
 
 
@@ -305,6 +329,76 @@ void Object::_copy( const Object& o )
 	_init_pos = o.get_pos();
 
 	dBodySetData( _body, this );
+}
+
+
+Object* Object::set_geom_abs_pos( const Eigen::Vector3d& pos, int index )
+{
+	dGeomSetOffsetWorldPosition( ( index < 0 ? _geoms.back() : _geoms[index] ), pos.x(), pos.y(), pos.z() );
+	return this;
+}
+
+Object* Object::set_geom_rel_pos( const Eigen::Vector3d& pos, int index )
+{
+	dGeomSetOffsetPosition( ( index < 0 ? _geoms.back() : _geoms[index] ), pos.x(), pos.y(), pos.z() );
+	return this;
+}
+
+Object* Object::set_geom_rot( double phi, double theta, double psi, int index )
+{
+	dMatrix3 r;
+	dRFromEulerAngles( r, phi, theta, psi );
+	dGeomSetOffsetRotation( ( index < 0 ? _geoms.back() : _geoms[index] ), r );
+	return this;
+}
+
+Object* Object::set_geom_rot( double ax, double ay, double az, double angle, int index )
+{
+	dMatrix3 r;
+	dRFromAxisAndAngle( r, ax, ay, az, angle );
+	dGeomSetOffsetRotation( ( index < 0 ? _geoms.back() : _geoms[index] ), r );
+	return this;
+}
+
+Object* Object::set_geom_rot( const Eigen::Vector3d& a1, const Eigen::Vector3d& a2, int index )
+{
+	dMatrix3 r;
+	dRFrom2Axes( r, a1.x(), a1.y(), a1.z(), a2.x(), a2.y(), a2.z() );
+	dGeomSetOffsetRotation( ( index < 0 ? _geoms.back() : _geoms[index] ), r );
+	return this;
+}
+
+
+Object* Object::add_box_geom( double l, double w, double h )
+{
+	dGeomID g = dCreateBox( _env.get_space(), l , w, h );
+	dGeomSetBody( g, _body );
+	_geoms.push_back( g );
+	return this;
+}
+
+Object* Object::add_sphere_geom( double r )
+{
+	dGeomID g = dCreateSphere( _env.get_space(), r );
+	dGeomSetBody( g, _body );
+	_geoms.push_back( g );
+	return this;
+}
+
+Object* Object::add_cylinder_geom( double r, double l )
+{
+	dGeomID g = dCreateCylinder( _env.get_space(), r, l );
+	dGeomSetBody( g, _body );
+	_geoms.push_back( g );
+	return this;
+}
+
+Object* Object::add_capcyl_geom( double r, double l )
+{
+	dGeomID g = dCreateCCylinder( _env.get_space(), r, l - r*2 );
+	dGeomSetBody( g, _body );
+	_geoms.push_back( g );
+	return this;
 }
 
 

@@ -245,7 +245,7 @@ void OsgVisitor::visit( const ode::Sphere& o )
 		_create_std_object( o );
 	else
 	{
-		ref_ptr<ShapeDrawable> drawable( new ShapeDrawable( new Sphere( Vec3d(), o.get_rad() ) ) );
+		ref_ptr<ShapeDrawable> drawable( new ShapeDrawable( new Sphere( Vec3d(), o.get_radius() ) ) );
 		_create_std_object( o, drawable );
 	}
 }
@@ -269,7 +269,7 @@ void OsgVisitor::visit( const ode::Cylinder& o )
 		_create_std_object( o );
 	else
 	{
-		ref_ptr<ShapeDrawable> drawable( new ShapeDrawable( new Cylinder( Vec3d(), o.get_rad(), o.get_width() ) ) );
+		ref_ptr<ShapeDrawable> drawable( new ShapeDrawable( new Cylinder( Vec3d(), o.get_radius(), o.get_length() ) ) );
 		_create_std_object( o, drawable );
 	}
 }
@@ -291,7 +291,7 @@ void OsgVisitor::visit( const ode::Wheel& o )
 	}
 	else
 	{
-		double rad = o.get_rad();
+		double rad = o.get_radius();
 		double width = o.get_width();
 		double def = o.get_def();
 
