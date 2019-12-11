@@ -30,31 +30,33 @@ int main( int argc, char* argv[] )
 
 	// [ Terrain ]
 
-	//float x( 1.2 );
+	float x( 1.2 );
+	float y( -0.61/2 );
 	//float y( 0.61/2 + 0.1 );
-	//float h( 0.16 );
-	//float l( 0.21 );
+	float h( 0.16 );
+	float l( 0.21 );
+	float w( 0.40 );
 	//float w( 0.50 );
-	//float slope( 20 );
+	float slope( 20 );
 
-	//float l2 = h/sin( slope*M_PI/180 );
-	//float h2 = h/cos( slope*M_PI/180 );
-	//float x2 = l/2 + sqrt( l2*l2 + h2*h2 )/2 - h*tan( slope*M_PI/180 );
+	float l2 = h/sin( slope*M_PI/180 );
+	float h2 = h/cos( slope*M_PI/180 );
+	float x2 = l/2 + sqrt( l2*l2 + h2*h2 )/2 - h*tan( slope*M_PI/180 );
 
-	//ode::Box ramp_part1( env, Eigen::Vector3d( x, y, 0 ), 1, l, w, h*2, false );
+	ode::Box ramp_part1( env, Eigen::Vector3d( x, y, 0 ), 1, l, w, h*2, false );
 
-	//ode::Box ramp_part2( env, Eigen::Vector3d( x + x2, y, 0 ), 1, l2, w, h2, false );
-	//ramp_part2.set_rotation( 0, -slope*M_PI/180, 0 );
+	ode::Box ramp_part2( env, Eigen::Vector3d( x + x2, y, 0 ), 1, l2, w, h2, false );
+	ramp_part2.set_rotation( 0, -slope*M_PI/180, 0 );
 
-	//ode::Box ramp_part3( env, Eigen::Vector3d( x - x2, y, 0 ), 1, l2, w, h2, false );
-	//ramp_part3.set_rotation( 0, slope*M_PI/180, 0 );
+	ode::Box ramp_part3( env, Eigen::Vector3d( x - x2, y, 0 ), 1, l2, w, h2, false );
+	ramp_part3.set_rotation( 0, slope*M_PI/180, 0 );
 
-	//ramp_part1.fix();
-	//ramp_part2.fix();
-	//ramp_part3.fix();
-	//ramp_part1.set_collision_group( "ground" );
-	//ramp_part2.set_collision_group( "ground" );
-	//ramp_part3.set_collision_group( "ground" );
+	ramp_part1.fix();
+	ramp_part2.fix();
+	ramp_part3.fix();
+	ramp_part1.set_collision_group( "ground" );
+	ramp_part2.set_collision_group( "ground" );
+	ramp_part3.set_collision_group( "ground" );
 
 
 	//ode::Box wall( env, Eigen::Vector3d( 0.5, 0, 0.21/2 ), 1, 0.1, 2, 0.21, false );
@@ -84,8 +86,8 @@ int main( int argc, char* argv[] )
 	// [ Simulation rules ]
 
 	// Cruise speed of the robot:
-	//float speedf( 0.1 );
-	float speedf( 0.02 );
+	float speedf( 0.1 );
+	//float speedf( 0.02 );
 	// Time to reach cruise speed:
 	float term( 0.5 );
 	// Maximum distance to travel ahead:
@@ -98,11 +100,11 @@ int main( int argc, char* argv[] )
 
 	std::function<bool(float,double)>  step_function = [&]( float timestep, double time )
 	{
-		//if ( speed <= speedf )
-		//{
-			//speed += speedf/term*timestep;
-			//robot.SetRobotSpeed( speed );
-		//}
+		if ( speed <= speedf )
+		{
+			speed += speedf/term*timestep;
+			robot.SetRobotSpeed( speed );
+		}
 
 		env.next_step( timestep );
 		robot.next_step( timestep );
@@ -140,9 +142,9 @@ int main( int argc, char* argv[] )
 		display_ptr->set_pause();
 
 		robot.accept( *display_ptr );
-		//ramp_part1.accept( *display_ptr );
-		//ramp_part2.accept( *display_ptr );
-		//ramp_part3.accept( *display_ptr );
+		ramp_part1.accept( *display_ptr );
+		ramp_part2.accept( *display_ptr );
+		ramp_part3.accept( *display_ptr );
 		//wall.accept( *display_ptr );
 		//box.accept( *display_ptr );
 		//help.accept( *display_ptr );

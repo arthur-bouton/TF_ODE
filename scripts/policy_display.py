@@ -19,7 +19,7 @@ columns = [ 'Direction' ] + state_1 + state_2 + actions
 
 
 
-fig, ax = subplots( 4, 4 )
+fig, ax = subplots( 4, 4, figsize=( 10, 10 ) )
 fig.canvas.set_window_title( __file__ )
 
 for i in range( 4 ) :
@@ -41,8 +41,8 @@ for i in range( 4 ) :
 
 ax[0,0].legend( actions )
 
-left  = 0.125
-right = 0.9
+left  = 0.05
+right = 0.98
 bottom = 0.05
 top = 0.98
 wspace = 0.1
