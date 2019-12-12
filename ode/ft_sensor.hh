@@ -31,7 +31,7 @@ class FT_sensor
 	                                                                                      const Eigen::Vector3d& c_lin_diag, const Eigen::Vector3d& c_ang_diag );
 	FT_sensor( const ode::Object* A, const ode::Object* B, const Eigen::Vector3d& center, double k_lin, double k_ang, double c_lin, double c_ang );
 
-	virtual void Update();
+	void Update();
 
 	inline const Eigen::Vector3d* GetForces()  const { return &_F; }
 	inline const Eigen::Vector3d* GetTorques() const { return &_T; }

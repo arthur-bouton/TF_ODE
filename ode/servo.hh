@@ -28,7 +28,7 @@ class Servo
 
     Servo( const Servo& s, Environment& env, Object& o1, Object& o2 );
 
-	virtual ptr_t clone( Environment& env, Object& o1, Object& o2 ) const;
+	ptr_t clone( Environment& env, Object& o1, Object& o2 ) const;
 
 	const Object& get_o1() const;
 	const Object& get_o2() const;
@@ -48,10 +48,10 @@ class Servo
 	void set_torque_max( double max );
 
 	double get_angle() const;
-	virtual double set_angle( double angle );
+	double set_angle( double angle );
 
 	double get_vel() const;
-	virtual double set_vel( double vel );
+	double set_vel( double vel );
 
 	inline servo_mode_t get_mode() const { return _mode; }
 
@@ -61,7 +61,7 @@ class Servo
 	double get_vel_max() const;
 	void set_vel_max( double vel_max );
 
-	virtual void next_step( double dt );
+	void next_step( double dt );
 
 	double get_real_angle() const;
 	double get_real_vel() const;

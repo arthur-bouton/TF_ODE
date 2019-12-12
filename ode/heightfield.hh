@@ -58,12 +58,12 @@ class HeightField : public Object
 		init();
 	}
 
-	virtual void set_texture( const char* const path_to_texture )
+	void set_texture( const char* const path_to_texture )
 	{
 		texture_path = path_to_texture;
 	}
 
-	virtual void accept(ConstVisitor &v) const
+	virtual void accept( ConstVisitor &v ) const
 	{
 		assert( !_geoms.empty() );
 		v.visit(*this);

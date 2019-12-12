@@ -150,7 +150,7 @@ namespace ode
         Environment*env = reinterpret_cast<Environment *>(data);
         env->_collision(o1, o2);
       }
-      virtual void _collision(dGeomID o1, dGeomID o2);
+      void _collision(dGeomID o1, dGeomID o2);
     //public: // ??
        // attributes
       dWorldID _world_id;

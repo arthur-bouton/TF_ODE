@@ -21,17 +21,17 @@ class Rover_1 : public Robot
 
 	Rover_1( ode::Environment& env, const Eigen::Vector3d& pose );
 
-	virtual void SetRobotSpeed( double speed );
+	void SetRobotSpeed( double speed );
 	inline double GetRobotSpeed() const { return _robot_speed; }
 
-	virtual void SetSteeringAngle( double angle );
-	virtual double GetSteeringTrueAngle() const;
+	void SetSteeringAngle( double angle );
+	double GetSteeringTrueAngle() const;
 
-	virtual void SetSteeringRate( double rate );
+	void SetSteeringRate( double rate );
 	inline double GetSteeringRateCmd() const { return _steering_rate; }
-	virtual double GetSteeringTrueRate() const;
+	double GetSteeringTrueRate() const;
 
-	virtual void SetBoggieTorque( double torque );
+	void SetBoggieTorque( double torque );
 	inline double GetBoggieTorque() const { return _boggie_torque; }
 
 	inline void SetCmdFreq( double freq ) { _ic_period = 1./freq; }
@@ -44,18 +44,18 @@ class Rover_1 : public Robot
 	inline void DeactivateIC() { _ic_activated = false; }
 	inline bool IsICActivated() const { return _ic_activated; }
 
-	virtual Eigen::Vector3d GetPosition() const;
-	virtual double GetDirection() const;
-	virtual bool IsUpsideDown() const;
-	virtual double GetRollAngle() const;
-	virtual double GetPitchAngle() const;
-	virtual void GetTiltRates( double& roll_rate, double& pitch_rate ) const;
-	virtual double GetBoggieAngle() const;
-	virtual Eigen::Matrix<double,4,3> GetFT300Torsors() const;
+	Eigen::Vector3d GetPosition() const;
+	double GetDirection() const;
+	bool IsUpsideDown() const;
+	double GetRollAngle() const;
+	double GetPitchAngle() const;
+	void GetTiltRates( double& roll_rate, double& pitch_rate ) const;
+	double GetBoggieAngle() const;
+	Eigen::Matrix<double,4,3> GetFT300Torsors() const;
 	inline const double* GetWheelTorques() const { return _torque_output; }
 
-	virtual void PrintFT300Torsors( bool endl = true ) const;
-	virtual void PrintWheelTorques( bool endl = true ) const;
+	void PrintFT300Torsors( bool endl = true ) const;
+	void PrintWheelTorques( bool endl = true ) const;
 
 	virtual void next_step( double dt = ode::Environment::time_step );
 
@@ -65,12 +65,12 @@ class Rover_1 : public Robot
 
 	virtual void _InternalControl( double delta_t );
 
-	virtual void _UpdateWheelControl();
-	virtual void _ApplyWheelControl();
-	virtual void _ApplySteeringControl();
-	virtual void _ApplyBoggieControl();
+	void _UpdateWheelControl();
+	void _ApplyWheelControl();
+	void _ApplySteeringControl();
+	void _ApplyBoggieControl();
 
-	virtual void _UpdateTorqueFilters();
+	void _UpdateTorqueFilters();
 	
 	double _robot_speed;
 	double _steering_rate;

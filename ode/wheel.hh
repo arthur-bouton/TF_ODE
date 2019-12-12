@@ -45,7 +45,7 @@ class Wheel : public Object
 	double get_def() const { return _def; }
 
 	/// const visitor
-	virtual void accept ( ConstVisitor &v ) const
+	virtual void accept( ConstVisitor &v ) const
 	{
 		assert( _body ); assert( !_geoms.empty() );
 		v.visit( *this );

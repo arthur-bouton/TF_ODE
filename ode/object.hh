@@ -51,8 +51,8 @@ class Object
 
 	inline Eigen::Vector3d get_init_pos() const { return _init_pos; }
 
-	virtual dBodyID get_body() const;
-	virtual std::vector<dGeomID> get_geoms() const;
+	dBodyID get_body() const;
+	std::vector<dGeomID> get_geoms() const;
 
 	/// ask the current position to ode
 	Eigen::Vector3d get_pos() const;
@@ -93,29 +93,29 @@ class Object
 
 	const Environment& get_env() const;
 
-	virtual double get_mass() const;
-	virtual Eigen::Vector3d get_cg() const;
-	virtual Eigen::Matrix3d get_inertia() const;
-	virtual void set_mass_parameters( double m,
-									  Eigen::Vector3d cg,
-								  	  Eigen::Matrix3d I );
-	virtual void set_inertia( double I11, double I22, double I33,
-							  double I12 = 0, double I13 = 0, double I23 = 0 );
+	double get_mass() const;
+	Eigen::Vector3d get_cg() const;
+	Eigen::Matrix3d get_inertia() const;
+	void set_mass_parameters( double m,
+							  Eigen::Vector3d cg,
+							  Eigen::Matrix3d I );
+	void set_inertia( double I11, double I22, double I33,
+					  double I12 = 0, double I13 = 0, double I23 = 0 );
 
 	const char* get_collision_group() const;
-	virtual void set_collision_group( const char* group );
+	void set_collision_group( const char* group );
 
 	contact_type get_contact_type() const;
-	virtual void set_contact_type( contact_type type );
+	void set_contact_type( contact_type type );
 
 	bool casts_shadow() const;
 	void disable_shadow_casting();
 
 	const float* get_color() const;
-	virtual void set_color( float r, float g, float b );
+	void set_color( float r, float g, float b );
 
 	float get_alpha() const;
-	virtual void set_alpha( float a );
+	void set_alpha( float a );
 
 	inline void set_mesh( const char* path ) { _mesh_path = path; }
 	inline const char* get_mesh_path() const { return _mesh_path; }
