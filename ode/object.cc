@@ -220,18 +220,18 @@ void Object::set_inertia( double I11, double I22, double I33,
 }
 
 
-const char* Object::get_collision_group() const
+const char* Object::get_collision_group( int index ) const
 {
-	if ( ! _geoms.empty() )
+	if ( _geoms.size() > index )
 	{
-		collision_feature* feature = ( collision_feature* ) dGeomGetData( _geoms[0] );
+		collision_feature* feature = ( collision_feature* ) dGeomGetData( _geoms[index] );
 		if ( feature != NULL )
 			return feature->group;
 	}
 	return NULL;
 }
 
-void Object::set_collision_group( const char* group )
+void Object::set_all_collision_group( const char* group )
 {
 	if ( ! _geoms.empty() )
 	{
@@ -246,12 +246,23 @@ void Object::set_collision_group( const char* group )
 	}
 }
 
-
-contact_type Object::get_contact_type() const
+void Object::set_collision_group( const char* group, int index )
 {
 	if ( ! _geoms.empty() )
 	{
-		collision_feature* feature = ( collision_feature* ) dGeomGetData( _geoms[0] );
+		collision_feature* feature = ( collision_feature* ) dGeomGetData( index < 0 ? _geoms.back() : _geoms[index] );
+		if ( feature != NULL )
+			feature->group = group;
+		else
+			dGeomSetData( ( index < 0 ? _geoms.back() : _geoms[index] ), new collision_feature( group ) );
+	}
+}
+
+contact_type Object::get_contact_type( int index ) const
+{
+	if ( _geoms.size() > index )
+	{
+		collision_feature* feature = ( collision_feature* ) dGeomGetData( _geoms[index] );
 		if ( feature != NULL )
 			return feature->type;
 		else
@@ -261,7 +272,19 @@ contact_type Object::get_contact_type() const
 		return DISABLED;
 }
 
-void Object::set_contact_type( contact_type type )
+void Object::set_contact_type( contact_type type, int index )
+{
+	if ( ! _geoms.empty() )
+	{
+		collision_feature* feature = ( collision_feature* ) dGeomGetData( index < 0 ? _geoms.back() : _geoms[index] );
+		if ( feature != NULL )
+			feature->type = type;
+		else
+			dGeomSetData( ( index < 0 ? _geoms.back() : _geoms[index] ), new collision_feature( type ) );
+	}
+}
+
+void Object::set_all_contact_type( contact_type type )
 {
 	if ( ! _geoms.empty() )
 	{

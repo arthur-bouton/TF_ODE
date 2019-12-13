@@ -102,11 +102,13 @@ class Object
 	void set_inertia( double I11, double I22, double I33,
 					  double I12 = 0, double I13 = 0, double I23 = 0 );
 
-	const char* get_collision_group() const;
-	void set_collision_group( const char* group );
+	const char* get_collision_group( int index = 0 ) const;
+	void set_all_collision_group( const char* group );
+	void set_collision_group( const char* group, int index = -1 );
 
-	contact_type get_contact_type() const;
-	void set_contact_type( contact_type type );
+	contact_type get_contact_type( int index = 0 ) const;
+	void set_all_contact_type( contact_type type );
+	void set_contact_type( contact_type type, int index = -1 );
 
 	bool casts_shadow() const;
 	void disable_shadow_casting();
