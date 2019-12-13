@@ -57,9 +57,7 @@ with DDPG( S_DIM, A_DIM, STATE_SCALE, ACTION_SCALE, GAMMA, TAU, BUFFER_SIZE, MIN
 		if len( sys.argv ) > 1 and sys.argv[1] == 'load' :
 			if len( sys.argv ) > 2 :
 				ddpg.load_model( sys.argv[2] )
-				if len( sys.argv ) > 3 and not ddpg.load_replay_buffer( sys.argv[3] ) :
-					print( "Can't open %s" % sys.argv[3], file=sys.stderr )
-					exit( -1 )
+				ddpg.load_replay_buffer( sys.argv[2] + '_replay_buffer.pkl' )
 			else :
 				ddpg.load_model( path_to_tf_model )
 				ddpg.load_replay_buffer( path_to_tf_model + '_replay_buffer.pkl' )
@@ -116,12 +114,7 @@ with DDPG( S_DIM, A_DIM, STATE_SCALE, ACTION_SCALE, GAMMA, TAU, BUFFER_SIZE, MIN
 			ddpg.save_replay_buffer( path_to_tf_model + '_replay_buffer.pkl' )
 			print( 'Replay buffer saved.' )
 		else :
-			answer = input( 'Where to store the replay buffer? (leave empty to discard data) ' )
-			if answer.strip() :
-				ddpg.save_replay_buffer( answer + '.pkl' )
-				print( 'Replay buffer saved as %s.' % answer )
-			else :
-				print( 'Data discarded.' )
+			print( 'Data discarded.' )
 
 	else :
 
