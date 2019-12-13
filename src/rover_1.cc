@@ -113,7 +113,7 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 							             front_length, front_width, front_height ) );
 	_main_body->set_mesh( "../meshes/front.obj" );
 	_bodies.push_back( _main_body );
-	//_main_body->set_contact_type( DISABLED );
+
 
 	ode::Object::ptr_t rear_body = Object::ptr_t( new Box( env,
 						                                   pose + rear_pos,
@@ -121,15 +121,15 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 						                                   rear_length, rear_width, rear_height ) );
 	rear_body->set_mesh( "../meshes/rear.obj" );
 	_bodies.push_back( rear_body );
-	//rear_body->set_contact_type( DISABLED );
+
 
 	ode::Object::ptr_t boggie = Object::ptr_t( new Box( env,
 							          pose + boggie_pos,
 							          boggie_mass,
-							          boggie_length, boggie_width, boggie_height ) );
+							          boggie_length, boggie_width, boggie_height, true, false ) );
 	boggie->set_mesh( "../meshes/sea.obj" );
 	_bodies.push_back( boggie );
-	//boggie->set_contact_type( DISABLED );
+
 
 	double motor_radius( 0.025 );
 	double motor_length( 0.1 );
@@ -144,7 +144,7 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 	_front_fork->set_geom_abs_pos( Vector3d( wheelbase/2, -( wheeltrack - wheel_width - motor_length )/2, wheel_radius[1] ) );
 	_front_fork->set_mesh( "../meshes/front_fork.obj" );
 	_bodies.push_back( _front_fork );
-	//_front_fork->set_contact_type( DISABLED );
+
 
 	Vector3d rear_fork_pos = pose + Vector3d( -wheelbase/2, 0, fork_elev );
 	_rear_fork = Object::ptr_t( new Box( env,
@@ -157,7 +157,6 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 	_rear_fork->set_geom_abs_pos( Vector3d( -wheelbase/2, -( wheeltrack - wheel_width - motor_length )/2, wheel_radius[3] ) );
 	_rear_fork->set_mesh( "../meshes/rear_fork.obj" );
 	_bodies.push_back( _rear_fork );
-	//_rear_fork->set_contact_type( DISABLED );
 
 
 	// [ Centre hinge joint ]
