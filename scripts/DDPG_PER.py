@@ -434,11 +434,26 @@ class DDPG() :
 		V_value = self.sess.run( self.Q_value, {self.states: s[np.newaxis, :] if s.ndim < 2 else s, self.actions: mu_a} )
 		return V_value.squeeze()
 	
-	def save( self, filename ) :
+	def save_model( self, filename ) :
 		self.saver.save( self.sess, filename )
 	
-	def load( self, filename ) :
+	def load_model( self, filename ) :
 		self.saver.restore( self.sess, filename )
+
+	def save_replay_buffer( self, filename ) :
+		with open( filename, 'wb' ) as f :
+			import pickle
+			pickle.dump( self.replay_buffer, f )
+
+	def load_replay_buffer( self, filename ) :
+		try :
+			with open( filename, 'rb' ) as f :
+				import pickle
+				temp_buf = pickle.load( f )
+			self.replay_buffer = temp_buf
+			return True
+		except IOError :
+			return False
 
 	def __enter__( self ) :
 		return self
@@ -492,9 +507,9 @@ if __name__ == '__main__' :
 
 			if len( sys.argv ) > 1 and sys.argv[1] == 'load' :
 				if len( sys.argv ) > 2 :
-					ddpg.load( sys.argv[2] )
+					ddpg.load_model( sys.argv[2] )
 				else :
-					ddpg.load( backup_file )
+					ddpg.load_model( backup_file )
 
 
 			np.random.seed( SEED )
@@ -568,12 +583,12 @@ if __name__ == '__main__' :
 
 			answer = input( '\nSave network parameters as ' + backup_file + '? (y) ' )
 			if answer.strip() == 'y' :
-				ddpg.save( backup_file )
+				ddpg.save_model( backup_file )
 				print( 'Parameters saved.' )
 			else :
 				answer = input( 'Where to store network parameters? (leave empty to discard data) ' )
 				if answer.strip() :
-					ddpg.save( answer )
+					ddpg.save_model( answer )
 					print( 'Parameters saved as %s.' % answer )
 				else :
 					print( 'Data discarded.' )
@@ -581,7 +596,7 @@ if __name__ == '__main__' :
 		else :
 
 
-			ddpg.load( backup_file )
+			ddpg.load_model( backup_file )
 
 
 			test_env = ENV( 180, store_data=True )

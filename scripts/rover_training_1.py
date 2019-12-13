@@ -8,8 +8,8 @@ import random
 import sys
 import os
 from protect_loop import Protect_loop
-from DDPG_vanilla import DDPG
-#from DDPG_PER import DDPG
+#from DDPG_vanilla import DDPG
+from DDPG_PER import DDPG
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 sys.path.append( '../build' )
@@ -17,7 +17,7 @@ import rover_training_1_module
 
 
 # Identifier name for the training data:
-run_id = 'step_5'
+run_id = 'step_05_PER_1'
 
 script_name = os.path.splitext( os.path.basename( __file__ ) )[0]
 
@@ -40,15 +40,15 @@ MINIBATCH_SIZE = 64 # Size of each minibatch
 ACTOR_LR = 1e-6 # Learning rate of the actor network
 CRITIC_LR = 1e-5 # Learning rate of the critic network
 BETA_L2 = 1e-6 # Ridge regularization coefficient
-#ALPHA_SAMPLING = 1 # Exponent interpolating between uniform sampling (0) and greedy prioritization (1)
-#BETA_IS = 0 # Exponent of the importance-sampling weights (if 0, no importance sampling)
+ALPHA_SAMPLING = 1 # Exponent interpolating between uniform sampling (0) and greedy prioritization (1)
+BETA_IS = 0 # Exponent of the importance-sampling weights (if 0, no importance sampling)
 #SUMMARY_DIR = '/tmp/' + script_name + '/' + data_id # Directory where to save summaries
 SUMMARY_DIR = None # No summarie
 SEED = None # Random seed for the initialization of all random generators
 SINGLE_THREAD = False # Force the execution on a single core in order to have a deterministic behavior
 
 with DDPG( S_DIM, A_DIM, STATE_SCALE, ACTION_SCALE, GAMMA, TAU, BUFFER_SIZE, MINIBATCH_SIZE, ACTOR_LR, CRITIC_LR, BETA_L2,
-		   #alpha_sampling=ALPHA_SAMPLING, beta_IS=BETA_IS,
+		   alpha_sampling=ALPHA_SAMPLING, beta_IS=BETA_IS,
 		   summary_dir=SUMMARY_DIR, seed=SEED, single_thread=SINGLE_THREAD ) as ddpg :
 
 
@@ -56,11 +56,15 @@ with DDPG( S_DIM, A_DIM, STATE_SCALE, ACTION_SCALE, GAMMA, TAU, BUFFER_SIZE, MIN
 
 		if len( sys.argv ) > 1 and sys.argv[1] == 'load' :
 			if len( sys.argv ) > 2 :
-				ddpg.load( sys.argv[2] )
+				ddpg.load_model( sys.argv[2] )
+				if len( sys.argv ) > 3 and not ddpg.load_replay_buffer( sys.argv[3] ) :
+					print( "Can't open %s" % sys.argv[3], file=sys.stderr )
+					exit( -1 )
 			else :
-				ddpg.load( path_to_tf_model )
+				ddpg.load_model( path_to_tf_model )
+				ddpg.load_replay_buffer( path_to_tf_model + '_replay_buffer.pkl' )
 		else :
-			ddpg.save( path_to_tf_model )
+			ddpg.save_model( path_to_tf_model )
 
 
 		np.random.seed( SEED )
@@ -82,9 +86,9 @@ with DDPG( S_DIM, A_DIM, STATE_SCALE, ACTION_SCALE, GAMMA, TAU, BUFFER_SIZE, MIN
 				if interruption() :
 					break
 
-				ddpg.replay_buffer.extend( trial_experience )
-				#for transition in trial_experience :
-					#ddpg.replay_buffer.add( transition )
+				#ddpg.replay_buffer.extend( trial_experience )
+				for transition in trial_experience :
+					ddpg.replay_buffer.add( transition )
 
 				n_ep += 1
 
@@ -93,7 +97,7 @@ with DDPG( S_DIM, A_DIM, STATE_SCALE, ACTION_SCALE, GAMMA, TAU, BUFFER_SIZE, MIN
 				if len( ddpg.replay_buffer ) >= ddpg.minibatch_size :
 					Li = ddpg.train( ITER_PER_EP )
 
-					ddpg.save( path_to_tf_model )
+					ddpg.save_model( path_to_tf_model )
 
 
 				# Evaluate the policy:
@@ -107,17 +111,17 @@ with DDPG( S_DIM, A_DIM, STATE_SCALE, ACTION_SCALE, GAMMA, TAU, BUFFER_SIZE, MIN
 		end = time.time()
 		print( 'Elapsed time: %.3f' % ( end - start ), file=sys.stderr )
 
-		#answer = input( '\nSave network parameters as ' + path_to_tf_model + '? (y) ' )
-		#if answer.strip() == 'y' :
-			#ddpg.save( path_to_tf_model )
-			#print( 'Parameters saved.' )
-		#else :
-			#answer = input( 'Where to store network parameters? (leave empty to discard data) ' )
-			#if answer.strip() :
-				#ddpg.save( answer )
-				#print( 'Parameters saved as %s.' % answer )
-			#else :
-				#print( 'Data discarded.' )
+		answer = input( '\nSave the replay buffer as ' + path_to_tf_model + '_replay_buffer.pkl? (y) ' )
+		if answer.strip() == 'y' :
+			ddpg.save_replay_buffer( path_to_tf_model + '_replay_buffer.pkl' )
+			print( 'Replay buffer saved.' )
+		else :
+			answer = input( 'Where to store the replay buffer? (leave empty to discard data) ' )
+			if answer.strip() :
+				ddpg.save_replay_buffer( answer + '.pkl' )
+				print( 'Replay buffer saved as %s.' % answer )
+			else :
+				print( 'Data discarded.' )
 
 	else :
 
