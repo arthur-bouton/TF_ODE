@@ -22,7 +22,6 @@ Rover_1_tf::Rover_1_tf( Environment& env, const Vector3d& pose, const char* path
 						_exploration( false )
 {
 	_last_pos = GetPosition();
-	_was_flipped = GetSteeringTrueAngle() < 0;
 
 
 	// Creation of the TensorFlow session:
@@ -56,22 +55,19 @@ Rover_1_tf::Rover_1_tf( Environment& env, const Vector3d& pose, const char* path
 }
 
 
-p::list Rover_1_tf::GetState( const bool flip ) const
+p::list Rover_1_tf::GetState() const
 {
-	// Flip or not left and right in order to speed up learning by taking into account the robot's symmetry:
-	int flip_coeff = flip ? -1 : 1;
-
 	p::list state;
 
-	state.append( flip_coeff*GetDirection() );
-	state.append( 2*flip_coeff*GetSteeringTrueAngle() - steering_angle_max );
-	state.append( flip_coeff*GetRollAngle() );
+	state.append( GetDirection() );
+	state.append( GetSteeringTrueAngle() );
+	state.append( GetRollAngle() );
 	state.append( GetPitchAngle() );
-	state.append( flip_coeff*GetBoggieAngle() );
+	state.append( GetBoggieAngle() );
 	const Vector3d* list[] = { _front_ft_sensor.GetForces(), _front_ft_sensor.GetTorques(), _rear_ft_sensor.GetForces(), _rear_ft_sensor.GetTorques() };
 	for ( int i = 0 ; i < 4 ; i++ )
 		for ( int j = 0 ; j < 3 ; j++ )
-			state.append( ( ( i + j )%2 == 0 ? 1 : flip_coeff )*list[i]->coeff( j ) );
+			state.append( list[i]->coeff( j ) );
 	//for ( int i = 0 ; i < NBWHEELS ; i++ )
 		//state.append( _torque_output[i] );
 
@@ -79,7 +75,7 @@ p::list Rover_1_tf::GetState( const bool flip ) const
 }
 
 
-void Rover_1_tf::InferAction( const p::list& state, double& steering_rate, double& boggie_torque, const bool flip ) const
+void Rover_1_tf::InferAction( const p::list& state, double& steering_rate, double& boggie_torque ) const
 {
 	// Setup the inputs and outputs:
 	tensorflow::Tensor state_tensor( tensorflow::DT_FLOAT, tensorflow::TensorShape( { 1, p::len( state ) } ) );
@@ -93,8 +89,8 @@ void Rover_1_tf::InferAction( const p::list& state, double& steering_rate, doubl
 	TF_CHECK_OK( _tf_session_ptr->Run( inputs, { "Actor_Output" }, {}, &outputs ) );
 
 	// Extract the outputs:
-	steering_rate = ( flip ? -1 : 1 )*outputs[0].flat<float>()( 0 );
-	boggie_torque = ( flip ? -1 : 1 )*outputs[0].flat<float>()( 1 );
+	steering_rate = outputs[0].flat<float>()( 0 );
+	boggie_torque = outputs[0].flat<float>()( 1 );
 
 	//for ( int i = 0 ; i < p::len( state ) ; i++ )
 		//printf( "%f ", state_tensor.flat<float>()( i ) );
@@ -132,19 +128,12 @@ void Rover_1_tf::_InternalControl( double delta_t )
 		//printf( "reward: %f\n", reward );
 //#endif
 
-	// Flip the role of left and right if the steering angle is negative:
-	bool flip = GetSteeringTrueAngle() < 0;
-
 	// Get the current state of the robot:
-	p::list current_state = GetState( flip );
+	p::list current_state = GetState();
 
-	// Store the last experience, flip the actions according to the last state:
+	// Store the latest experience:
 	if ( p::len( _last_state ) > 0 )
-		_experience.append( p::make_tuple( _last_state,
-		                                   p::make_tuple( ( _was_flipped ? -1 : 1 )*_steering_rate, ( _was_flipped ? -1 : 1 )*_boggie_torque ),
-										   reward,
-										   false,
-										   current_state ) );
+		_experience.append( p::make_tuple( _last_state, p::make_tuple( _steering_rate, _boggie_torque ), reward, false, current_state ) );
 
 
 	// Choose the next action:
@@ -167,9 +156,9 @@ void Rover_1_tf::_InternalControl( double delta_t )
 	}
 	if ( !_exploration || ! explore )
 	{
-		InferAction( current_state, _steering_rate, _boggie_torque, flip );
+		InferAction( current_state, _steering_rate, _boggie_torque );
 #ifdef PRINT
-		printf( "INFER: %f %f%s\n", _steering_rate, _boggie_torque, flip ? " (flipped)" : "" );
+		printf( "INFER: %f %f\n", _steering_rate, _boggie_torque );
 #endif
 	}
 #ifdef PRINT
@@ -182,7 +171,6 @@ void Rover_1_tf::_InternalControl( double delta_t )
 #endif
 
 	_last_state = current_state;
-	_was_flipped = flip;
 }
 
 
