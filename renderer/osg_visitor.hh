@@ -81,8 +81,6 @@ class OsgVisitor : public ode::ConstVisitor
 	virtual void visit( const ode::Wheel& );
 	virtual void visit( const ode::HeightField& );
 
-	void enable_dump( const std::string& prefix );
-
 	inline int get_window_width() const { return _wwidth; }
 	inline int get_window_height() const { return _wheight; }
 

@@ -85,30 +85,6 @@ class UpdateCallback : public NodeCallback
 };
 
 
-struct ImgPostDrawCallback : public Camera::DrawCallback
-{
-	ImgPostDrawCallback( const std::string& prefix ) : _prefix( prefix ), _image( new Image ), _k( 0 ) {}
-
-	virtual void operator() ( const Camera &camera ) const
-	{
-		int x = ( int ) camera.getViewport()->x();
-		int y = ( int ) camera.getViewport()->y();
-		int width = ( int ) camera.getViewport()->width(); 
-		int height = ( int )camera.getViewport()->height();
-
-		_image->readPixels( x, y, width, height, GL_RGB, GL_UNSIGNED_BYTE );
-		osgDB::writeImageFile( *_image ,
-							   _prefix + boost::str(boost::format("%1%")%boost::io::group(std::setfill('0'),std::setw(3),_k++)) + ".png" );
-	}
-
-	private:
-
-	std::string _prefix;
-	ref_ptr<Image> _image;
-	mutable size_t _k;
-};
-
-
 OsgVisitor::OsgVisitor( unsigned int screen, int wwidth, int wheight, int wxpos, int wypos,
 						double ground_length, double ground_width,
 						Vec3d cam_pos, Vec3d cam_center, camera_t cam, bool shadows, Vec3d light_position ) :
@@ -370,12 +346,6 @@ void OsgVisitor::visit( const ode::HeightField& o )
 
 	_root->addChild( pat.get() );
 	_set_tm( pat );
-}
-
-
-void OsgVisitor::enable_dump( const std::string& prefix )
-{ 
-	_viewer.getCamera()->setPostDrawCallback( new ImgPostDrawCallback( prefix ) );
 }
 
 

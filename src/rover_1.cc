@@ -115,18 +115,18 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 	_bodies.push_back( _main_body );
 
 
-	ode::Object::ptr_t rear_body = Object::ptr_t( new Box( env,
-						                                   pose + rear_pos,
-						                                   rear_mass,
-						                                   rear_length, rear_width, rear_height ) );
+	ode::Object::ptr_t rear_body( new Box( env,
+						                   pose + rear_pos,
+						                   rear_mass,
+						                   rear_length, rear_width, rear_height ) );
 	rear_body->set_mesh( "../meshes/rear.obj" );
 	_bodies.push_back( rear_body );
 
 
-	ode::Object::ptr_t boggie = Object::ptr_t( new Box( env,
-							          pose + boggie_pos,
-							          boggie_mass,
-							          boggie_length, boggie_width, boggie_height, true, false ) );
+	ode::Object::ptr_t boggie( new Box( env,
+							            pose + boggie_pos,
+							            boggie_mass,
+							            boggie_length, boggie_width, boggie_height, true, false ) );
 	boggie->set_mesh( "../meshes/sea.obj" );
 	_bodies.push_back( boggie );
 
