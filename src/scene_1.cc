@@ -109,8 +109,8 @@ int main( int argc, char* argv[] )
 		std::function<bool(renderer::OsgText*)> update_pos_text = [&robot]( renderer::OsgText* text )
 		{
 			char buff[100];
-			snprintf( buff, sizeof( buff ), "Steering rate: %5.1f\nBoggie torque: %5.1f\nx: %5.2f\ny: %5.2f",
-			          robot.GetSteeringRateCmd(), robot.GetBoggieTorque(), robot.GetPosition().x(), robot.GetPosition().y() );
+			snprintf( buff, sizeof( buff ), "Forward speed: %5.1f cm/s\nSteering rate: %5.1f °/s\nBoggie torque: %5.1f N\u00B7m\nx: %5.2f m\ny: %5.2f m",
+			          robot.GetRobotSpeed()*100, robot.GetSteeringRateCmd(), robot.GetBoggieTorque(), robot.GetPosition().x(), robot.GetPosition().y() );
 			text->set_text( buff );
 
 			return false;
