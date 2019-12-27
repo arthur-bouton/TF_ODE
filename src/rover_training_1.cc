@@ -22,7 +22,7 @@
 #include "rover_tf.hh"
 #include "ode/box.hh"
 #include "ode/heightfield.hh"
-#include "utils/sim_loop.hh"
+#include "renderer/sim_loop.hh"
 #include "renderer/osg_text.hh"
 #include <boost/python.hpp>
 #include <random>

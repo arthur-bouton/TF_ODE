@@ -4,7 +4,7 @@
 #include "ode/cylinder.hh"
 #include "ode/box.hh"
 #include "ode/heightfield.hh"
-#include "utils/sim_loop.hh"
+#include "renderer/sim_loop.hh"
 
 //#include <X11/Xlib.h>
 //#include <iostream>
