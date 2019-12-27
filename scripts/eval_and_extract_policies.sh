@@ -1,10 +1,13 @@
 #!/bin/bash
 
 # Identifier name for the training data:
-run_id=step_5
+run_id=step_05_PER_1
 
 # Maximum duration of a successful run for it to be extracted:
-target_duration=20
+target_duration=17
+
+# Maximum amount of data to extract:
+max_extractions=5
 
 # Number of digits for the identifiers of extracted models:
 n_digits=4
@@ -53,6 +56,7 @@ get_preffix_and_suffix()
 }
 
 
+# Initialize file name parts:
 ref_file=($file_list)
 ref_file=${ref_file[0]}
 get_preffix_and_suffix $ref_file
@@ -62,7 +66,7 @@ for (( i = 0 ; i < n_digits ; i++ )); do
 	digit_expr+=[0-9]
 done
 
-
+# Create the temporary storage directory:
 mkdir -p $tmp_storage_dir
 
 
@@ -82,7 +86,9 @@ get_file_number()
 
 extract_data()
 {
-	get_file_number
+	if [ $((++c)) -le $max_extractions ]; then
+		get_file_number
+	fi
 
 	mkdir -p $extraction_dir
 	for file in $file_list; do
@@ -92,6 +98,9 @@ extract_data()
 	echo "$file_number -- ${log[*]} => ${result[*]}" >> $extraction_dir/$dataset_name'_index.txt'
 }
 
+
+# Initialize file_number:
+get_file_number
 
 # Synchronous updates:
 while inotifywait -qqe modify $watched_file; do
