@@ -94,7 +94,7 @@ void Sim_loop::_do_print_time()
 }
 
 
-void Sim_loop::loop( std::function<bool(float,double)>& step_function )
+void Sim_loop::loop( std::function<bool(float,double)> step_function )
 {
 	if ( _display_ptr != nullptr )
 	{

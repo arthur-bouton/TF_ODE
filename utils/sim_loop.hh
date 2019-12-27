@@ -35,7 +35,7 @@ class Sim_loop
 
 	Sim_loop( float timestep = DEFAULT_TIMESTEP, renderer::OsgVisitor* display_ptr = nullptr, bool print_time = false, int log_level = 0 );
 
-	virtual void loop( std::function<bool(float,double)>& step_function );
+	virtual void loop( std::function<bool(float,double)> step_function );
 
 	inline void set_fps( int fps ) { _fps = fps; _ufperiod = 1e6/_fps; }
 	inline double get_time() const { return _time*_timestep; }

@@ -456,10 +456,11 @@ void Rover_1::_InternalControl( double delta_t )
 	//PrintFT300Torsors();
 	//PrintWheelTorques();
 
-	//printf( "%f ", GetDirection() );
-	printf( "%f %f ", _steering_rate, _boggie_torque );
-	//printf( "%f %f ", GetSteeringTrueAngle(), GetBoggieAngle() );
-	//printf( "%f %f ", GetRollAngle(), GetPitchAngle() );
+	printf( "x: %f y: %f ", GetPosition().x(), GetPosition().y() );
+	printf( "direction: %f ", GetDirection() );
+	printf( "roll: %f pitch: %f ", GetRollAngle(), GetPitchAngle() );
+	//printf( "steering_angle: %f boggie_angle: %f ", GetSteeringTrueAngle(), GetBoggieAngle() );
+	//printf( "steering_rate: %f boggie_torque: %f ", _steering_rate, _boggie_torque );
 
 	printf( "\n" );
 	fflush( stdout );

@@ -129,9 +129,6 @@ OsgVisitor::OsgVisitor( unsigned int screen, int wwidth, int wheight, int wxpos,
 	_viewer.addEventHandler( new osgViewer::StatsHandler );
 	_viewer.addEventHandler( _keh.get() );
 	_viewer.realize();
-
-	//      _create_ground();
-	//      _hud = new OsgHud( _shadowed_scene.get() );
 }
 
 
@@ -355,8 +352,14 @@ void OsgVisitor::update()
 		_viewer.getCamera()->setViewMatrixAsLookAt( _camera_home_pos ,
 													_camera_center,
 													Vec3d( 0, 0, 1 ) );
-	_viewer.frame();
+	for ( auto& text : _texts )
+	{
+		if ( text.second->update() )
+			_texts.erase( text.first );
+	}
+
 	//_update_traj();
+	_viewer.frame();
 }
 
 
@@ -535,6 +538,28 @@ void OsgVisitor::_update_traj()
 		_shadowed_scene->addChild( geode.get() );
 	}
 }
+
+
+OsgText::ptr_t OsgVisitor::add_text( const char* label )
+{
+	OsgText::ptr_t text( new OsgText( _root, _wwidth, _wheight ) );
+	_texts[label] = text;
+	return text;
+}
+
+OsgText::ptr_t OsgVisitor::get_text( const char* label )
+{
+	if ( _texts.find( label ) == _texts.end() )
+		return _texts[label];
+	else
+		return nullptr;
+}
+
+void OsgVisitor::remove_text( const char* label )
+{
+	_texts.erase( label );
+}
+
 
 
 }

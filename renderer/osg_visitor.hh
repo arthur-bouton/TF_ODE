@@ -27,7 +27,8 @@
 
 #include "ode/object.hh"
 #include "osg_keyboard.hh"
-//#include "osg_hud.hh"
+#include "osg_text.hh"
+#include <map>
 
 
 namespace renderer
@@ -67,8 +68,6 @@ class OsgVisitor : public ode::ConstVisitor
 	inline void set_pause() { _keh->set_pause(); }
 	inline bool do_single_step() { return _keh->do_single_step(); }
 
-	//OsgHud* get_hud() { return _hud; }
-
 	void update();
 
 	bool done();
@@ -83,6 +82,10 @@ class OsgVisitor : public ode::ConstVisitor
 
 	inline int get_window_width() const { return _wwidth; }
 	inline int get_window_height() const { return _wheight; }
+
+	OsgText::ptr_t add_text( const char* label );
+	OsgText::ptr_t get_text( const char* label );
+	void remove_text( const char* label );
 
 	protected:
 
@@ -102,7 +105,6 @@ class OsgVisitor : public ode::ConstVisitor
 
 	osgViewer::Viewer _viewer;
 	osg::ref_ptr<KeyboardEventHandler> _keh;
-	//OsgHud* _hud;
 	osg::ref_ptr<osg::Group> _root;
 	bool _shadows;
 	osg::Vec3d _light_position;
@@ -117,6 +119,7 @@ class OsgVisitor : public ode::ConstVisitor
 	osg::Vec3 _prev_pos;
 	int _wwidth, _wheight;
 	const char* _ground_texture_path;
+	std::map<const char*,OsgText::ptr_t> _texts;
 };
 
 

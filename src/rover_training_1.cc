@@ -20,10 +20,10 @@
 #include "ode/environment.hh"
 #include "renderer/osg_visitor.hh"
 #include "rover_tf.hh"
-#include "ode/cylinder.hh"
 #include "ode/box.hh"
 #include "ode/heightfield.hh"
 #include "utils/sim_loop.hh"
+#include "renderer/osg_text.hh"
 #include <boost/python.hpp>
 #include <random>
 
@@ -152,6 +152,22 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 		step_c.accept( *display_ptr );
 
 		robot::RoverControl* keycontrol = new robot::RoverControl( &robot, display_ptr->get_viewer() );
+
+
+		std::function<bool(renderer::OsgText*)> update_pos_text = [&robot]( renderer::OsgText* text )
+		{
+			char buff[100];
+			snprintf( buff, sizeof( buff ), "Steering rate: %5.1f\nBoggie torque: %5.1f\nx: %5.2f\ny: %5.2f",
+			          robot.GetSteeringRateCmd(), robot.GetBoggieTorque(), robot.GetPosition().x(), robot.GetPosition().y() );
+			text->set_text( buff );
+
+			return false;
+		};
+
+		renderer::OsgText::ptr_t pos_text = display_ptr->add_text( "hud" );
+		pos_text->set_pos( 40, 50 );
+		pos_text->set_size( 28 );
+		pos_text->set_callback( update_pos_text );
 	}
 	else
 		display_ptr = nullptr;

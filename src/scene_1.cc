@@ -1,10 +1,10 @@
 #include "ode/environment.hh"
 #include "renderer/osg_visitor.hh"
 #include "rover.hh"
-#include "ode/cylinder.hh"
 #include "ode/box.hh"
 #include "ode/heightfield.hh"
 #include "utils/sim_loop.hh"
+#include "renderer/osg_text.hh"
 
 //#include <X11/Xlib.h>
 //#include <iostream>
@@ -25,8 +25,8 @@ int main( int argc, char* argv[] )
 	// [ Robot ]
 
 	robot::Rover_1 robot( env, Eigen::Vector3d( 0, 0, 0 ) );
-	robot.SetCmdPeriod( 0.5 );
-	//robot.DeactivateIC();
+	//robot.SetCmdPeriod( 0.5 );
+	robot.DeactivateIC();
 
 
 	// [ Terrain ]
@@ -62,7 +62,7 @@ int main( int argc, char* argv[] )
 
 	float speed = 0;
 
-	std::function<bool(float,double)>  step_function = [&]( float timestep, double time )
+	std::function<bool(float,double)> step_function = [&]( float timestep, double time )
 	{
 		if ( speed <= speedf )
 		{
@@ -73,8 +73,6 @@ int main( int argc, char* argv[] )
 		env.next_step( timestep );
 		robot.next_step( timestep );
 
-		//printf( "x: %f y: %f\n", robot.GetPosition().x(), robot.GetPosition().y() );
-		//printf( "roll: %f pitch: %f\n", robot.GetRollAngle(), robot.GetPitchAngle() );
 		if ( time >= timeout || fabs( robot.GetPosition().y() ) >= y_max || robot.GetPosition().x() >= x_goal || robot.IsUpsideDown() )
 			return true;
 
@@ -106,6 +104,22 @@ int main( int argc, char* argv[] )
 		//field.accept( *display_ptr );
 
 		robot::RoverControl* keycontrol = new robot::RoverControl( &robot, display_ptr->get_viewer() );
+
+
+		std::function<bool(renderer::OsgText*)> update_pos_text = [&robot]( renderer::OsgText* text )
+		{
+			char buff[100];
+			snprintf( buff, sizeof( buff ), "Steering rate: %5.1f\nBoggie torque: %5.1f\nx: %5.2f\ny: %5.2f",
+			          robot.GetSteeringRateCmd(), robot.GetBoggieTorque(), robot.GetPosition().x(), robot.GetPosition().y() );
+			text->set_text( buff );
+
+			return false;
+		};
+
+		renderer::OsgText::ptr_t pos_text = display_ptr->add_text( "hud" );
+		pos_text->set_pos( 40, 50 );
+		pos_text->set_size( 28 );
+		pos_text->set_callback( update_pos_text );
 	}
 
 	
