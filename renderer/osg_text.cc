@@ -60,6 +60,14 @@ void OsgText::set_pos( int x, int y )
 }
 
 
+void OsgText::add_background( float margin, float alpha, float r, float g, float b )
+{
+	_text->setDrawMode( osgText::Text::DrawModeMask::FILLEDBOUNDINGBOX | osgText::Text::DrawModeMask::TEXT );
+	_text->setBoundingBoxColor( osg::Vec4( r, g, b, alpha ) );
+	_text->setBoundingBoxMargin( margin ); 
+}
+
+
 OsgText::~OsgText()
 {
 	_root->removeChild( TextProjectionMatrix );

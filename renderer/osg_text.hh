@@ -57,6 +57,8 @@ class OsgText
 		_text->setColor( osg::Vec4( r, g, b, alpha ) );
 	}
 
+	void add_background( float margin = 10, float alpha = 0.3, float r = 10, float g = 10, float b = 10 );
+
 	void set_callback( std::function<bool(OsgText*)> callback )
 	{	
 		_callback = callback;

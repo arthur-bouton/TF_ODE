@@ -106,7 +106,7 @@ int main( int argc, char* argv[] )
 		robot::RoverControl* keycontrol = new robot::RoverControl( &robot, display_ptr->get_viewer() );
 
 
-		std::function<bool(renderer::OsgText*)> update_pos_text = [&robot]( renderer::OsgText* text )
+		std::function<bool(renderer::OsgText*)> update_text = [&robot]( renderer::OsgText* text )
 		{
 			char buff[100];
 			snprintf( buff, sizeof( buff ), "Forward speed: %5.1f cm/s\nSteering rate: %5.1f °/s\nBoggie torque: %5.1f N\u00B7m\nx: %5.2f m\ny: %5.2f m",
@@ -116,10 +116,11 @@ int main( int argc, char* argv[] )
 			return false;
 		};
 
-		renderer::OsgText::ptr_t pos_text = display_ptr->add_text( "hud" );
-		pos_text->set_pos( 40, 50 );
-		pos_text->set_size( 28 );
-		pos_text->set_callback( update_pos_text );
+		renderer::OsgText::ptr_t text = display_ptr->add_text( "hud" );
+		text->set_pos( 30, 50 );
+		text->set_size( 28 );
+		text->add_background();
+		text->set_callback( update_text );
 	}
 
 	
