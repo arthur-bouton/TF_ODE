@@ -33,9 +33,14 @@ class OsgText
 
 	typedef std::shared_ptr<OsgText> ptr_t;
 
-	OsgText( osg::ref_ptr<osg::Group> root, int window_width = 1024, int window_height = 768 );
+	OsgText( osg::ref_ptr<osg::Group> root, int window_width = 1024, int window_height = 768, int alignment = 1 );
+
+	void set_alignment( int alignment );
 
 	void set_pos( int x, int y );
+
+	inline int get_x() const { return _x; }
+	inline int get_y() const { return _y; }
 
 	inline void set_text( const std::string& text )
 	{	

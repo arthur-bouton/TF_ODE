@@ -83,7 +83,7 @@ class OsgVisitor : public ode::ConstVisitor
 	inline int get_window_width() const { return _wwidth; }
 	inline int get_window_height() const { return _wheight; }
 
-	OsgText::ptr_t add_text( const char* label );
+	OsgText::ptr_t add_text( const char* label, int alignment = 1 );
 	OsgText::ptr_t get_text( const char* label );
 	void remove_text( const char* label );
 

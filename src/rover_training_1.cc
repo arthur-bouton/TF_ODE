@@ -165,7 +165,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 		};
 
 		renderer::OsgText::ptr_t text = display_ptr->add_text( "hud" );
-		text->set_pos( 30, 50 );
+		text->set_pos( 30, 30 );
 		text->set_size( 28 );
 		text->add_background();
 		text->set_callback( update_text );

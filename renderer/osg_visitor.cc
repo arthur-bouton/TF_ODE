@@ -540,9 +540,9 @@ void OsgVisitor::_update_traj()
 }
 
 
-OsgText::ptr_t OsgVisitor::add_text( const char* label )
+OsgText::ptr_t OsgVisitor::add_text( const char* label, int alignment )
 {
-	OsgText::ptr_t text( new OsgText( _root, _wwidth, _wheight ) );
+	OsgText::ptr_t text( new OsgText( _root, _wwidth, _wheight, alignment ) );
 	_texts[label] = text;
 	return text;
 }

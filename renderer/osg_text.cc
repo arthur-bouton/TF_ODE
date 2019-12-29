@@ -11,7 +11,7 @@ namespace renderer
 #define CASTS_SHADOW 0x1
 
 
-OsgText::OsgText( ref_ptr<Group> root, int window_width, int window_height ) :
+OsgText::OsgText( ref_ptr<Group> root, int window_width, int window_height, int alignment ) :
          _root( root ), _width( window_width ), _height( window_height ), _callback( nullptr )
 {
 	TextGeode = ref_ptr<Geode>( new Geode );
@@ -38,7 +38,6 @@ OsgText::OsgText( ref_ptr<Group> root, int window_width, int window_height ) :
 
     // Add the Geometry node to contain Text geometry as a child of the
     // Text model view matrix.
-    // ( See figure "n" )
     TextModelViewMatrix->addChild( TextGeode );
 
     // Add the text ( Text class is derived from drawable ) to the geode:
@@ -46,9 +45,33 @@ OsgText::OsgText( ref_ptr<Group> root, int window_width, int window_height ) :
     TextGeode->addDrawable( _text );
 
 
-    _text->setAxisAlignment( osgText::Text::SCREEN );
+    //_text->setAxisAlignment( osgText::Text::SCREEN );
+	//_text->setCharacterSizeMode( osgText::Text::SCREEN_COORDS );
+
+	set_alignment( alignment );
+	set_pos( 0, 0 );
 
 	_text->setFont( "/usr/share/fonts/truetype/noto/NotoMono-Regular.ttf" );
+}
+
+
+void OsgText::set_alignment( int alignment )
+{
+	switch ( alignment )
+	{
+		case 1 :
+			_text->setAlignment( osgText::Text::LEFT_TOP );
+			return;
+		case 2 :
+			_text->setAlignment( osgText::Text::RIGHT_TOP );
+			return;
+		case 3 :
+			_text->setAlignment( osgText::Text::LEFT_BOTTOM );
+			return;
+		case 4 :
+			_text->setAlignment( osgText::Text::RIGHT_BOTTOM );
+			return;
+	}
 }
 
 
