@@ -34,10 +34,9 @@ Sim_loop::Sim_loop( float timestep, renderer::OsgVisitor* display_ptr, bool prin
 		_capture = false;
 		_image = nullptr;
 
-		_warp_text = _display_ptr->add_text( "warp" );
-		_warp_text->set_alignment( 2 );
-		_warp_text->set_pos( 994, 30 );
-		_warp_text->set_size( 40 );
+		_warp_text = _display_ptr->add_text( "warp", 2 );
+		_warp_text->set_pos( 97 );
+		_warp_text->set_size( 5 );
 		_warp_text->set_color( 10, 10, 10, 0.5 );
 
 		_display_ptr->update();

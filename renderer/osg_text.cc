@@ -12,7 +12,7 @@ namespace renderer
 
 
 OsgText::OsgText( ref_ptr<Group> root, int window_width, int window_height, int alignment ) :
-         _root( root ), _width( window_width ), _height( window_height ), _callback( nullptr )
+         _root( root ), _width( window_width ), _height( window_height ), _callback( nullptr ), _margin( 0 )
 {
 	TextGeode = ref_ptr<Geode>( new Geode );
 	TextGeode->setNodeMask( TextGeode->getNodeMask() & ~CASTS_SHADOW );
@@ -50,6 +50,7 @@ OsgText::OsgText( ref_ptr<Group> root, int window_width, int window_height, int 
 
 	set_alignment( alignment );
 	set_pos( 0, 0 );
+	set_size( 3 );
 
 	_text->setFont( "/usr/share/fonts/truetype/noto/NotoMono-Regular.ttf" );
 }
@@ -57,7 +58,8 @@ OsgText::OsgText( ref_ptr<Group> root, int window_width, int window_height, int 
 
 void OsgText::set_alignment( int alignment )
 {
-	switch ( alignment )
+	_alignment = alignment;
+	switch ( _alignment )
 	{
 		case 1 :
 			_text->setAlignment( osgText::Text::LEFT_TOP );
@@ -75,19 +77,46 @@ void OsgText::set_alignment( int alignment )
 }
 
 
-void OsgText::set_pos( int x, int y )
+void OsgText::set_pos( float x, float y )
 {
-	_text->setPosition( Vec3( x, _height - y, 0 ) );
 	_x = x;
 	_y = y;
+	if ( _y < 0 )
+		switch ( _alignment )
+		{
+			case 1 :
+				_y = _x*_width/_height;
+				break;
+			case 2 :
+				_y = ( 100 - _x )*_width/_height;
+				break;
+			case 3 :
+				_y = 100 - _x*_width/_height;
+				break;
+			case 4 :
+				_y = 100 - ( 100 - _x )*_width/_height;
+				break;
+		}
+	_text->setPosition( Vec3( _x/100*_width, ( 1 - _y/100 )*_height, 0 ) );
+}
+
+
+void OsgText::set_size( float size )
+{	
+	_size = size;
+	_text->setCharacterSize( _size/100*_height );
+
+	if ( _margin > 0 )
+		_text->setBoundingBoxMargin( _margin*_size/100*_height );
 }
 
 
 void OsgText::add_background( float margin, float alpha, float r, float g, float b )
 {
+	_margin = margin;
 	_text->setDrawMode( osgText::Text::DrawModeMask::FILLEDBOUNDINGBOX | osgText::Text::DrawModeMask::TEXT );
 	_text->setBoundingBoxColor( osg::Vec4( r, g, b, alpha ) );
-	_text->setBoundingBoxMargin( margin ); 
+	_text->setBoundingBoxMargin( _margin*_size/100*_height );
 }
 
 

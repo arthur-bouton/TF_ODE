@@ -37,19 +37,16 @@ class OsgText
 
 	void set_alignment( int alignment );
 
-	void set_pos( int x, int y );
+	void set_pos( float x, float y = -1 );
 
 	inline int get_x() const { return _x; }
 	inline int get_y() const { return _y; }
 
+	void set_size( float size );
+
 	inline void set_text( const std::string& text )
 	{	
 		_text->setText( text, osgText::String::ENCODING_UTF8 );
-	}
-
-	void set_size( float size )
-	{	
-		_text->setCharacterSize( size );
 	}
 
 	void set_font( const std::string& font_path )
@@ -62,7 +59,7 @@ class OsgText
 		_text->setColor( osg::Vec4( r, g, b, alpha ) );
 	}
 
-	void add_background( float margin = 10, float alpha = 0.3, float r = 10, float g = 10, float b = 10 );
+	void add_background( float margin = 0.4, float alpha = 0.3, float r = 10, float g = 10, float b = 10 );
 
 	void set_callback( std::function<bool(OsgText*)> callback )
 	{	
@@ -81,7 +78,8 @@ class OsgText
 	protected:    
 
 	osg::ref_ptr<osgText::Text> _text;
-	int _width, _height, _x, _y;
+	int _width, _height, _alignment;
+	float _x, _y, _size, _margin;
 
 	std::function<bool(OsgText*)> _callback;
 
