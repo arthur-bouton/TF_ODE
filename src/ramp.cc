@@ -139,7 +139,7 @@ int main( int argc, char* argv[] )
 
 		display_ptr->set_window_name( "Ramp" );
 		//display_ptr->disable_shadows();
-		display_ptr->set_pause();
+		display_ptr->get_keh()->set_pause();
 
 		robot.accept( *display_ptr );
 		ramp_part1.accept( *display_ptr );

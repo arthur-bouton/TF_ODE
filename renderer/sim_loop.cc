@@ -19,7 +19,7 @@
 
 Sim_loop::Sim_loop( float timestep, renderer::OsgVisitor* display_ptr, bool print_time, int log_level ) :
                     _timestep( timestep ), _display_ptr( display_ptr ), _log_level( log_level ), _time( 0 ),
-					_print_time( print_time ), _nsec( 0 )
+					_print_time( print_time ), _nsec( 0 ), _warp_factor( 1 )
 {
 	if ( _display_ptr != nullptr )
 	{
@@ -33,6 +33,12 @@ Sim_loop::Sim_loop( float timestep, renderer::OsgVisitor* display_ptr, bool prin
 		_capture_rate = int( 1./_fps_captures/_timestep );
 		_capture = false;
 		_image = nullptr;
+
+		_warp_text = _display_ptr->add_text( "warp" );
+		_warp_text->set_alignment( 2 );
+		_warp_text->set_pos( 994, 30 );
+		_warp_text->set_size( 40 );
+		_warp_text->set_color( 10, 10, 10, 0.5 );
 
 		_display_ptr->update();
 
@@ -102,6 +108,18 @@ void Sim_loop::loop( std::function<bool(float,double)> step_function )
 		{
 			_update_chrono();
 
+			if ( _warp_factor != _display_ptr->get_keh()->get_warp_factor() )
+			{
+				_warp_factor = _display_ptr->get_keh()->get_warp_factor();
+				set_timewarp( _warp_factor );
+				if ( _warp_factor == 1 )
+					_warp_text->set_text( "" );
+				else if ( _warp_factor > 1 )
+					_warp_text->set_text( std::string( "real time \u00D7" ) + std::to_string( int( _warp_factor ) ) );
+				else if ( _warp_factor < 1 )
+					_warp_text->set_text( std::string( "real time \u00F7" ) + std::to_string( int( 1/_warp_factor ) ) );
+			}
+
 			if ( _chrono >= _ufperiod )
 			{
 				_display_ptr->update();
@@ -125,7 +143,7 @@ void Sim_loop::loop( std::function<bool(float,double)> step_function )
 				_stopped = false;
 			}
 
-			if ( !_display_ptr->paused() || _display_ptr->do_single_step() )
+			if ( !_display_ptr->get_keh()->paused() || _display_ptr->get_keh()->do_single_step() )
 			{
 				if ( _utimestep*_step_counter_u < _ufperiod )
 				{

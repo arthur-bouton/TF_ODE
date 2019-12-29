@@ -126,8 +126,12 @@ OsgVisitor::OsgVisitor( unsigned int screen, int wwidth, int wheight, int wxpos,
 														 _camera_center,
 			   											 Vec3( 0, 0, 1 ) );
 	}
-	_viewer.addEventHandler( new osgViewer::StatsHandler );
+
+	// Display fps and OSG performance when pressing s key:
+	//_viewer.addEventHandler( new osgViewer::StatsHandler );
+
 	_viewer.addEventHandler( _keh.get() );
+
 	_viewer.realize();
 }
 
@@ -147,12 +151,6 @@ void OsgVisitor::set_window_name( std::string name )
 	_viewer.getWindows( windows );
 	windows[0]->setWindowName( name );
 }
-
-
-osgViewer::Viewer* OsgVisitor::get_viewer() { return &_viewer; }
-
-
-KeyboardEventHandler* OsgVisitor::get_keh() { return _keh.get(); }
 
 
 void OsgVisitor::visit( const std::vector<ode::Object::ptr_t>& v )

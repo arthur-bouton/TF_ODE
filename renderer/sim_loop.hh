@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <osgDB/ReadFile>
 #include <osgDB/WriteFile>
+#include "renderer/osg_text.hh"
 
 
 #define DEFAULT_TIMESTEP 0.001 // Seconds
@@ -40,7 +41,7 @@ class Sim_loop
 	inline void set_fps( int fps ) { _fps = fps; _ufperiod = 1e6/_fps; }
 	inline double get_time() const { return _time*_timestep; }
 
-	inline void set_timewrap( float wrap_factor ) { _utimestep = _timestep*1e6/wrap_factor; }
+	inline void set_timewarp( float warp_factor ) { _utimestep = _timestep*1e6/warp_factor; }
 
 	virtual void set_fps_captures( int fps );
 	virtual void start_captures( const char* path = DEFAULT_CAPTURE_PATH );
@@ -75,6 +76,9 @@ class Sim_loop
 	unsigned int _capture_rate;
 	osg::ref_ptr<osg::Image> _image;
 	unsigned int _step_counter_c;
+
+	float _warp_factor;
+	renderer::OsgText::ptr_t _warp_text;
 };
 
 

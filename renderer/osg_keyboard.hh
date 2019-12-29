@@ -65,6 +65,7 @@ class KeyboardEventHandler : public osgGA::GUIEventHandler
 		else
 			return false;
 	}
+	inline float get_warp_factor() { return _warp_factor; }
 
 	protected:  
 
@@ -78,6 +79,8 @@ class KeyboardEventHandler : public osgGA::GUIEventHandler
 
 	bool _space_switch;
 	bool _n_state;
+
+	float _warp_factor;
 
 	osgViewer::View* _view;
 };

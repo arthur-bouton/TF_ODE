@@ -60,13 +60,9 @@ class OsgVisitor : public ode::ConstVisitor
 
 	void set_background_color( float R, float G, float B, float max=255 );
 
-	osgViewer::Viewer* get_viewer();
+	inline osgViewer::Viewer* get_viewer() { return &_viewer; }
 
-	KeyboardEventHandler* get_keh();
-
-	inline bool paused() const { return _keh->paused(); }
-	inline void set_pause() { _keh->set_pause(); }
-	inline bool do_single_step() { return _keh->do_single_step(); }
+	inline KeyboardEventHandler* get_keh() { return _keh; }
 
 	void update();
 

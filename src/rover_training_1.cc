@@ -145,7 +145,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 
 		display_ptr->set_window_name( "Rover training 1" );
 		//display_ptr->disable_shadows();
-		display_ptr->set_pause();
+		display_ptr->get_keh()->set_pause();
 
 		robot.accept( *display_ptr );
 		step.accept( *display_ptr );

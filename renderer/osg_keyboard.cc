@@ -11,7 +11,8 @@ KeyboardEventHandler::KeyboardEventHandler( osgViewer::View* view ) : _paused( f
 																	  _do_single_step( false ),
 											   				   		  _space_switch( false ),
 											   				   		  _n_state( KEY_UP ),
-															   		  _view( view ) {}
+															   		  _view( view ),
+																	  _warp_factor( 1 ) {}
 
 osgViewer::View* KeyboardEventHandler::get_view() { return _view; }
 
@@ -57,7 +58,6 @@ bool KeyboardEventHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIA
 				(*itr).second.keyState = KEY_DOWN;
 				(*itr).second.keyFunction( (*itr).second.functionArg );
 			}
-
 			else if ( ea.getKey() == osgGA::GUIEventAdapter::KEY_Space )
 				_paused = true;
 			else if ( ea.getKey() == osgGA::GUIEventAdapter::KEY_C && _space_switch )
@@ -67,9 +67,17 @@ bool KeyboardEventHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIA
 				_do_single_step = true;
 				_n_state = KEY_DOWN;
 			}
+			else if ( ea.getKey() == osgGA::GUIEventAdapter::KEY_I )
+				_warp_factor /= 2;
+			else if ( ea.getKey() == osgGA::GUIEventAdapter::KEY_O )
+				_warp_factor  = 1;
+			else if ( ea.getKey() == osgGA::GUIEventAdapter::KEY_P )
+				_warp_factor *= 2;
 			else if ( ea.getKey() == osgGA::GUIEventAdapter::KEY_H )
+			{
 				if ( _view != NULL )
 					_view->home();
+			}
 			else
 				return false;
 
