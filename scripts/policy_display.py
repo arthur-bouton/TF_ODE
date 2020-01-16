@@ -7,9 +7,7 @@ from matplotlib.pyplot import *
 #rcParams['text.latex.unicode']=True
 
 
-data_file = 'training_data/step_0.dat'
-
-df = pd.read_csv( data_file, sep=' ', header=None, skiprows=6, skipfooter=1, engine='python' )
+data_file = '../training_data/step_06_PER_1_no_sym.dat'
 
 state_1 = [ 'Steering angle', 'Roll angle', 'Pitch Angle', 'Boggie angle' ]
 state_2 = [ 'Front $f_x$', 'Front $f_y$', 'Front $f_z$', 'Front $\\tau_x$', 'Front $\\tau_y$', 'Front $\\tau_z$',
@@ -18,14 +16,24 @@ actions = [ 'Steering rate', 'Boggie torque' ]
 columns = [ 'Direction' ] + state_1 + state_2 + actions
 
 
+df = pd.read_csv( data_file, sep=' ', header=None, names=columns )
+
+# Convert every field to np.float64 and replace strings by np.nan:
+df = df.apply( pd.to_numeric, errors='coerce' )
+
+# Remove rows that contain at least one NaN:
+df = df.dropna()
+
+
 
 fig, ax = subplots( 4, 4, figsize=( 10, 10 ) )
 fig.canvas.set_window_title( __file__ )
+dot_size = 2
 
 for i in range( 4 ) :
 
-	ax[0,i].scatter( df[ 1 + i ], df[ 17 ] )
-	ax[0,i].scatter( df[ 1 + i ], df[ 18 ] )
+	ax[0,i].scatter( df.iloc[:,i], df.iloc[:,17], s=dot_size )
+	ax[0,i].scatter( df.iloc[:,i], df.iloc[:,18], s=dot_size )
 
 	ax[0,i].set_xlabel( state_1[ i ] )
 
@@ -33,8 +41,8 @@ for i in range( 4 ) :
 for i in range( 4 ) :
 	for j in range( 3 ) :
 
-		ax[j+1,i].scatter( df[ 5 + i*3 + j ], df[ 17 ] )
-		ax[j+1,i].scatter( df[ 5 + i*3 + j ], df[ 18 ] )
+		ax[j+1,i].scatter( df.iloc[:, 4 + i*3 + j ], df.iloc[:,17], s=dot_size )
+		ax[j+1,i].scatter( df.iloc[:, 4 + i*3 + j ], df.iloc[:,18], s=dot_size )
 
 		ax[j+1,i].set_xlabel( state_2[ i*3 + j ] )
 
@@ -51,8 +59,6 @@ subplots_adjust( left, bottom, right, top, wspace, hspace )
 
 
 
-df.columns = columns
-
 # Compute the correlation matrix
 corr = df.corr()
 
@@ -60,7 +66,7 @@ corr = df.corr()
 mask = np.zeros_like( corr, dtype=np.bool )
 mask[np.triu_indices_from( mask )] = True
 
-f, ax = subplots()
+f, ax = subplots( figsize=( 12, 12 ) )
 ax = sns.heatmap(
 	corr, 
 	mask=mask,
@@ -71,8 +77,8 @@ ax = sns.heatmap(
 	cmap=sns.diverging_palette(20, 220, n=200),
 	square=True
 )
-ax.set_xticklabels( ax.get_xticklabels(), rotation=45, horizontalalignment='right' )
-ax.set_yticklabels( ax.get_yticklabels(), rotation=0 )
+ax.set_xticklabels( ax.get_xticklabels()[:-1], rotation=45, horizontalalignment='right' )
+ax.set_yticklabels( [''] + ax.get_yticklabels()[1:], rotation=0 )
 
 
 
