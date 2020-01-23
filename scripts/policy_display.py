@@ -25,6 +25,7 @@ df = df.apply( pd.to_numeric, errors='coerce' )
 df = df.dropna()
 
 
+# Plot all the action values in relation to each dimension of the state space:
 
 fig, ax = subplots( 4, 4, figsize=( 10, 10 ) )
 fig.canvas.set_window_title( __file__ )
@@ -58,11 +59,12 @@ hspace = 0.3
 subplots_adjust( left, bottom, right, top, wspace, hspace )
 
 
+# Plot the correlations between each dimension:
 
-# Compute the correlation matrix
+# Compute the correlation matrix:
 corr = df.corr()
 
-# Generate a mask for the upper triangle
+# Generate a mask for the upper triangle:
 mask = np.zeros_like( corr, dtype=np.bool )
 mask[np.triu_indices_from( mask )] = True
 
@@ -79,6 +81,23 @@ ax = sns.heatmap(
 )
 ax.set_xticklabels( ax.get_xticklabels()[:-1], rotation=45, horizontalalignment='right' )
 ax.set_yticklabels( [''] + ax.get_yticklabels()[1:], rotation=0 )
+
+
+# Print the variance of each feature:
+
+print( df.var().to_frame( 'Variances' ) )
+
+
+# Print the ordered most significant correlations:
+
+mask = np.zeros_like( corr, dtype=np.bool )
+mask[np.triu_indices_from( mask, 1 )] = True
+corr_list = corr.where( mask ).stack().reset_index()
+corr_list.columns = [ 'Feature 1', 'Feature 2', 'Correlations' ]
+
+ranking = corr_list.iloc[ :, 2 ].abs().sort_values( ascending=False )
+
+print( corr_list.iloc[ ranking.head( 10 ).index ] )
 
 
 
