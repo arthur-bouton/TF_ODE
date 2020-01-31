@@ -21,6 +21,7 @@
 #include <osg/MatrixTransform>
 #include <osg/Projection>
 #include <memory>
+#include <functional>
 
 
 namespace renderer 
