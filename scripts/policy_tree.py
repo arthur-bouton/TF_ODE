@@ -1,6 +1,5 @@
 #!/usr/bin/python
 import pandas as pd
-from matplotlib.pyplot import *
 import numpy as np
 from ModelTree.ModelTree import Model_tree
 
@@ -47,6 +46,7 @@ boggie_torque_max = 20
 
 
 
+oblique = False
 max_depth_1 = 2
 max_depth_2 = 2
 min_samples = 20
@@ -66,7 +66,7 @@ if len( sys.argv ) > 2 :
 
 
 
-model_tree_1 = Model_tree( oblique=False, max_depth=max_depth_1, node_min_samples=min_samples, model='linear', loss_tol=loss_tol, L1_reg=L1_reg )
+model_tree_1 = Model_tree( oblique=oblique, max_depth=max_depth_1, node_min_samples=min_samples, model='linear', loss_tol=loss_tol, L1_reg=L1_reg )
 if len( sys.argv ) > 1 and sys.argv[1] == 'plot' :
 	model_tree_1.load_tree_params( param_file + '1' )
 else :
@@ -75,7 +75,7 @@ else :
 	model_tree_1.save_tree_params( param_file + '1' )
 
 
-model_tree_2 = Model_tree( oblique=False, max_depth=max_depth_2, node_min_samples=min_samples, model='linear', loss_tol=loss_tol, L1_reg=L1_reg )
+model_tree_2 = Model_tree( oblique=oblique, max_depth=max_depth_2, node_min_samples=min_samples, model='linear', loss_tol=loss_tol, L1_reg=L1_reg )
 if len( sys.argv ) > 1 and sys.argv[1] == 'plot' :
 	model_tree_2.load_tree_params( param_file + '2' )
 else :
@@ -96,13 +96,15 @@ print( '\nAbsolute errors: %.2f | %.2f -- Quadratic errors: %.2f | %.2f -- Param
 % ( abs_errors[0], abs_errors[1], quad_errors[0], quad_errors[1], *n_params_1, *n_params_2 ) )
 
 if len( sys.argv ) < 2 or sys.argv[1] != 'plot' :
-	print( 'CSV entry: max_depth_1, max_depth_2, min_samples, loss_tol, L1_reg, abs_err_1, abs_err_2, quad_err_1, quad_err_2, nz_params_1, t_params_1, nz_params_2, t_params_2' )
-	print( '%i,%i,%i,%f,%f,%f,%f,%f,%f,%i,%i,%i,%i'
-	% ( max_depth_1, max_depth_2, min_samples, loss_tol, L1_reg, abs_errors[0], abs_errors[1], quad_errors[0], quad_errors[1], *n_params_1, *n_params_2  ) )
+	print( 'CSV entry: oblique, max_depth_1, max_depth_2, min_samples, loss_tol, L1_reg, abs_err_1, abs_err_2, quad_err_1, quad_err_2, nz_params_1, t_params_1, nz_params_2, t_params_2' )
+	print( '%s,%i,%i,%i,%f,%f,%f,%f,%f,%f,%i,%i,%i,%i'
+	% ( oblique, max_depth_1, max_depth_2, min_samples, loss_tol, L1_reg, abs_errors[0], abs_errors[1], quad_errors[0], quad_errors[1], *n_params_1, *n_params_2  ) )
 
 
 
 if len( sys.argv ) > 1 and sys.argv[1] == 'plot' :
+	from matplotlib.pyplot import *
+
 	fig, ax = subplots( 2, 1, sharex=True )
 	fig.canvas.set_window_title( 'Actions' )
 
