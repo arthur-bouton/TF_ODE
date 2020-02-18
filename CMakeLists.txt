@@ -11,6 +11,7 @@ pkg_check_modules( ODE REQUIRED ode )
 pkg_check_modules( OSGV REQUIRED openscenegraph-osgViewer )
 pkg_check_modules( OSGS REQUIRED openscenegraph-osgShadow )
 find_package( TensorflowCC REQUIRED ) # From https://github.com/FloopCZ/tensorflow_cc
+find_package( yaml-cpp REQUIRED )
 
 include_directories( ${PROJECT_SOURCE_DIR} )
 include_directories( ${PROJECT_SOURCE_DIR}/${SRC_DIR} )
@@ -36,6 +37,17 @@ target_link_libraries( ramp robdyn
 							${ODE_LIBRARIES}
 							${OSGV_LIBRARIES}
 							${OSGS_LIBRARIES} )
+
+add_executable( scene_1_mt ${SRC_DIR}/scene_1_mt.cc
+						   ${SRC_DIR}/rover_1_mt.cc
+						   scripts/ModelTree/cpp/model_tree.cc
+						   ${SRC_DIR}/rover_1.cc )
+target_link_libraries( scene_1_mt robdyn
+								  ${ODE_LIBRARIES}
+								  ${OSGV_LIBRARIES}
+								  ${OSGS_LIBRARIES}
+								  yaml-cpp )
+target_compile_definitions( scene_1_mt PRIVATE PRINT )
 
 
 

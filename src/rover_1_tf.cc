@@ -1,6 +1,4 @@
 #include "rover_tf.hh"
-#include "ode/box.hh"
-#include "ode/wheel.hh"
 #include <tensorflow/core/protobuf/meta_graph.pb.h>
 #include "tensorflow/cc/framework/ops.h"
 #include <random>

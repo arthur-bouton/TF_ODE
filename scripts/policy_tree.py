@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import pandas as pd
 import numpy as np
-from ModelTree.ModelTree import Model_tree
+from ModelTree.model_tree import Model_tree
 
 
 data_file = '../training_data/step_06_PER_1_no_sym.dat'
@@ -48,10 +48,10 @@ boggie_torque_max = 20
 
 oblique = False
 max_depth_1 = 2
-max_depth_2 = 2
+max_depth_2 = 1
 min_samples = 20
 loss_tol = 0.1
-L1_reg = 0
+L1_reg = 0.1
 param_file = 'tree_params_'
 
 import sys
