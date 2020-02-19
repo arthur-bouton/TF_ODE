@@ -44,6 +44,12 @@ int main( int argc, char* argv[] )
 	step_c.fix();
 	step_c.set_collision_group( "ground" );
 
+
+	//ode::Box side_obstacle( env, Eigen::Vector3d( 1, -0.61/2, 0.21/2 ), 1, 0.2, 0.5, 0.21, false );
+	//side_obstacle.fix();
+	//side_obstacle.set_collision_group( "ground" );
+
+
 	//ode::HeightField field( env, Eigen::Vector3d( 2, 0, -0.01 ), "../env_data/heightmap_rock_step.png", 0.3, 3, 3, 0, -1, 1 );
 	//ode::HeightField field( env, Eigen::Vector3d( 1, 0, -0.3 ), "../env_data/heightmap_rock_groove.png", 0.3, 3, 3, 0, -1, 1 );
 	//field.set_collision_group( "ground" );
@@ -103,6 +109,7 @@ int main( int argc, char* argv[] )
 		robot.accept( *display_ptr );
 		step.accept( *display_ptr );
 		step_c.accept( *display_ptr );
+		//side_obstacle.accept( *display_ptr );
 		//field.accept( *display_ptr );
 
 		//robot::RoverControl* keycontrol = new robot::RoverControl( &robot, display_ptr->get_viewer() );
