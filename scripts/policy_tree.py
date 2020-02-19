@@ -47,11 +47,11 @@ boggie_torque_max = 20
 
 
 oblique = False
-max_depth_1 = 2
-max_depth_2 = 1
+max_depth_1 = 1
+max_depth_2 = 0
 min_samples = 20
 loss_tol = 0.1
-L1_reg = 0.1
+L1_reg = 1
 param_file = 'tree_params_'
 
 import sys
