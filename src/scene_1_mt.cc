@@ -7,6 +7,8 @@
 #include "renderer/osg_text.hh"
 
 
+//#define YAML_FILE_PATH_1 "../scripts/tree_data/{oblique:false,max_depth_1:1,max_depth_2:1,L1_reg:1}/params_1.yaml"
+//#define YAML_FILE_PATH_2 "../scripts/tree_data/{oblique:false,max_depth_1:0,max_depth_2:0,L1_reg:1}/params_2.yaml"
 #define YAML_FILE_PATH_1 "../scripts/tree_params_1.yaml"
 #define YAML_FILE_PATH_2 "../scripts/tree_params_2.yaml"
 

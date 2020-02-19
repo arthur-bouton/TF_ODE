@@ -13,7 +13,7 @@ class Rover_1_mt : public Rover_1
 {
 	public:
 
-	Rover_1_mt( ode::Environment& env, const Eigen::Vector3d& pose, std::string yaml_file_path_1, std::string yaml_file_path_2 );
+	Rover_1_mt( ode::Environment& env, const Eigen::Vector3d& pose, const std::string yaml_file_path_1, const std::string yaml_file_path_2, const bool oblique_trees = false );
 
 	std::vector<double> GetState( const bool flip = false ) const;
 

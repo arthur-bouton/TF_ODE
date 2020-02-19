@@ -10,10 +10,11 @@ namespace robot
 {
 
 
-Rover_1_mt::Rover_1_mt( Environment& env, const Vector3d& pose, std::string yaml_file_path_1, std::string yaml_file_path_2 ) : Rover_1( env, pose )
+Rover_1_mt::Rover_1_mt( Environment& env, const Vector3d& pose, const std::string yaml_file_path_1, const std::string yaml_file_path_2, const bool oblique_trees ) :
+            Rover_1( env, pose ), node_1( 0 ), node_2( 0 )
 {
-	_lmt_ptr_1 = Linear_model_tree<double>::ptr_t( new Linear_model_tree<double>( yaml_file_path_1 ) );
-	_lmt_ptr_2 = Linear_model_tree<double>::ptr_t( new Linear_model_tree<double>( yaml_file_path_2 ) );
+	_lmt_ptr_1 = Linear_model_tree<double>::ptr_t( new Linear_model_tree<double>( yaml_file_path_1, oblique_trees ) );
+	_lmt_ptr_2 = Linear_model_tree<double>::ptr_t( new Linear_model_tree<double>( yaml_file_path_2, oblique_trees ) );
 }
 
 
@@ -47,10 +48,10 @@ void Rover_1_mt::InferAction( const vector<double>& state, double& steering_rate
 	boggie_torque = ( flip ? -1 : 1 )*_lmt_ptr_2->predict( state, node_2 );
 
 #ifdef PRINT
-	//for ( auto val : state )
-		//printf( "%f ", val );
-	//printf( "%f %f\n", _steering_rate, _boggie_torque );
-	//fflush( stdout );
+	for ( auto val : state )
+		printf( "%f ", val );
+	printf( "%f %f\n", _steering_rate, _boggie_torque );
+	fflush( stdout );
 #endif
 }
 
