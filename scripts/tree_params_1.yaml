@@ -1,13 +1,32 @@
-# Straight Model Tree (max depth: 1, node min samples: 20, loss tol: 0.1)
-# Model: Linear regression with a L1 regularization coefficient of 1
 1:
-  info: Node 1, root
+  terminal: false
+  split params:
+  - 5
+  - -20
+2:
+  terminal: true
+  model params:
+  - 0.5
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+3:
   terminal: false
   split params:
   - 8
   - 3.0491020000000004
-2:
-  info: Node 2 at depth 1, child of node 1
+4:
   terminal: true
   model params:
   - 0.317174942817851
@@ -25,8 +44,7 @@
   - -0.0
   - -0.062046517216905524
   - 8.638600248507624
-3:
-  info: Node 3 at depth 1, child of node 1
+5:
   terminal: true
   model params:
   - -0.16648056274057746
