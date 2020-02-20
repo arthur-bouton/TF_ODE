@@ -28,7 +28,7 @@
 #include <random>
 
 
-#define DEFAULT_PATH_TO_TF_MODEL "../training_data/rover_training_1"
+#define DEFAULT_PATH_TO_TF_MODEL "../training_data/step_06_PER_1_no_sym/selected/rover_training_1_0005"
 
 
 namespace p = boost::python;
@@ -41,7 +41,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 	dInitODE();
 	// Set the global friction coefficient:
 	//ode::Environment env( 0.7 );
-	ode::Environment env( 0.5 );
+	ode::Environment env( 0.6 );
 
 
 	// [ Robot ]
@@ -67,9 +67,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 		char* endptr;
 		orientation = strtod( argv[3], &endptr );
 		if ( *endptr != '\0' )
-		{
 			throw std::runtime_error( std::string( "Invalide argument " ) + std::string( argv[3] ) );
-		}
 	}
 	else
 	{
@@ -215,7 +213,11 @@ int main( int argc, char* argv[] )
 {
 	Py_Initialize();
 
-	simulation( argc > 1 ? argv[1] : "display", argc > 2 ? argv[2] : DEFAULT_PATH_TO_TF_MODEL, argc, argv );
+	const char* path_to_tf_model = DEFAULT_PATH_TO_TF_MODEL;
+	if ( argc > 2 && strncmp( argv[2], "--", 3 ) != 0 )
+		path_to_tf_model = argv[2];
+
+	simulation( argc > 1 ? argv[1] : "display", path_to_tf_model, argc, argv );
 
 	return 0;
 }

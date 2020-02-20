@@ -16,8 +16,8 @@ int main( int argc, char* argv[] )
 	// [ Dynamic environment ]
 
 	dInitODE();
-	//ode::Environment env( 0.7 );
-	ode::Environment env( 0.5 );
+	ode::Environment env( 0.6 );
+	//ode::Environment env( 0.5 );
 	//ode::Environment env( false, 0.5 );
 	//ode::Environment env( false, 0.7 );
 
@@ -31,16 +31,29 @@ int main( int argc, char* argv[] )
 
 	// [ Terrain ]
 
-	double rot( 0 );
-	float step_height( 0.105*2 );
-	ode::Box step( env, Eigen::Vector3d( 1.5, 0, step_height/2 ), 1, 1, 3, step_height, false );
-	step.set_rotation( 0, 0, rot*M_PI/180 );
-	step.fix();
-	step.set_collision_group( "ground" );
+	//double orientation( 0 );
+	//if ( argc > 2 )
+	//{
+		//char* endptr;
+		//orientation = strtod( argv[2], &endptr );
+		//if ( *endptr != '\0' )
+			//throw std::runtime_error( std::string( "Invalide orientation: " ) + std::string( argv[2] ) );
+	//}
+	//float step_height( 0.105*2 );
+	//ode::Box step( env, Eigen::Vector3d( 1.5, 0, step_height/2 ), 1, 1, 3, step_height, false );
+	//step.set_orientationation( 0, 0, orientation*M_PI/180 );
+	//step.fix();
+	//step.set_collision_group( "ground" );
 
-	ode::Box step_c( env, Eigen::Vector3d( 2.5, 0, step_height/2 ), 1, 2, 3, step_height, false );
-	step_c.fix();
-	step_c.set_collision_group( "ground" );
+	//ode::Box step_c( env, Eigen::Vector3d( 2.5, 0, step_height/2 ), 1, 2, 3, step_height, false );
+	//step_c.fix();
+	//step_c.set_collision_group( "ground" );
+
+
+	ode::Box side_obstacle( env, Eigen::Vector3d( 1, -0.61/2, 0.21/2 ), 1, 0.2, 0.5, 0.21, false );
+	side_obstacle.fix();
+	side_obstacle.set_collision_group( "ground" );
+
 
 	//ode::HeightField field( env, Eigen::Vector3d( 2, 0, -0.01 ), "../env_data/heightmap_rock_step.png", 0.3, 3, 3, 0, -1, 1 );
 	//ode::HeightField field( env, Eigen::Vector3d( 1, 0, -0.3 ), "../env_data/heightmap_rock_groove.png", 0.3, 3, 3, 0, -1, 1 );
@@ -99,8 +112,9 @@ int main( int argc, char* argv[] )
 		display_ptr->get_keh()->set_pause();
 
 		robot.accept( *display_ptr );
-		step.accept( *display_ptr );
-		step_c.accept( *display_ptr );
+		//step.accept( *display_ptr );
+		//step_c.accept( *display_ptr );
+		side_obstacle.accept( *display_ptr );
 		//field.accept( *display_ptr );
 
 		robot::RoverControl* keycontrol = new robot::RoverControl( &robot, display_ptr->get_viewer() );
