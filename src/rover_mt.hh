@@ -13,7 +13,8 @@ class Rover_1_mt : public Rover_1
 {
 	public:
 
-	Rover_1_mt( ode::Environment& env, const Eigen::Vector3d& pose, const std::string yaml_file_path_1, const std::string yaml_file_path_2, const bool oblique_trees = false );
+	Rover_1_mt( ode::Environment& env, const Eigen::Vector3d& pose, const std::string yaml_file_path_1, const std::string yaml_file_path_2,
+	            bool oblique_trees = false, unsigned int degree = 1, bool interaction_only = false );
 
 	std::vector<double> GetState( const bool flip = false ) const;
 
@@ -25,7 +26,7 @@ class Rover_1_mt : public Rover_1
 
 	virtual void _InternalControl( double delta_t );
 
-	Linear_model_tree<double>::ptr_t _lmt_ptr_1, _lmt_ptr_2;
+	mt_ptr_t<double> _lmt_ptr_1, _lmt_ptr_2;
 };
 
 

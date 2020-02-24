@@ -10,11 +10,20 @@ namespace robot
 {
 
 
-Rover_1_mt::Rover_1_mt( Environment& env, const Vector3d& pose, const std::string yaml_file_path_1, const std::string yaml_file_path_2, const bool oblique_trees ) :
+Rover_1_mt::Rover_1_mt( Environment& env, const Vector3d& pose, const std::string yaml_file_path_1, const std::string yaml_file_path_2,
+                        bool oblique_trees, unsigned int degree, bool interaction_only ) :
             Rover_1( env, pose ), node_1( 0 ), node_2( 0 )
 {
-	_lmt_ptr_1 = Linear_model_tree<double>::ptr_t( new Linear_model_tree<double>( yaml_file_path_1, oblique_trees ) );
-	_lmt_ptr_2 = Linear_model_tree<double>::ptr_t( new Linear_model_tree<double>( yaml_file_path_2, oblique_trees ) );
+	if ( degree == 1 )
+	{
+		_lmt_ptr_1 = mt_ptr_t<double>( new Linear_model_tree<double>( yaml_file_path_1, oblique_trees ) );
+		_lmt_ptr_2 = mt_ptr_t<double>( new Linear_model_tree<double>( yaml_file_path_2, oblique_trees ) );
+	}
+	else
+	{
+		_lmt_ptr_1 = mt_ptr_t<double>( new Polynomial_model_tree<double>( yaml_file_path_1, oblique_trees, degree, interaction_only ) );
+		_lmt_ptr_2 = mt_ptr_t<double>( new Polynomial_model_tree<double>( yaml_file_path_2, oblique_trees, degree, interaction_only ) );
+	}
 }
 
 

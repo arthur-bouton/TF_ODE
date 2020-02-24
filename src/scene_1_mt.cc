@@ -7,10 +7,7 @@
 #include "renderer/osg_text.hh"
 
 
-//#define YAML_FILE_PATH_1 "../scripts/tree_data/{oblique:false,max_depth_1:1,max_depth_2:1,L1_reg:1}/params_1.yaml"
-//#define YAML_FILE_PATH_2 "../scripts/tree_data/{oblique:false,max_depth_1:0,max_depth_2:0,L1_reg:1}/params_2.yaml"
-#define YAML_FILE_PATH_1 "../scripts/tree_params_1.yaml"
-#define YAML_FILE_PATH_2 "../scripts/tree_params_2.yaml"
+#define YAML_FILE_PATH "../scripts/tree_params2_"
 
 
 int main( int argc, char* argv[] )
@@ -19,14 +16,20 @@ int main( int argc, char* argv[] )
 
 	dInitODE();
 	ode::Environment env( 0.6 );
-	//ode::Environment env( 0.5 );
+	//ode::Environment env( 0.7 );
 	//ode::Environment env( false, 0.5 );
 	//ode::Environment env( false, 0.7 );
 
 
 	// [ Robot ]
 
-	robot::Rover_1_mt robot( env, Eigen::Vector3d( 0, 0, 0 ), YAML_FILE_PATH_1, YAML_FILE_PATH_2 );
+	const char* yaml_file_path = YAML_FILE_PATH;
+	if ( argc > 3 )
+		yaml_file_path = argv[3];
+	std::string yaml_file_path_1 = std::string( yaml_file_path ) + std::string( "1.yaml" );
+	std::string yaml_file_path_2 = std::string( yaml_file_path ) + std::string( "2.yaml" );
+	//robot::Rover_1_mt robot( env, Eigen::Vector3d( 0, 0, 0 ), yaml_file_path_1, yaml_file_path_2, false, 1 );
+	robot::Rover_1_mt robot( env, Eigen::Vector3d( 0, 0, 0 ), yaml_file_path_1, yaml_file_path_2, false, 2, true );
 	//robot.SetCmdPeriod( 0.5 );
 	robot.SetCmdPeriod( 0.1 );
 
