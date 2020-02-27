@@ -96,11 +96,13 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 	// Time to reach cruise speed:
 	float term( 0.5 );
 	// Duration before starting the internal control:
-	float IC_start( 1 );
+	//float IC_start( 1 );
+	float IC_start( 4.00 );
 	// Timeout of the simulation:
 	float timeout( 60 );
 	// Maximum distance to travel ahead:
-	float x_goal( 2 );
+	//float x_goal( 2 );
+	float x_goal( 1.5 );
 	// Maximum lateral deviation permitted:
 	float y_max( 0.5 );
 
