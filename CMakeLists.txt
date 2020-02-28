@@ -49,6 +49,14 @@ target_link_libraries( scene_1_mt robdyn
 								  yaml-cpp )
 target_compile_definitions( scene_1_mt PRIVATE PRINT )
 
+add_executable( crawling ${SRC_DIR}/crawling.cc
+						 ${SRC_DIR}/rover_1.cc
+						 ${SRC_DIR}/rover_1_crawlers.cc )
+target_link_libraries( crawling robdyn
+							    ${ODE_LIBRARIES}
+							    ${OSGV_LIBRARIES}
+							    ${OSGS_LIBRARIES} )
+
 
 
 find_package( PythonLibs 3 REQUIRED )

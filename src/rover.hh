@@ -61,6 +61,9 @@ class Rover_1 : public Robot
 
 	virtual ~Rover_1();
 
+	double steering_max_vel;
+	double boggie_max_torque;
+
 	protected:
 
 	virtual void _InternalControl( double delta_t );
@@ -75,9 +78,6 @@ class Rover_1 : public Robot
 	double _robot_speed;
 	double _steering_rate;
 	double _boggie_torque;
-
-	double steering_max_vel;
-	double boggie_max_torque;
 
 	double wheelbase;
 	double wheeltrack;
@@ -140,6 +140,8 @@ class Rover_1 : public Robot
 	bool _ic_activated;
 	double _ic_period;
 	double _ic_clock;
+
+	bool _crawling_mode;
 };
 
 
@@ -226,6 +228,26 @@ class RoverControl : public osgGA::GUIEventHandler
 	double _speed_sensi;
 	double _turn_sensi;
 	double _torque_sensi;
+};
+
+
+class Crawler_1 : public Rover_1
+{
+	public:
+
+	Crawler_1( ode::Environment& env, const Eigen::Vector3d& pose, float torque_amplitude, float dt_torque, float angle_rate = -1, float angle_span = -1 );
+
+	void PrintControls( double time );
+
+	protected:
+
+	virtual void _InternalControl( double delta_t );
+
+	float _torque_amplitude, _angle_rate, _angle_span;
+
+	double _dtorque_dt;
+
+	int _phase;
 };
 
 

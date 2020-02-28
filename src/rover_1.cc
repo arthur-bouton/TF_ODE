@@ -21,7 +21,8 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 				  _boggie_torque( 0 ),
                   _ic_period( 0 ),
                   _ic_clock( 0 ),
-                  _ic_activated( true )
+                  _ic_activated( true ),
+				  _crawling_mode( false )
 {
 	// [ Rover's parameters ]
 
@@ -322,26 +323,44 @@ void Rover_1::SetBoggieTorque( double torque )
 
 void Rover_1::_UpdateWheelControl()
 {
-	double speed = _robot_speed;
-
 	double gamma = servos()[0]->get_real_angle();
 	double dgamma_dt = servos()[0]->get_real_vel();
 
 	double diff[NBWHEELS];
 	double trans[NBWHEELS];
-	double speed_lim = speed;
+	double min_speed = 0;
+	double adjusted_speed;
 	for ( int i = 0 ; i < NBWHEELS ; i++ )
 	{
 		diff[i] = ( i%2 ? -1 : 1 )*wheeltrack/wheelbase*tan( gamma/2 );
 		trans[i] = ( i/2 ? -1 : 1 )*( -wheelbase*tan( gamma/2 ) + ( i%2 ? -1 : 1 )*wheeltrack )*dgamma_dt/4;
 
-		if ( speed >= 0 )
-			speed_lim = std::min( speed_lim, ( WHEELS_MAX_SPEED*wheel_radius[i] - trans[i] )/( 1 + diff[i] ) );
-		else
-			speed_lim = std::max( speed_lim, ( -WHEELS_MAX_SPEED*wheel_radius[i] - trans[i] )/( 1 + diff[i] ) );
+		if ( _crawling_mode )
+		{
+			// Look for the minimal robot speed that prevents any wheel from going backward:
+			if ( _robot_speed >= 0 )
+				min_speed = std::max( min_speed, -trans[i]/( 1 + diff[i] ) );
+			else
+				min_speed = std::min( min_speed, -trans[i]/( 1 + diff[i] ) );
+		}
 	}
+	// Assert that the robot speed is high enough:
+	if ( _robot_speed >= 0 )
+		adjusted_speed = std::max( _robot_speed, min_speed );
+	else
+		adjusted_speed = std::min( _robot_speed, min_speed );
+
+	// Reduce the robot speed according to the wheel speed limit:
+	#define WHEELS_MAX_SPEED 7.4351 // rad/s
 	for ( int i = 0 ; i < NBWHEELS ; i++ )
-		_W[i] = ( speed_lim*( 1 + diff[i] ) + trans[i] )/wheel_radius[i];
+		if ( _robot_speed >= 0 )
+			adjusted_speed = std::min( adjusted_speed, ( WHEELS_MAX_SPEED*wheel_radius[i] - trans[i] )/( 1 + diff[i] ) );
+		else
+			adjusted_speed = std::max( adjusted_speed, ( -WHEELS_MAX_SPEED*wheel_radius[i] - trans[i] )/( 1 + diff[i] ) );
+
+	// Compute the corresponding speed for each wheel:
+	for ( int i = 0 ; i < NBWHEELS ; i++ )
+		_W[i] = ( adjusted_speed*( 1 + diff[i] ) + trans[i] )/wheel_radius[i];
 }
 
 
