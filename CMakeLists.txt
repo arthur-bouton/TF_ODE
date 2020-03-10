@@ -17,12 +17,20 @@ include_directories( ${PROJECT_SOURCE_DIR} )
 include_directories( ${PROJECT_SOURCE_DIR}/${SRC_DIR} )
 
 
+##########
+# ROBDYN #
+##########
+
 file( GLOB ROB_SOURCES ode/*.cc renderer/*.cc utils/*.cc )
 #add_library( robdyn STATIC ${ROB_SOURCES} )
 add_library( robdyn SHARED ${ROB_SOURCES} )
 #target_include_directories( robdyn PUBLIC ${EIGEN3_INCLUDE_DIR} )
 target_link_libraries( robdyn TensorflowCC::Shared ) # In order to use only TensorFlow's version of Eigen
 
+
+###########
+# scene_1 #
+###########
 
 add_executable( scene_1 ${SRC_DIR}/scene_1.cc
 						${SRC_DIR}/rover_1.cc )
@@ -31,12 +39,22 @@ target_link_libraries( scene_1 robdyn
 							   ${OSGV_LIBRARIES}
 							   ${OSGS_LIBRARIES} )
 
+
+########
+# ramp #
+########
+
 add_executable( ramp ${SRC_DIR}/ramp.cc
 					 ${SRC_DIR}/rover_1.cc )
 target_link_libraries( ramp robdyn
 							${ODE_LIBRARIES}
 							${OSGV_LIBRARIES}
 							${OSGS_LIBRARIES} )
+
+
+##############
+# scene_1_mt #
+##############
 
 add_executable( scene_1_mt ${SRC_DIR}/scene_1_mt.cc
 						   ${SRC_DIR}/rover_1_mt.cc
@@ -49,6 +67,11 @@ target_link_libraries( scene_1_mt robdyn
 								  yaml-cpp )
 target_compile_definitions( scene_1_mt PRIVATE PRINT )
 
+
+############
+# crawling #
+############
+
 add_executable( crawling ${SRC_DIR}/crawling.cc
 						 ${SRC_DIR}/rover_1.cc
 						 ${SRC_DIR}/rover_1_crawlers.cc )
@@ -58,6 +81,9 @@ target_link_libraries( crawling robdyn
 							    ${OSGS_LIBRARIES} )
 
 
+################
+# BOOST.PYTHON #
+################
 
 find_package( PythonLibs 3 REQUIRED )
 include_directories( ${PYTHON_INCLUDE_DIRS} )
@@ -65,6 +91,10 @@ find_package( Boost REQUIRED COMPONENTS python3 )
 #find_package( Boost REQUIRED COMPONENTS python3 numpy3 )
 include_directories( ${Boost_INCLUDE_DIR} )
 
+
+####################
+# rover_training_1 #
+####################
 
 set( ROVER_TRAINING_1_SOURCES ${SRC_DIR}/rover_training_1.cc
 							  ${SRC_DIR}/rover_1_tf.cc
@@ -81,13 +111,25 @@ set( ROVER_TRAINING_1_LIBRARIES robdyn
 add_executable( rover_training_1_exe ${ROVER_TRAINING_1_SOURCES} )
 target_link_libraries( rover_training_1_exe ${ROVER_TRAINING_1_LIBRARIES} )
 target_compile_definitions( rover_training_1_exe PRIVATE EXE )
-#target_compile_definitions( rover_training_1_exe PRIVATE PRINT )
+target_compile_definitions( rover_training_1_exe PRIVATE PRINT_STATE_AND_ACTIONS )
+#target_compile_definitions( rover_training_1_exe PRIVATE PRINT_EXPLO )
 #set_target_properties( rover_training_1_exe PROPERTIES COMPILE_FLAGS "-g" )
 
 add_library( rover_training_1_module SHARED ${ROVER_TRAINING_1_SOURCES} )
 target_link_libraries( rover_training_1_module ${ROVER_TRAINING_1_LIBRARIES} )
 set_target_properties( rover_training_1_module PROPERTIES PREFIX "" )
 set_target_properties( rover_training_1_module PROPERTIES LINK_FLAGS "-Wl,--no-undefined" )
+
+
+######################
+# data_collection_tf #
+######################
+
+add_executable( data_collection_tf ${SRC_DIR}/data_collection_tf.cc
+							       ${SRC_DIR}/rover_1_tf.cc
+							       ${SRC_DIR}/rover_1.cc )
+target_link_libraries( data_collection_tf ${ROVER_TRAINING_1_LIBRARIES} )
+target_compile_definitions( data_collection_tf PRIVATE PRINT_TRANSITIONS )
 
 
 

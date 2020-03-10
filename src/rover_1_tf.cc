@@ -90,10 +90,12 @@ void Rover_1_tf::InferAction( const p::list& state, double& steering_rate, doubl
 	steering_rate = outputs[0].flat<float>()( 0 );
 	boggie_torque = outputs[0].flat<float>()( 1 );
 
+#ifdef PRINT_STATE_AND_ACTIONS
 	for ( int i = 0 ; i < p::len( state ) ; i++ )
 		printf( "%f ", state_tensor.flat<float>()( i ) );
 	printf( "%f %f\n", _steering_rate, _boggie_torque );
 	fflush( stdout );
+#endif
 }
 
 
@@ -122,7 +124,7 @@ void Rover_1_tf::_InternalControl( double delta_t )
 	// Get the reward obtained since last call:
 	double reward = _ComputeReward( delta_t );
 	_total_reward += reward;
-//#ifdef PRINT
+//#ifdef PRINT_EXPLO
 		//printf( "reward: %f\n", reward );
 //#endif
 
@@ -132,6 +134,19 @@ void Rover_1_tf::_InternalControl( double delta_t )
 	// Store the latest experience:
 	if ( p::len( _last_state ) > 0 )
 		_experience.append( p::make_tuple( _last_state, p::make_tuple( _steering_rate, _boggie_torque ), reward, false, current_state ) );
+
+#ifdef PRINT_TRANSITIONS
+	if ( p::len( _last_state ) > 0 )
+	{
+		for ( int i = 0 ; i < p::len( _last_state ) ; i++ )
+			printf( "%f ", float( p::extract<float>( _last_state[i] ) ) );
+		printf( "%f %f", _steering_rate, _boggie_torque );
+		for ( int i = 0 ; i < p::len( current_state ) ; i++ )
+			printf( " %f", float( p::extract<float>( current_state[i] ) ) );
+		printf( "\n" );
+		fflush( stdout );
+	}
+#endif
 
 
 	// Choose the next action:
@@ -147,7 +162,7 @@ void Rover_1_tf::_InternalControl( double delta_t )
 			explore = true;
 			_steering_rate = _ctrl_dist( _rd_gen )*steering_max_vel;
 			_boggie_torque = _ctrl_dist( _rd_gen )*boggie_max_torque;
-#ifdef PRINT
+#ifdef PRINT_EXPLO
 			printf( "EXPLO: %f %f\n", _steering_rate, _boggie_torque );
 #endif
 		}
@@ -155,16 +170,16 @@ void Rover_1_tf::_InternalControl( double delta_t )
 	if ( !_exploration || ! explore )
 	{
 		InferAction( current_state, _steering_rate, _boggie_torque );
-#ifdef PRINT
+#ifdef PRINT_EXPLO
 		printf( "INFER: %f %f\n", _steering_rate, _boggie_torque );
 #endif
 	}
-#ifdef PRINT
+#ifdef PRINT_EXPLO
 	else
 		printf( "EXPLO: %f %f (continue)\n", _steering_rate, _boggie_torque );
 #endif
 
-#ifdef PRINT
+#ifdef PRINT_EXPLO
 	fflush( stdout );
 #endif
 

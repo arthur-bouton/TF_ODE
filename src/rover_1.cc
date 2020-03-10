@@ -382,7 +382,7 @@ void Rover_1::_ApplySteeringControl()
 {
 	//_steering_rate = std::min( std::max( -steering_max_vel, _steering_rate ), steering_max_vel ); // Redundant with Servo::set_vel
 	//_steering_rate = servos()[0]->set_vel( _steering_rate*DEG_TO_RAD )*RAD_TO_DEG;
-	servos()[0]->set_vel( _steering_rate*DEG_TO_RAD )*RAD_TO_DEG;
+	servos()[0]->set_vel( _steering_rate*DEG_TO_RAD );
 }
 
 
@@ -458,7 +458,10 @@ void Rover_1::next_step( double dt )
 		_InternalControl( _ic_clock );
 
 		_ic_clock = 0;
+		_ic_tick = true;
 	}
+	else
+		_ic_tick = false;
 
 	_UpdateWheelControl();
 

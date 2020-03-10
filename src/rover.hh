@@ -43,6 +43,7 @@ class Rover_1 : public Robot
 	inline void ActivateIC() { _ic_activated = true; }
 	inline void DeactivateIC() { _ic_activated = false; }
 	inline bool IsICActivated() const { return _ic_activated; }
+	inline bool ICTick() const { return _ic_tick; }
 
 	Eigen::Vector3d GetPosition() const;
 	double GetDirection() const;
@@ -140,6 +141,7 @@ class Rover_1 : public Robot
 	bool _ic_activated;
 	double _ic_period;
 	double _ic_clock;
+	bool _ic_tick;
 
 	bool _crawling_mode;
 };
