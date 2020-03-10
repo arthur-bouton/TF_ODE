@@ -4,7 +4,16 @@ import numpy as np
 from ModelTree.model_tree import Model_tree
 
 
-data_file = '../training_data/step_06_PER_1_no_sym.dat'
+data_file_list = []
+data_file_list.append( '../training_data/samples_mu06_period01_angle0_even.dat' )
+data_file_list.append( '../training_data/samples_mu06_period01_angle0_odd.dat' )
+data_file_list.append( '../training_data/samples_mu06_period01_angle1_even.dat' )
+data_file_list.append( '../training_data/samples_mu06_period01_angle1_odd.dat' )
+data_file_list.append( '../training_data/samples_mu06_period01_angle2_even.dat' )
+data_file_list.append( '../training_data/samples_mu06_period01_angle2_odd.dat' )
+data_file_list.append( '../training_data/samples_mu06_period01_angle5_even.dat' )
+data_file_list.append( '../training_data/samples_mu06_period01_angle5_odd.dat' )
+
 
 state_1 = [ 'Steering angle', 'Roll angle', 'Pitch Angle', 'Boggie angle' ]
 state_2 = [ 'Front $f_x$', 'Front $f_y$', 'Front $f_z$', 'Front $\\tau_x$', 'Front $\\tau_y$', 'Front $\\tau_z$',
@@ -13,7 +22,10 @@ actions = [ 'Steering rate', 'Boggie torque' ]
 columns = [ 'Direction' ] + state_1 + state_2 + actions
 
 
-df = pd.read_csv( data_file, sep=' ', header=None, names=columns )
+df_list = []
+for f in data_file_list :
+	df_list.append( pd.read_csv( f, sep=' ', header=None, names=columns, comment='t' ) )
+df = pd.concat( df_list )
 
 # Convert every field to np.float64 and replace strings by np.nan:
 df = df.apply( pd.to_numeric, errors='coerce' )
@@ -51,7 +63,8 @@ max_depth_1 = 1
 max_depth_2 = 0
 min_samples = 20
 loss_tol = 0.1
-L1_reg = 1
+L1 = 1
+grid = 20
 param_file = 'tree_params_'
 
 import sys
@@ -66,7 +79,8 @@ if len( sys.argv ) > 2 :
 
 
 
-model_tree_1 = Model_tree( oblique=oblique, max_depth=max_depth_1, node_min_samples=min_samples, model='linear', loss_tol=loss_tol, L1_reg=L1_reg )
+#model_tree_1 = Model_tree( oblique=oblique, max_depth=max_depth_1, node_min_samples=min_samples, model='polynomial', interaction_only=True, loss_tol=loss_tol, L1=L1, search_grid=grid )
+model_tree_1 = Model_tree( oblique=oblique, max_depth=max_depth_1, node_min_samples=min_samples, model='linear', loss_tol=loss_tol, L1=L1, search_grid=grid )
 if len( sys.argv ) > 1 and sys.argv[1] == 'plot' :
 	model_tree_1.load_tree_params( param_file + '1' )
 else :
@@ -75,7 +89,8 @@ else :
 	model_tree_1.save_tree_params( param_file + '1' )
 
 
-model_tree_2 = Model_tree( oblique=oblique, max_depth=max_depth_2, node_min_samples=min_samples, model='linear', loss_tol=loss_tol, L1_reg=L1_reg )
+#model_tree_2 = Model_tree( oblique=oblique, max_depth=max_depth_2, node_min_samples=min_samples, model='polynomial', interaction_only=True, loss_tol=loss_tol, L1=L1, search_grid=grid )
+model_tree_2 = Model_tree( oblique=oblique, max_depth=max_depth_2, node_min_samples=min_samples, model='linear', loss_tol=loss_tol, L1=L1, search_grid=grid )
 if len( sys.argv ) > 1 and sys.argv[1] == 'plot' :
 	model_tree_2.load_tree_params( param_file + '2' )
 else :
@@ -96,9 +111,9 @@ print( '\nAbsolute errors: %.2f | %.2f -- Quadratic errors: %.2f | %.2f -- Param
 % ( abs_errors[0], abs_errors[1], quad_errors[0], quad_errors[1], *n_params_1, *n_params_2 ) )
 
 if len( sys.argv ) < 2 or sys.argv[1] != 'plot' :
-	print( 'CSV entry: oblique, max_depth_1, max_depth_2, min_samples, loss_tol, L1_reg, abs_err_1, abs_err_2, quad_err_1, quad_err_2, nz_params_1, t_params_1, nz_params_2, t_params_2' )
+	print( 'CSV entry: oblique, max_depth_1, max_depth_2, min_samples, loss_tol, L1, abs_err_1, abs_err_2, quad_err_1, quad_err_2, nz_params_1, t_params_1, nz_params_2, t_params_2' )
 	print( '%s,%i,%i,%i,%f,%f,%f,%f,%f,%f,%i,%i,%i,%i'
-	% ( oblique, max_depth_1, max_depth_2, min_samples, loss_tol, L1_reg, abs_errors[0], abs_errors[1], quad_errors[0], quad_errors[1], *n_params_1, *n_params_2  ) )
+	% ( oblique, max_depth_1, max_depth_2, min_samples, loss_tol, L1, abs_errors[0], abs_errors[1], quad_errors[0], quad_errors[1], *n_params_1, *n_params_2  ) )
 
 
 
