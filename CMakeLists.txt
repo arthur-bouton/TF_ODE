@@ -65,7 +65,7 @@ target_link_libraries( scene_1_mt robdyn
 								  ${OSGV_LIBRARIES}
 								  ${OSGS_LIBRARIES}
 								  yaml-cpp )
-target_compile_definitions( scene_1_mt PRIVATE PRINT )
+#target_compile_definitions( scene_1_mt PRIVATE PRINT_STATE_AND_ACTIONS )
 
 
 ############

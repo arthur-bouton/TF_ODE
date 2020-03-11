@@ -28,10 +28,10 @@ int main( int argc, char* argv[] )
 		yaml_file_path = argv[3];
 	std::string yaml_file_path_1 = std::string( yaml_file_path ) + std::string( "1.yaml" );
 	std::string yaml_file_path_2 = std::string( yaml_file_path ) + std::string( "2.yaml" );
-	//robot::Rover_1_mt robot( env, Eigen::Vector3d( 0, 0, 0 ), yaml_file_path_1, yaml_file_path_2, false, 1 );
-	robot::Rover_1_mt robot( env, Eigen::Vector3d( 0, 0, 0 ), yaml_file_path_1, yaml_file_path_2, false, 2, true );
-	//robot.SetCmdPeriod( 0.5 );
-	robot.SetCmdPeriod( 0.1 );
+	robot::Rover_1_mt robot( env, Eigen::Vector3d( 0, 0, 0 ), yaml_file_path_1, yaml_file_path_2, false, 1 );
+	//robot::Rover_1_mt robot( env, Eigen::Vector3d( 0, 0, 0 ), yaml_file_path_1, yaml_file_path_2, false, 2, true );
+	//robot.SetCmdPeriod( 0.1 );
+	robot.SetCmdPeriod( 0.5 );
 
 
 	// [ Terrain ]
@@ -79,6 +79,7 @@ int main( int argc, char* argv[] )
 	float y_max( 0.5 );
 
 	float speed = 0;
+	std::vector<double> prev_state;
 
 	std::function<bool(float,double)> step_function = [&]( float timestep, double time )
 	{
@@ -90,6 +91,25 @@ int main( int argc, char* argv[] )
 
 		env.next_step( timestep );
 		robot.next_step( timestep );
+
+		if ( robot.ICTick() )
+		{
+			std::vector<double> current_state = robot.GetState();
+
+			if ( prev_state.size() > 0 )
+			{
+				// Print the transitions:
+				for ( auto val : prev_state )
+					printf( "%f ", val );
+				printf( "%f %f", robot.GetSteeringRateCmd(), robot.GetBoggieTorque() );
+				for ( auto val : current_state )
+					printf( " %f", val );
+				printf( "\n" );
+				fflush( stdout );
+			}
+
+			prev_state = current_state;
+		}
 
 		//if ( time >= timeout || fabs( robot.GetPosition().y() ) >= y_max || robot.GetPosition().x() >= x_goal || robot.IsUpsideDown() )
 			//return true;

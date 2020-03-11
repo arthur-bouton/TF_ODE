@@ -1,3 +1,7 @@
+/*
+** To collect the data, run in bash:
+**    N=100 ; for i in $(seq 1 $N) ; do echo -ne "                       [$i/$N]\r" ; ./data_collection_tf -- >> ../scripts/transitions.dat ; done
+*/
 #include "ode/environment.hh"
 #include "renderer/osg_visitor.hh"
 #include "rover_tf.hh"
@@ -15,6 +19,10 @@
 
 int main( int argc, char* argv[] )
 {
+	char tf_verbosity[] = "TF_CPP_MIN_LOG_LEVEL=1";
+	putenv( tf_verbosity );
+
+
 	Py_Initialize();
 
 
@@ -178,6 +186,10 @@ int main( int argc, char* argv[] )
 
 	sim.loop( step_function );
 
+	fprintf( stderr, "%s t %6.3f | x %5.3f | y %+6.3f | Rmoy %7.3f\n",
+	( robot.GetPosition().x() >= x_goal ? "\033[1;32m[Success]\033[0;39m" : "\033[1;31m[Failure]\033[0;39m" ),
+	sim.get_time(), robot.GetPosition().x(), robot.GetPosition().y(), robot.GetTotalReward()/sim.get_time() );
+	fflush( stderr );
 
 	return 0;
 }

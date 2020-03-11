@@ -56,7 +56,7 @@ void Rover_1_mt::InferAction( const vector<double>& state, double& steering_rate
 	steering_rate = ( flip ? -1 : 1 )*_lmt_ptr_1->predict( state, node_1 );
 	boggie_torque = ( flip ? -1 : 1 )*_lmt_ptr_2->predict( state, node_2 );
 
-#ifdef PRINT
+#ifdef PRINT_STATE_AND_ACTIONS
 	for ( auto val : state )
 		printf( "%f ", val );
 	printf( "%f %f\n", _steering_rate, _boggie_torque );
