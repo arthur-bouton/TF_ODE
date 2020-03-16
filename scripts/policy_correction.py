@@ -5,6 +5,7 @@ from gmr import GMM
 import pickle
 import sys
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 
 gmm_file = 'gmm.pkl'
@@ -67,7 +68,7 @@ if len( sys.argv ) > 1 and ( sys.argv[1] == 'train' or sys.argv[1] == 'score' ) 
 		# Train the GMM model #
 		#######################
 
-		n_components = 20
+		n_components = 200
 		gmm = GMM( n_components=n_components )
 		print( 'Training the model with %d gaussian units' % n_components )
 		gmm.from_samples( data )
@@ -127,25 +128,57 @@ df = df.dropna()
 
 # Reset the index:
 df.reset_index( drop=True, inplace=True )
+#df = df.iloc[:3]
 
 
 s_sprime_indices = np.array( list( range( dim_s ) ) + list( range( dim_s + dim_a, dim_t ) ) )
 s_a_indices = np.array( range( dim_s + dim_a ) )
 
 delta_a = []
-for _, samp in df.iterrows() :
+grad_a = []
+delta_s_norm = []
+for _, samp in tqdm( df.iterrows(), total=len( df ), leave=False ) :
 	s_a = samp[ state_1 + actions ].to_numpy()[np.newaxis,:]
 	s_sprime = samp[ state_1 + state_2 ].to_numpy()
-	#s_a = samp.iloc[ :, s_a_indices ].to_numpy()
-	#s_sprime = samp.iloc[ :, s_sprime_indices ].to_numpy()
 	sprime = samp[ state_2 ].to_numpy()
 
 	expected_sprime = gmm.predict( s_a_indices, s_a )
-	#print( s_sprime_indices.shape, s_sprime.shape )
-	grad_a_sprime = gmm.condition_derivative( s_sprime_indices, s_sprime )
+	grad_a_sprime = gmm.condition_derivative( s_sprime_indices, s_sprime )[:,dim_s:]
 
-	delta_a.append( grad_a_sprime.dot( expected_sprime - sprime ) )
+	delta_a.append( grad_a_sprime.dot( ( expected_sprime - sprime ).T ) )
+
+	grad_a.append( grad_a_sprime )
+	delta_s_norm.append( np.linalg.norm( expected_sprime - sprime ) )
 
 
-plt.plot( df[ actions ] )
-plt.plot( delta_a )
+fig, ax = plt.subplots( 2, 1, sharex=True )
+fig.canvas.set_window_title( 'Policy corrections' )
+
+ax[0].set_title( 'Trial result' )
+ax[0].plot( df[ actions ] )
+ax[0].legend( [ 'Steering rate', 'Boggie torque' ] )
+
+ax[1].set_title( 'Corrections' )
+ax[1].plot( [ a[0] for a in delta_a ] )
+ax[1].plot( [ a[1] for a in delta_a ] )
+ax[1].legend( [ 'Steering rate', 'Boggie torque' ] )
+
+
+fig, ax = plt.subplots( 3, 1, sharex=True )
+fig.canvas.set_window_title( 'Gradient and state discrepancy' )
+
+ax[0].set_title( 'Gradient of the steering rate' )
+for i in range( len( grad_a[0][0] ) ) :
+	ax[0].plot( [ g[0][i] for g in grad_a ] )
+ax[0].legend( list( range( len( grad_a[0][0] ) ) ) )
+
+ax[1].set_title( 'Gradient of the boggie torque' )
+for i in range( len( grad_a[0][1] ) ) :
+	ax[1].plot( [ g[1][i] for g in grad_a ] )
+ax[1].legend( list( range( len( grad_a[0][1] ) ) ) )
+
+ax[2].set_title( 'Delta s norm' )
+ax[2].plot( delta_s_norm )
+
+
+plt.show()
