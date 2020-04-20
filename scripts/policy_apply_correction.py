@@ -2,6 +2,7 @@
 import pandas as pd
 import numpy as np
 from gmr import GMM
+from ModelTree.model_tree import Model_tree
 import pickle
 import sys
 import matplotlib.pyplot as plt
@@ -11,15 +12,12 @@ import warnings
 warnings.filterwarnings( action='ignore', module='pandas', category=UserWarning )
 
 
-gmm_id = 'gmm_t2e5_k200_kmeans'
-#gmm_id = 'gmm_t2e5_k500'
+gmm_file = 'gmm_t2e5_k500.pkl'
 
-gmm_file = gmm_id + '.pkl'
-
-trial_file = 'trial2.dat'
-
-model_data_file_list = []
-model_data_file_list.append( 'transitions_2e5.dat' )
+trial_file = 'trial_0.dat'
+if len( sys.argv ) > 1 :
+	trial_file = sys.argv[1]
+print( trial_file )
 
 
 
@@ -46,93 +44,6 @@ dim_t = 2*dim_s + dim_a
 
 
 
-if len( sys.argv ) > 1 and ( sys.argv[1] == 'train' or sys.argv[1] == 'score' ) :
-
-	#######################
-	# Load the model data #
-	#######################
-
-	df_list = []
-	for f in model_data_file_list :
-		df_list.append( pd.read_csv( f, sep=' ', header=None, names=columns ) )
-	df = pd.concat( df_list )
-
-	# Convert every field to np.float64 and replace strings by np.nan:
-	df = df.apply( pd.to_numeric, errors='coerce' )
-
-	# Remove rows that contain at least one NaN:
-	df = df.dropna()
-
-	# Shuffle the rows:
-	#df = df.sample( frac=1 )
-
-	# Reset the index:
-	df.reset_index( drop=True, inplace=True )
-
-	# Symmetrize the states and actions around the steering angle:
-	variables_to_flip = [ 'Direction', 'Steering angle', 'Roll angle', 'Boggie angle' ] + forces[1::2]
-	variables_to_flip = [ name + ' s1' for name in variables_to_flip ]
-	variables_to_flip = variables_to_flip + actions
-	df.loc[ df[ 'Steering angle s1' ] < 0, variables_to_flip ] *= -1
-
-	variables_to_flip = [ 'Direction', 'Steering angle', 'Roll angle', 'Boggie angle' ] + forces[1::2]
-	variables_to_flip = [ name + ' s2' for name in variables_to_flip ]
-	df.loc[ df[ 'Steering angle s2' ] < 0, variables_to_flip ] *= -1
-
-	# Drop some features:
-	df = df.drop( [ name + ' s1' for name in features_to_drop ], axis=1 )
-	df = df.drop( [ name + ' s2' for name in features_to_drop ], axis=1 )
-
-
-	data = df.to_numpy()
-
-	print( 'Number of transitions in the data: %d' % data.shape[0] )
-
-
-	if sys.argv[1] == 'train' :
-
-		#######################
-		# Train the GMM model #
-		#######################
-
-		n_components = 500
-		gmm = GMM( n_components=n_components )
-		print( 'Training the model with %d gaussian units' % n_components )
-		gmm.from_samples( data, init='', plot_title=gmm_id, n_iter=100, savefig=True )
-		print( 'Model ready' )
-		plt.show()
-
-		# Save the model:
-		with open( gmm_file, 'wb' ) as f :
-			pickle.dump( gmm, f )
-
-
-	elif sys.argv[1] == 'score' :
-
-		# Load the model:
-		with open( gmm_file, 'rb' ) as f :
-			gmm = pickle.load( f )
-
-		######################
-		# Evaluate the model #
-		######################
-
-		N_test = 20
-		i_test = np.random.choice( range( len( data ) ), N_test, replace=False )
-		X_data = df.drop( actions, axis=1 ).to_numpy()[i_test,:]
-		Y_data = df[ actions ].to_numpy()[i_test,:]
-
-		X_indices = np.array( list( range( dim_s ) ) + list( range( dim_s + dim_a, dim_t ) ) )
-		Y_pred = gmm.predict( X_indices, X_data )
-
-		abs_errors = abs( Y_pred - Y_data ).mean( axis=0 )
-		print( 'Absolute errors: %g %g' % tuple( abs_errors ) )
-		print( Y_data )
-		print( Y_pred )
-
-
-	exit( 0 )
-
 
 # Load the model:
 with open( gmm_file, 'rb' ) as f :
@@ -142,9 +53,6 @@ with open( gmm_file, 'rb' ) as f :
 #######################
 # Load the trial data #
 #######################
-
-if len( sys.argv ) > 2 :
-	trial_file = sys.argv[2]
 
 df = pd.read_csv( trial_file, sep=' ', header=None, names=columns )
 
@@ -179,7 +87,7 @@ s_a_indices = np.array( range( dim_s + dim_a ) )
 delta_a = []
 grad_a = []
 delta_s_norm = []
-for _, samp in tqdm( df.iterrows(), total=len( df ), leave=False ) :
+for _, samp in tqdm( df.iterrows(), total=len( df ), leave=False, desc='Computation of the gradients' ) :
 	s_a = samp[ state_1 + actions ].to_numpy()[np.newaxis,:]
 	s_sprime = samp[ state_1 + state_2 ].to_numpy()
 	sprime = samp[ state_2 ].to_numpy()
@@ -189,12 +97,62 @@ for _, samp in tqdm( df.iterrows(), total=len( df ), leave=False ) :
 
 	delta_a.append( grad_a_sprime.dot( ( expected_sprime - sprime ).T ) )
 
-	#if 'grad_a_prev' in globals() :
-		#grad_a.append( grad_a_sprime - grad_a_prev )
-	#grad_a_prev = grad_a_sprime
+	# For plot only:
 	grad_a.append( grad_a_sprime )
 	delta_s_norm.append( np.linalg.norm( expected_sprime - sprime ) )
 
+
+
+#######################################
+# Load the trees and their parameters #
+#######################################
+
+alpha = 0.3
+
+oblique = False
+model_type='linear'
+param_file = 'tree_params2_0_'
+if len( sys.argv ) > 2 :
+	param_file = sys.argv[2]
+
+batch_dparams = [ {} ]*2
+
+for action_n in range( 2 ) :
+	model_tree = Model_tree( oblique=oblique, model=model_type )
+	model_tree.load_tree_params( param_file + str( action_n + 1 ) )
+	tree_params = model_tree.get_tree_params()
+
+	for i, samp in df.iterrows() :
+		s = samp[ state_1 ].to_numpy()
+
+		_, node_id = model_tree.predict( s, return_node_id=True )
+
+		if node_id not in batch_dparams[action_n] :
+			batch_dparams[action_n][node_id] = np.zeros( dim_s + 1 )
+
+		grad_mu = np.insert( s, 0, 1 )
+
+		batch_dparams[action_n][node_id] += alpha*grad_mu/grad_mu.dot( grad_mu )*delta_a[i][action_n]
+
+
+	# Modify the parameters of each regression model encountered:
+	for node_id, dparams in batch_dparams[action_n].items() :
+		for i in range( len( dparams ) ) :
+			tree_params[node_id]['model params'][i] += float( dparams[i] )
+
+	# Save the new parameters:
+	new_param_file = param_file[:-2] + str( int( param_file[-2] ) + 1 ) + '_' + str( action_n + 1 )
+	model_tree.set_tree_params( tree_params )
+	model_tree.save_tree_params( new_param_file )
+
+
+print( batch_dparams )
+
+
+
+#########
+# Plots #
+#########
 
 fig, ax = plt.subplots( 2, 1, sharex=True )
 fig.canvas.set_window_title( 'Policy corrections' )

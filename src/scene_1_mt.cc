@@ -94,7 +94,7 @@ int main( int argc, char* argv[] )
 
 		if ( robot.ICTick() )
 		{
-			std::vector<double> current_state = robot.GetState();
+			std::vector<double> current_state = robot.GetFullState();
 
 			if ( prev_state.size() > 0 )
 			{

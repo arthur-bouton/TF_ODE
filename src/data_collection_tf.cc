@@ -88,7 +88,8 @@ int main( int argc, char* argv[] )
 	// Time to reach cruise speed:
 	float term( 0.5 );
 	// Duration before starting the internal control:
-	float IC_start( 3.75 + 0.25*uniform( gen ) );
+	//float IC_start( 3.75 + 0.25*uniform( gen ) );
+	float IC_start( 3.75 - 0.5*3 + 0.25*uniform( gen ) );
 	// Timeout of the simulation:
 	float timeout( 20 );
 	// Maximum distance to travel ahead:

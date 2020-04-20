@@ -27,7 +27,7 @@ Rover_1_mt::Rover_1_mt( Environment& env, const Vector3d& pose, const std::strin
 }
 
 
-vector<double> Rover_1_mt::GetState( const bool flip ) const
+vector<double> Rover_1_mt::GetState( const bool flip, const bool full ) const
 {
 	// Flip or not the left and right to account for the robot's symmetry:
 	int flip_coeff = flip ? -1 : 1;
@@ -42,7 +42,7 @@ vector<double> Rover_1_mt::GetState( const bool flip ) const
 	const Vector3d* list[] = { _front_ft_sensor.GetForces(), _front_ft_sensor.GetTorques(), _rear_ft_sensor.GetForces(), _rear_ft_sensor.GetTorques() };
 	for ( int i = 0 ; i < 4 ; i++ )
 		for ( int j = 0 ; j < 3 ; j++ )
-			if ( i != 2 )
+			if ( i != 2 || full )
 				state.push_back( ( ( i + j )%2 == 0 ? 1 : flip_coeff )*list[i]->coeff( j ) );
 	//for ( int i = 0 ; i < NBWHEELS ; i++ )
 		//state.push_back( _torque_output[i] );
