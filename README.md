@@ -1,16 +1,21 @@
-# TF_ODE
+# Dynamics environment for reinforcement learning
 
-Reinforcement learning with TensorFlow and Open Dynamics Engine
+<p align="center">
+	<img src="cover_picture.png?raw=true" width="600">
+</p>
+
+Dynamics environment for reinforcement learning with Open Dynamics Engine and TensorFLow.<br />
+The environment mixes dynamic simulation compiled from C++ and scripts in Python and Bash.
 
 
-**Build the simulation:**
+### Build the simulation:
 
 `$ mkdir build && cd build`  
 `$ cmake ..`  
 `$ make`  
 
 
-**Start a training:**
+### Start a training:
 
 Set the identifier directory name for the training data in both *rover_training_1.py* and *eval_and_extract_policies.sh*, for example:  
 `run_id = 'run_1'` and `run_id=run_1`
