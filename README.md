@@ -10,6 +10,9 @@ The environment mixes dynamic simulation compiled from C++ and scripts in Python
 
 ### Dependencies:
 
+To download the git submodules, clone this repository with the `git clone --recursive` option or run in the root directory:  
+`$ git submodule update --init`
+
 To compile the simulations, you will need to install the following libraries:  
 `$ sudo apt-get install libode-dev libopenscenegraph-dev libeigen3-dev libboost-dev libboost-python-dev libyaml-cpp-dev`
 

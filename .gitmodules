@@ -1,0 +1,6 @@
+[submodule "scripts/ModelTree"]
+	path = scripts/ModelTree
+	url = https://github.com/Bouty92/ModelTree
+[submodule "scripts/gmr"]
+	path = scripts/gmr
+	url = https://github.com/Bouty92/gmr
