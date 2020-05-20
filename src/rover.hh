@@ -2,7 +2,7 @@
 #define ROVER_HH 
 
 #include "ode/robot.hh"
-#include "utils/filters.hh"
+#include "Filters/cpp/filters.hh" // https://github.com/Bouty92/Filters
 #include "ode/ft_sensor.hh"
 
 #include <osgViewer/Viewer>

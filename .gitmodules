@@ -4,3 +4,6 @@
 [submodule "scripts/gmr"]
 	path = scripts/gmr
 	url = https://github.com/Bouty92/gmr
+[submodule "Filters"]
+	path = Filters
+	url = git://github.com/Bouty92/Filters

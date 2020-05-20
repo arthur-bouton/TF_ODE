@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import pandas as pd
 import numpy as np
-from gmr import GMM
+from gmr import GMM # https://github.com/Bouty92/gmr
 from ModelTree.model_tree import Model_tree
 import pickle
 import sys

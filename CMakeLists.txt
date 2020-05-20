@@ -21,7 +21,7 @@ include_directories( ${PROJECT_SOURCE_DIR}/${SRC_DIR} )
 # ROBDYN #
 ##########
 
-file( GLOB ROB_SOURCES ode/*.cc renderer/*.cc utils/*.cc )
+file( GLOB ROB_SOURCES ode/*.cc renderer/*.cc Filters/cpp/*.cc )
 #add_library( robdyn STATIC ${ROB_SOURCES} )
 add_library( robdyn SHARED ${ROB_SOURCES} )
 #target_include_directories( robdyn PUBLIC ${EIGEN3_INCLUDE_DIR} )
