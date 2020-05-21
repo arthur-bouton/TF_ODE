@@ -7,3 +7,6 @@
 [submodule "Filters"]
 	path = Filters
 	url = git://github.com/Bouty92/Filters
+[submodule "scripts/MachineLearning"]
+	path = scripts/MachineLearning
+	url = git://github.com/Bouty92/MachineLearning.git

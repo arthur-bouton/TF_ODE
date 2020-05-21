@@ -37,7 +37,7 @@ Set the identifier directory name for the training data in both *rover_training_
 - `run_id = 'run_1'` in *rover_training_1.py*.
 - `run_id=run_1` in *eval_and_extract_policies.sh*.
 
-If the directory doesn't exist yet, create it so that tee can start writing in it:  
+If the directory doesn't exist yet, create it so that *tee* can start writing in it:  
 `$ mkdir -p ../training_data/run_1`
 
 Then, start the training with:  
