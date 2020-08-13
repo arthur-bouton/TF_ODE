@@ -77,6 +77,9 @@ class Sim_loop
 	osg::ref_ptr<osg::Image> _image;
 	unsigned int _step_counter_c;
 
+	bool _is_paused;
+	renderer::OsgText::ptr_t _paused_text;
+
 	float _warp_factor;
 	renderer::OsgText::ptr_t _warp_text;
 };

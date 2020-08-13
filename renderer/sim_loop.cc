@@ -19,7 +19,7 @@
 
 Sim_loop::Sim_loop( float timestep, renderer::OsgVisitor* display_ptr, bool print_time, int log_level ) :
                     _timestep( timestep ), _display_ptr( display_ptr ), _log_level( log_level ), _time( 0 ),
-					_print_time( print_time ), _nsec( 0 ), _warp_factor( 1 )
+					_print_time( print_time ), _nsec( 0 ), _is_paused( false ), _warp_factor( 1 )
 {
 	if ( _display_ptr != nullptr )
 	{
@@ -33,6 +33,11 @@ Sim_loop::Sim_loop( float timestep, renderer::OsgVisitor* display_ptr, bool prin
 		_capture_rate = int( 1./_fps_captures/_timestep );
 		_capture = false;
 		_image = nullptr;
+
+		_paused_text = _display_ptr->add_text( "", 0 );
+		_paused_text->set_pos( 50, 95 );
+		_paused_text->set_size( 5 );
+		_paused_text->set_color( 10, 10, 10, 0.5 );
 
 		_warp_text = _display_ptr->add_text( "warp", 2 );
 		_warp_text->set_pos( 97 );
@@ -106,6 +111,15 @@ void Sim_loop::loop( std::function<bool(float,double)> step_function )
 		while( !_display_ptr->done() )
 		{
 			_update_chrono();
+
+			if ( _is_paused != _display_ptr->get_keh()->paused() )
+			{
+				_is_paused = !_is_paused;
+				if ( _is_paused )
+					_paused_text->set_text( "PAUSED" );
+				else
+					_paused_text->set_text( "" );
+			}
 
 			if ( _warp_factor != _display_ptr->get_keh()->get_warp_factor() )
 			{

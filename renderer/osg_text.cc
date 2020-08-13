@@ -61,6 +61,9 @@ void OsgText::set_alignment( int alignment )
 	_alignment = alignment;
 	switch ( _alignment )
 	{
+		case 0 :
+			_text->setAlignment( osgText::Text::CENTER_CENTER );
+			return;
 		case 1 :
 			_text->setAlignment( osgText::Text::LEFT_TOP );
 			return;
@@ -84,6 +87,9 @@ void OsgText::set_pos( float x, float y )
 	if ( _y < 0 )
 		switch ( _alignment )
 		{
+			case 0 :
+				_y = _x;
+				break;
 			case 1 :
 				_y = _x*_width/_height;
 				break;
