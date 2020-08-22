@@ -36,21 +36,26 @@ namespace p = boost::python;
 
 p::list simulation( const char* option = "", const char* path_to_tf_model = DEFAULT_PATH_TO_TF_MODEL, int argc = 0, char* argv[] = nullptr )
 {
+	// Uniform random generator:
+	std::random_device rd;
+	std::mt19937 gen( rd() );
+	std::uniform_real_distribution<double> uniform( -1, 1 );
+
+
 	// [ Dynamic environment ]
 
 	dInitODE();
 	// Set the global friction coefficient:
-	//ode::Environment env( 0.7 );
-	ode::Environment env( 0.6 );
+	ode::Environment env( 0.5 );
 
 
 	// [ Robot ]
 
 	robot::Rover_1_tf robot( env, Eigen::Vector3d( 0, 0, 0 ), path_to_tf_model );
 	robot.SetCmdPeriod( 0.5 );
-#ifdef EXE
-	robot.SetCmdPeriod( 0.1 );
-#endif
+//#ifdef EXE
+	//robot.SetCmdPeriod( 0.1 );
+//#endif
 	robot.DeactivateIC();
 	if ( strncmp( option, "trial", 6 ) == 0 || strncmp( option, "explore", 8 ) == 0 )
 		robot.SetExploration( true );
@@ -72,19 +77,16 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 	else
 	{
 		// Maximum angle to be chosen randomly when not specified:
-		float max_rot( 15 );
-		std::random_device rd;
-		std::mt19937 gen( rd() );
-		std::uniform_real_distribution<double> uniform( -1., 1. );
-		orientation = uniform( gen )*max_rot;
+		float max_rot( 10 );
+		orientation = max_rot*uniform( gen );
 	}
 	float step_height( 0.105*2 );
-	ode::Box step( env, Eigen::Vector3d( 1.5, 0, step_height/2 ), 1, 1, 3, step_height, false );
+	ode::Box step( env, Eigen::Vector3d( 1.25, 0, step_height/2 ), 1, 1, 3, step_height, false );
 	step.set_rotation( 0, 0, orientation*M_PI/180 );
 	step.fix();
 	step.set_collision_group( "ground" );
 
-	ode::Box step_c( env, Eigen::Vector3d( 2.5, 0, step_height/2 ), 1, 2, 3, step_height, false );
+	ode::Box step_c( env, Eigen::Vector3d( 2.25, 0, step_height/2 ), 1, 2, 3, step_height, false );
 	step_c.fix();
 	step_c.set_collision_group( "ground" );
 
@@ -96,15 +98,15 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 	// Time to reach cruise speed:
 	float term( 0.5 );
 	// Duration before starting the internal control:
-	//float IC_start( 1 );
-	float IC_start( 4.00 );
+	float IC_start( 1 );
+	if ( strncmp( option, "eval", 5 ) != 0 )
+		IC_start += 0.25*uniform( gen );
 	// Timeout of the simulation:
-	float timeout( 60 );
+	float timeout( 80 );
 	// Maximum distance to travel ahead:
-	//float x_goal( 2 );
 	float x_goal( 1.5 );
 	// Maximum lateral deviation permitted:
-	float y_max( 0.5 );
+	float y_max( 0.6 );
 
 	float speed = 0;
 
@@ -121,8 +123,6 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 
 		env.next_step( timestep );
 		robot.next_step( timestep );
-
-		//printf( "x: %f y: %f\n", robot.GetPosition().x(), robot.GetPosition().y() );
 
 		// If the robot has reached the goal, is out of track or has tipped over, end the simulation:
 		if ( time >= timeout || fabs( robot.GetPosition().y() ) >= y_max || robot.GetPosition().x() >= x_goal || robot.IsUpsideDown() )

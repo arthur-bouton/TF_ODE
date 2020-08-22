@@ -62,7 +62,8 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 
 	belly_elev = 0.33;
 
-	front_mass = 4.55 + 2.2; // Body + battery
+	//front_mass = 4.55 + 2.2; // Body + battery
+	front_mass = 4.55; // Body without battery
 	front_length = 0.345;
 	front_height = 0.225;
 	front_width = 0.200;
@@ -220,6 +221,11 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 	
 	for ( int i = 0 ; i < NBWHEELS ; i++ )
 		_torque_filter[i] = filters::ptr_t<double>( new filters::LP_second_order_bilinear<double>( 0.001, 2*M_PI, 0.5, nullptr, _torque_output + i ) );
+
+	const Vector3d* vec[] = { _front_ft_sensor.GetForces(), _front_ft_sensor.GetTorques(), _rear_ft_sensor.GetForces(), _rear_ft_sensor.GetTorques() };
+	for ( int i = 0 ; i < 4 ; i++ )
+		for ( int j = 0 ; j < 3 ; j++ )
+			_ft_filter[i*3+j] = filters::ptr_t<double>( new filters::LP_second_order_bilinear<double>( 0.001, 4*M_PI, 0.5, vec[i]->data() + j, (double*) vec[i]->data() + j ) );
 }
 
 
@@ -406,6 +412,13 @@ void Rover_1::_UpdateTorqueFilters()
 }
 
 
+void Rover_1::_UpdateFtFilters()
+{
+	for ( int i = 0 ; i < 12 ; i++ )
+		_ft_filter[i]->update();
+}
+
+
 Matrix<double,4,3> Rover_1::GetFT300Torsors() const
 {
 	Matrix<double,4,3> ft_torsors;
@@ -450,6 +463,7 @@ void Rover_1::next_step( double dt )
 {
 	_front_ft_sensor.Update();
 	_rear_ft_sensor.Update();
+	_UpdateFtFilters();
 	//_UpdateTorqueFilters();
 
 	_ic_clock += dt;

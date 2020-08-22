@@ -75,6 +75,7 @@ class Rover_1 : public Robot
 	void _ApplyBoggieControl();
 
 	void _UpdateTorqueFilters();
+	void _UpdateFtFilters();
 	
 	double _robot_speed;
 	double _steering_rate;
@@ -135,6 +136,7 @@ class Rover_1 : public Robot
 
 	FT_sensor _front_ft_sensor;
 	FT_sensor _rear_ft_sensor;
+	filters::ptr_t<double> _ft_filter[12];
 
 	double _W[NBWHEELS];
 

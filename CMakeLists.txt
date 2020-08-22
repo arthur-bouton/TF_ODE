@@ -111,7 +111,7 @@ set( ROVER_TRAINING_1_LIBRARIES robdyn
 add_executable( rover_training_1_exe ${ROVER_TRAINING_1_SOURCES} )
 target_link_libraries( rover_training_1_exe ${ROVER_TRAINING_1_LIBRARIES} )
 target_compile_definitions( rover_training_1_exe PRIVATE EXE )
-target_compile_definitions( rover_training_1_exe PRIVATE PRINT_STATE_AND_ACTIONS )
+#target_compile_definitions( rover_training_1_exe PRIVATE PRINT_STATE_AND_ACTIONS )
 #target_compile_definitions( rover_training_1_exe PRIVATE PRINT_EXPLO )
 #set_target_properties( rover_training_1_exe PROPERTIES COMPILE_FLAGS "-g" )
 

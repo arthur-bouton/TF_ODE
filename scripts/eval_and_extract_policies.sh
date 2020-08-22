@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Identifier name for the training data:
-run_id=step_05_PER_1
+run_id=step_05_nobat_nosym_1
 
 # Maximum duration of a successful run for it to be extracted:
-target_duration=17
+target_duration=30
 
 # Maximum amount of data to extract:
-max_extractions=5
+max_extractions=3
 
 # Number of digits for the identifiers of extracted models:
 n_digits=4
