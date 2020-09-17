@@ -43,6 +43,7 @@ class Rover_1_tf : public Rover_1
     std::mt19937 _rd_gen;
     std::uniform_real_distribution<double> _expl_dist;
     std::uniform_real_distribution<double> _ctrl_dist;
+    //std::normal_distribution<double> _ctrl_dist;
 };
 
 

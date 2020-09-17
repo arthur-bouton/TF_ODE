@@ -17,11 +17,7 @@ sys.path.append( '../build' )
 import rover_training_1_module
 
 
-sess = tf.Session()
-
 from keras.layers import Dense
-from keras import backend as K
-K.set_session( sess )
 
 
 # Actor network:
@@ -45,7 +41,7 @@ def critic( states, actions ) :
 
 
 # Identifier name for the training data:
-run_id = 'step_05_nobat_nosym_1'
+run_id = 'step_05_reverse_crawl'
 
 script_name = os.path.splitext( os.path.basename( __file__ ) )[0]
 
@@ -54,25 +50,23 @@ path_to_tf_model = '../training_data/' + run_id + '/' + script_name
 
 # Parameters for the training:
 EP_MAX = 100000 # Maximal number of episodes for the training
-ITER_PER_EP = 200 # Number of training iterations between each episode
+ITER_PER_EP = 500 # Number of training iterations between each episode
 hyper_params = {}
 hyper_params['s_dim'] = 17 # Dimension of the state space
 hyper_params['a_dim'] = 2 # Dimension of the action space
 hyper_params['state_scale'] = [ 90, 45, 25, 25, 45 ] + [ 100 ]*3 + [ 30 ]*3 + [ 100 ]*3 + [ 30 ]*3 # A scalar or a vector to normalize the state
 hyper_params['action_scale'] = [ 15, 25 ] # A scalar or a vector to scale the actions
-hyper_params['sess'] = sess # The TensorFlow session to use
 hyper_params['actor_def'] = actor # The function defining the actor network
 hyper_params['critic_def'] = critic # The function defining the critic network
-hyper_params['gamma'] = 0.9 # Discount factor of the reward
+hyper_params['gamma'] = 0.99 # Discount factor of the reward
 hyper_params['tau'] = 1e-3 # Soft target update factor
 hyper_params['buffer_size'] = 1e5 # Maximal size of the replay buffer
 hyper_params['minibatch_size'] = 64 # Size of each minibatch
-hyper_params['actor_lr'] = 1e-6 # Learning rate of the actor network
-hyper_params['critic_lr'] = 1e-5 # Learning rate of the critic network
+hyper_params['actor_lr'] = 1e-5 # Learning rate of the actor network
+hyper_params['critic_lr'] = 2e-5 # Learning rate of the critic network
 hyper_params['beta_L2'] = 0 # Ridge regularization coefficient
 #hyper_params['alpha_sampling'] = 1 # Exponent interpolating between a uniform sampling (0) and a greedy prioritization (1) (DDPG_PER only)
 #hyper_params['beta_IS'] = 1 # Exponent of the importance-sampling weights (if 0, no importance sampling) (DDPG_PER only)
-hyper_params['summary_dir'] = None # No summaries
 #hyper_params['summary_dir'] = '/tmp/' + script_name + '/' + data_id # Directory in which to save the summaries
 hyper_params['seed'] = None # Seed for the initialization of all random generators
 hyper_params['single_thread'] = False # Force the execution on a single core in order to have a deterministic behavior
@@ -148,3 +142,6 @@ else :
 	os.chdir( '../build' )
 	import subprocess
 	subprocess.call( './rover_training_1_exe display ' + path_to_tf_model )
+
+
+ddpg.sess.close()

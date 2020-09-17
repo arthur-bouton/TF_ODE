@@ -31,6 +31,9 @@ class Rover_1 : public Robot
 	inline double GetSteeringRateCmd() const { return _steering_rate; }
 	double GetSteeringTrueRate() const;
 
+	inline void SetCrawlingMode( bool crawl ) { _crawling_mode = crawl; }
+	inline bool IsCrawlingMode() const { return _crawling_mode; }
+
 	void SetBoggieTorque( double torque );
 	inline double GetBoggieTorque() const { return _boggie_torque; }
 

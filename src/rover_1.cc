@@ -47,7 +47,7 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 	#define FORK_C_ANG Vector3d( 1., 1., 1. )
 
 	steering_max_vel = 15;
-	boggie_max_torque = 20;
+	boggie_max_torque = 25;
 
 	wheelbase = 0.58;
 	wheeltrack = 0.61;

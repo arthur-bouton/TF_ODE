@@ -52,7 +52,8 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 	// [ Robot ]
 
 	robot::Rover_1_tf robot( env, Eigen::Vector3d( 0, 0, 0 ), path_to_tf_model );
-	robot.SetCmdPeriod( 0.5 );
+	robot.SetCrawlingMode( true );
+	robot.SetCmdPeriod( 0.1 );
 //#ifdef EXE
 	//robot.SetCmdPeriod( 0.1 );
 //#endif
@@ -77,16 +78,16 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 	else
 	{
 		// Maximum angle to be chosen randomly when not specified:
-		float max_rot( 10 );
+		float max_rot( 5 );
 		orientation = max_rot*uniform( gen );
 	}
 	float step_height( 0.105*2 );
-	ode::Box step( env, Eigen::Vector3d( 1.25, 0, step_height/2 ), 1, 1, 3, step_height, false );
+	ode::Box step( env, Eigen::Vector3d( -1.25, 0, step_height/2 ), 1, 1, 3, step_height, false );
 	step.set_rotation( 0, 0, orientation*M_PI/180 );
 	step.fix();
 	step.set_collision_group( "ground" );
 
-	ode::Box step_c( env, Eigen::Vector3d( 2.25, 0, step_height/2 ), 1, 2, 3, step_height, false );
+	ode::Box step_c( env, Eigen::Vector3d( -2.25, 0, step_height/2 ), 1, 2, 3, step_height, false );
 	step_c.fix();
 	step_c.set_collision_group( "ground" );
 
@@ -94,17 +95,17 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 	// [ Simulation rules ]
 
 	// Cruise speed of the robot:
-	float speedf( 0.15 );
+	float speedf( -0.10 );
 	// Time to reach cruise speed:
 	float term( 0.5 );
 	// Duration before starting the internal control:
 	float IC_start( 1 );
-	if ( strncmp( option, "eval", 5 ) != 0 )
-		IC_start += 0.25*uniform( gen );
+	if ( strncmp( option, "trial", 6 ) == 0 )
+		IC_start += 0.05*uniform( gen );
 	// Timeout of the simulation:
-	float timeout( 80 );
+	float timeout( 60 );
 	// Maximum distance to travel ahead:
-	float x_goal( 1.5 );
+	float x_goal( -1.5 );
 	// Maximum lateral deviation permitted:
 	float y_max( 0.6 );
 
@@ -112,7 +113,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 
 	std::function<bool(float,double)>  step_function = [&]( float timestep, double time )
 	{
-		if ( speed <= speedf )
+		if ( speed >= speedf )
 		{
 			speed += speedf/term*timestep;
 			robot.SetRobotSpeed( speed );
@@ -125,7 +126,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 		robot.next_step( timestep );
 
 		// If the robot has reached the goal, is out of track or has tipped over, end the simulation:
-		if ( time >= timeout || fabs( robot.GetPosition().y() ) >= y_max || robot.GetPosition().x() >= x_goal || robot.IsUpsideDown() )
+		if ( time >= timeout || fabs( robot.GetPosition().y() ) >= y_max || robot.GetPosition().x() <= x_goal || robot.IsUpsideDown() )
 			return true;
 
 		return false;
@@ -189,7 +190,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 	if ( strncmp( option, "trial", 6 ) != 0 )
 	{
 		printf( "%s t %6.3f | x %5.3f | y %+6.3f | Rmoy %7.3f\n",
-		( robot.GetPosition().x() >= x_goal ? "\033[1;32m[Success]\033[0;39m" : "\033[1;31m[Failure]\033[0;39m" ),
+		( robot.GetPosition().x() <= x_goal ? "\033[1;32m[Success]\033[0;39m" : "\033[1;31m[Failure]\033[0;39m" ),
 		sim.get_time(), robot.GetPosition().x(), robot.GetPosition().y(), robot.GetTotalReward()/sim.get_time() );
 		fflush( stdout );
 	}
