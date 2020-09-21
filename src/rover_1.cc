@@ -232,7 +232,7 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 Vector3d Rover_1::GetPosition() const
 {
 	dVector3 center_pos;
-	dBodyGetRelPointPos( _main_body->get_body(), -front_pos[0], -front_pos[1], -front_pos[2] + wheel_radius[0], center_pos );
+	dBodyGetRelPointPos( _main_body->get_body(), -front_pos[0], -front_pos[1], -front_pos[2] + sea_elev, center_pos );
 	return Vector3d( center_pos[0], center_pos[1], center_pos[2] );
 }
 
