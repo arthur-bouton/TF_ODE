@@ -111,9 +111,9 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 
 	float speed = 0;
 
-	std::function<bool(float,double)>  step_function = [&]( float timestep, double time )
+	std::function<bool(float,double)> step_function = [&]( float timestep, double time )
 	{
-		if ( speed >= speedf )
+		if ( fabs( speed ) <= fabs( speedf ) )
 		{
 			speed += speedf/term*timestep;
 			robot.SetRobotSpeed( speed );
@@ -215,6 +215,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 int main( int argc, char* argv[] )
 {
 	Py_Initialize();
+	signal( SIGINT, SIG_DFL );
 
 	const char* path_to_tf_model = DEFAULT_PATH_TO_TF_MODEL;
 	if ( argc > 2 && strncmp( argv[2], "--", 3 ) != 0 )
