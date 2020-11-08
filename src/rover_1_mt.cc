@@ -68,7 +68,8 @@ void Rover_1_mt::InferAction( const vector<double>& state, double& steering_rate
 void Rover_1_mt::_InternalControl( double delta_t )
 {
 	// Flip the role of left and right if the steering angle is negative:
-	bool flip = GetSteeringTrueAngle() < 0;
+	//bool flip = GetSteeringTrueAngle() < 0;
+	bool flip = false;
 
 	// Get the current state of the robot:
 	vector<double> state = GetState( flip );
