@@ -1,11 +1,19 @@
 #!/bin/bash
 
-data_dir=tree_data_mu05_1
+if [ $# -ge 1 ]; then
+	data_dir=$1
+else
+	>&2 echo Please specify the directory containing the parameters of each tree.
+	exit 1
+fi
 
 csv_file=performance.csv
 
 angle_list=$( seq -1 1 1 )
 offset_list=$( seq 0 0.01 0.09 )
+
+exec_file=../build/scene_1_mt
+#exec_file=../build/scene_1_mt_inter
 
 # Position of the trial duration in the string returned from the evaluation:
 duration_pos=2
@@ -13,6 +21,10 @@ duration_pos=2
 
 trap 'echo;exit' INT
 for tree_dir in $data_dir/* ; do
+	if ! [[ -f $tree_dir/params_1.yaml && -f $tree_dir/params_2.yaml ]]; then
+		continue
+	fi
+
 	echo -e '\n\n===' $tree_dir '===\n'
 
 	nsuccesses=0
@@ -20,7 +32,7 @@ for tree_dir in $data_dir/* ; do
 	average_time=0
 	for angle in $angle_list ; do
 		for offset in $offset_list ; do
-			result=($(../build/scene_1_mt nodisplay $angle $tree_dir/params_ $offset 2> /dev/null))
+			result=($( $exec_file nodisplay $angle $tree_dir/params_ $offset 2> /dev/null ))
 			echo ${result[*]}
 
 			ntrials=$(( ntrials + 1 ))
@@ -33,7 +45,7 @@ for tree_dir in $data_dir/* ; do
 
 	success_percentage=0
 	if [ $nsuccesses -ne 0 ] ; then
-		success_percentage=$( echo $nsuccesses $ntrials | awk '{printf "%.2f", $1/$2}' )
+		success_percentage=$( echo $nsuccesses $ntrials | awk '{printf "%.1f", $1/$2*100}' )
 		average_time=$( echo $average_time $nsuccesses | awk '{printf "%.2f", $1/$2}' )
 	fi
 
