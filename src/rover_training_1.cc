@@ -28,7 +28,7 @@
 #include <random>
 
 
-#define DEFAULT_PATH_TO_TF_MODEL "../training_data/step_06_PER_1_no_sym/selected/rover_training_1_0005"
+#define DEFAULT_PATH_TO_TF_MODEL "../training_data/Rdxyt05_egreedy0907/selected/rover_training_1_0004"
 
 
 namespace p = boost::python;
@@ -53,7 +53,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 
 	robot::Rover_1_tf robot( env, Eigen::Vector3d( 0, 0, 0 ), path_to_tf_model );
 	robot.SetCrawlingMode( true );
-	robot.SetCmdPeriod( 0.1 );
+	robot.SetCmdPeriod( 0.2 );
 //#ifdef EXE
 	//robot.SetCmdPeriod( 0.1 );
 //#endif
@@ -82,12 +82,12 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 		orientation = max_rot*uniform( gen );
 	}
 	float step_height( 0.105*2 );
-	ode::Box step( env, Eigen::Vector3d( -1.25, 0, step_height/2 ), 1, 1, 3, step_height, false );
+	ode::Box step( env, Eigen::Vector3d( -1, 0, step_height/2 ), 1, 1, 3, step_height, false );
 	step.set_rotation( 0, 0, orientation*M_PI/180 );
 	step.fix();
 	step.set_collision_group( "ground" );
 
-	ode::Box step_c( env, Eigen::Vector3d( -2.25, 0, step_height/2 ), 1, 2, 3, step_height, false );
+	ode::Box step_c( env, Eigen::Vector3d( -2, 0, step_height/2 ), 1, 2, 3, step_height, false );
 	step_c.fix();
 	step_c.set_collision_group( "ground" );
 
@@ -95,13 +95,13 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 	// [ Simulation rules ]
 
 	// Cruise speed of the robot:
-	float speedf( -0.10 );
+	float speedf( -0.04 );
 	// Time to reach cruise speed:
 	float term( 0.5 );
 	// Duration before starting the internal control:
 	float IC_start( 1 );
 	if ( strncmp( option, "trial", 6 ) == 0 )
-		IC_start += 0.05*uniform( gen );
+		IC_start += 0.25*uniform( gen );
 	// Timeout of the simulation:
 	float timeout( 60 );
 	// Maximum distance to travel ahead:
@@ -239,7 +239,9 @@ void eval( const char* path_to_tf_model )
 }
 
 
-BOOST_PYTHON_MODULE( rover_training_1_module )
+//BOOST_PYTHON_MODULE( rover_training_1_module )
+//BOOST_PYTHON_MODULE( rover_training_1_module_Rdxy05t05_gauss01 )
+BOOST_PYTHON_MODULE( rover_training_1_module_Rdxy05t05_egreedy0907 )
 {
     p::def( "trial", trial );
     p::def( "eval", eval );

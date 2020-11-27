@@ -24,7 +24,7 @@ from keras.layers import Dense
 def actor( states, a_dim ) :
 
 	x = Dense( 400, activation='relu' )( states )
-	x = Dense( 400, activation='relu' )( x )
+	x = Dense( 300, activation='relu' )( x )
 	action = Dense( a_dim, activation='tanh' )( x )
 
 	return action
@@ -34,14 +34,15 @@ def actor( states, a_dim ) :
 def critic( states, actions ) :
 
 	x = Dense( 400, activation='relu' )( tf.concat( [ states, actions ], 1 ) )
-	x = Dense( 400, activation='relu' )( x )
+	x = Dense( 300, activation='relu' )( x )
 	Q_value = Dense( 1, activation='linear' )( x )
 
 	return Q_value
 
 
 # Identifier name for the training data:
-run_id = 'step_05_reverse_crawl'
+#run_id = 'step05_speed004_Rdxyt05_gauss01'
+run_id = 'step05_speed004_Rdxyt05_egreedy0907'
 
 script_name = os.path.splitext( os.path.basename( __file__ ) )[0]
 
@@ -64,7 +65,8 @@ hyper_params['buffer_size'] = 1e5 # Maximal size of the replay buffer
 hyper_params['minibatch_size'] = 64 # Size of each minibatch
 hyper_params['actor_lr'] = 1e-5 # Learning rate of the actor network
 hyper_params['critic_lr'] = 2e-5 # Learning rate of the critic network
-hyper_params['beta_L2'] = 0 # Ridge regularization coefficient
+#hyper_params['beta_L2'] = 0 # Ridge regularization coefficient
+hyper_params['beta_L2'] = 1e-6 # Ridge regularization coefficient
 #hyper_params['alpha_sampling'] = 1 # Exponent interpolating between a uniform sampling (0) and a greedy prioritization (1) (DDPG_PER only)
 #hyper_params['beta_IS'] = 1 # Exponent of the importance-sampling weights (if 0, no importance sampling) (DDPG_PER only)
 #hyper_params['summary_dir'] = '/tmp/' + script_name + '/' + data_id # Directory in which to save the summaries

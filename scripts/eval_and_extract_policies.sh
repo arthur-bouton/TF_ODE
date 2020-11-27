@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Identifier name for the training data:
-run_id=step_05_reverse_crawl
+run_id=Rdxyt_gauss01
 
 # Maximum duration of a successful run for it to be extracted:
 target_duration=30

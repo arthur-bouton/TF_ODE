@@ -64,7 +64,7 @@ int main( int argc, char* argv[] )
 	// [ Simulation rules ]
 
 	// Cruise speed of the robot:
-	float speedf( 0.10 );
+	float speedf( -0.04 );
 	// Time to reach cruise speed:
 	float term( 0.5 );
 	// Timeout of the simulation:
@@ -78,7 +78,7 @@ int main( int argc, char* argv[] )
 
 	std::function<bool(float,double)> step_function = [&]( float timestep, double time )
 	{
-		if ( speed <= speedf )
+		if ( fabs( speed ) <= fabs( speedf ) )
 		{
 			speed += speedf/term*timestep;
 			robot.SetRobotSpeed( speed );

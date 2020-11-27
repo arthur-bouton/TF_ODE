@@ -30,8 +30,9 @@ int main( int argc, char* argv[] )
 	std::string yaml_file_path_2 = std::string( yaml_file_path ) + std::string( "2.yaml" );
 	robot::Rover_1_mt robot( env, Eigen::Vector3d( 0, 0, 0 ), yaml_file_path_1, yaml_file_path_2, false, 1 );
 	//robot::Rover_1_mt robot( env, Eigen::Vector3d( 0, 0, 0 ), yaml_file_path_1, yaml_file_path_2, false, 2, true );
-	robot.SetCmdPeriod( 0.1 );
-	//robot.SetCmdPeriod( 0.5 );
+	robot.SetCrawlingMode( true );
+	//robot.SetCmdPeriod( 0.1 );
+	robot.SetCmdPeriod( 0.5 );
 	robot.DeactivateIC();
 
 
@@ -46,12 +47,12 @@ int main( int argc, char* argv[] )
 			throw std::runtime_error( std::string( "Invalide orientation: " ) + std::string( argv[2] ) );
 	}
 	float step_height( 0.105*2 );
-	ode::Box step( env, Eigen::Vector3d( -1.25, 0, step_height/2 ), 1, 1, 3, step_height, false );
+	ode::Box step( env, Eigen::Vector3d( -1, 0, step_height/2 ), 1, 1, 3, step_height, false );
 	step.set_rotation( 0, 0, orientation*M_PI/180 );
 	step.fix();
 	step.set_collision_group( "ground" );
 
-	ode::Box step_c( env, Eigen::Vector3d( -2.25, 0, step_height/2 ), 1, 2, 3, step_height, false );
+	ode::Box step_c( env, Eigen::Vector3d( -2, 0, step_height/2 ), 1, 2, 3, step_height, false );
 	step_c.fix();
 	step_c.set_collision_group( "ground" );
 
@@ -69,7 +70,7 @@ int main( int argc, char* argv[] )
 	// [ Simulation rules ]
 
 	// Cruise speed of the robot:
-	float speedf( -0.10 );
+	float speedf( -0.04 );
 	// Time to reach cruise speed:
 	float term( 0.5 );
 	// Duration before starting the internal control:
@@ -86,7 +87,7 @@ int main( int argc, char* argv[] )
 	// Maximum distance to travel ahead:
 	float x_goal( -1.5 );
 	// Maximum lateral deviation permitted:
-	float y_max( 0.5 );
+	float y_max( 0.6 );
 
 	float speed = 0;
 	std::vector<double> prev_state;
@@ -178,7 +179,7 @@ int main( int argc, char* argv[] )
 	
 	// [ Simulation loop ]
 
-	Sim_loop sim( 0.001, display_ptr, false, 1 );
+	Sim_loop sim( 0.001, display_ptr, false, 0 );
 	//sim.set_fps( 25 );
 
 	if ( argc > 1 && strncmp( argv[1], "capture", 8 ) == 0 )

@@ -49,8 +49,8 @@ Rover_1_tf::Rover_1_tf( Environment& env, const Vector3d& pose, const char* path
 	else
 		_rd_gen = std::mt19937( seed );
     _expl_dist = std::uniform_real_distribution<double>( 0., 1. );
-    _ctrl_dist = std::uniform_real_distribution<double>( -1., 1. );
-    //_ctrl_dist = std::normal_distribution<double>( 0., 1. );
+    _ctrl_dist_uniform = std::uniform_real_distribution<double>( -1., 1. );
+    _ctrl_dist_normal = std::normal_distribution<double>( 0., 1. );
 }
 
 
@@ -107,12 +107,17 @@ double Rover_1_tf::_ComputeReward( double delta_t )
 
 	// Reward the forward advance:
 	//double reward = pos_diff[0]*fabs( pos_diff[0] ) + pos_diff[2]*fmax( 0., pos_diff[2] );
-	double reward = -pos_diff[0]*fabs( pos_diff[0] );
+	//double reward = -pos_diff[0]*fabs( pos_diff[0] );
+	double reward = -pos_diff[0];
 	// Scaling:
-	reward *= 100./( delta_t*delta_t );
+	//reward *= 100./( delta_t*delta_t );
+	reward *= 25./delta_t;
+
+	// Penalise side deviation:
+	reward -= fabs( new_pos[1] )*0.5;
 
 	// Penalise the use of boggie torque:
-	reward -= fabs( _boggie_torque )/boggie_max_torque;
+	reward -= fabs( _boggie_torque )/boggie_max_torque*0.5;
 
 	_last_pos = new_pos;
 	return reward;
@@ -153,20 +158,23 @@ void Rover_1_tf::_InternalControl( double delta_t )
 
 	static bool explore;
 
-	//if ( _exploration && _expl_dist( _rd_gen ) > 0.7 )
 	double draw = _expl_dist( _rd_gen );
-	if ( _exploration && ( ! explore && draw > 0.7 || explore && draw > 0.3 ) )
+	if ( _exploration && ( ! explore && draw > 0.9 || explore && draw > 0.7 ) )
 	{
 		explore = ! explore;
 		if ( explore )
 		{
-			_steering_rate = _ctrl_dist( _rd_gen )*steering_max_vel;
-			_boggie_torque = _ctrl_dist( _rd_gen )*boggie_max_torque;
+			_steering_rate = _ctrl_dist_uniform( _rd_gen )*steering_max_vel;
+			_boggie_torque = _ctrl_dist_uniform( _rd_gen )*boggie_max_torque;
 #ifdef PRINT_EXPLO
 			printf( "EXPLO: %f %f\n", _steering_rate, _boggie_torque );
 #endif
 		}
 	}
+#ifdef PRINT_EXPLO
+	else if ( explore )
+		printf( "EXPLO: %f %f (continue)\n", _steering_rate, _boggie_torque );
+#endif
 	if ( !_exploration || ! explore )
 	{
 		InferAction( current_state, _steering_rate, _boggie_torque );
@@ -174,10 +182,6 @@ void Rover_1_tf::_InternalControl( double delta_t )
 		printf( "INFER: %f %f\n", _steering_rate, _boggie_torque );
 #endif
 	}
-#ifdef PRINT_EXPLO
-	else
-		printf( "EXPLO: %f %f (continue)\n", _steering_rate, _boggie_torque );
-#endif
 
 #ifdef PRINT_EXPLO
 	fflush( stdout );
@@ -188,8 +192,8 @@ void Rover_1_tf::_InternalControl( double delta_t )
 
 	//if ( _exploration )
 	//{
-		//_steering_rate += _ctrl_dist( _rd_gen )*0.2*steering_max_vel;
-		//_boggie_torque += _ctrl_dist( _rd_gen )*0.2*boggie_max_torque;
+		//_steering_rate += _ctrl_dist_normal( _rd_gen )*0.1*steering_max_vel;
+		//_boggie_torque += _ctrl_dist_normal( _rd_gen )*0.1*boggie_max_torque;
 	//}
 
 

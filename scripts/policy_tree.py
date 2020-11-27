@@ -5,14 +5,12 @@ from ModelTree.model_tree import Model_tree
 
 
 data_file_list = []
-data_file_list.append( '../training_data/samples_mu06_period01_angle0_even.dat' )
-data_file_list.append( '../training_data/samples_mu06_period01_angle0_odd.dat' )
-data_file_list.append( '../training_data/samples_mu06_period01_angle1_even.dat' )
-data_file_list.append( '../training_data/samples_mu06_period01_angle1_odd.dat' )
-data_file_list.append( '../training_data/samples_mu06_period01_angle2_even.dat' )
-data_file_list.append( '../training_data/samples_mu06_period01_angle2_odd.dat' )
-data_file_list.append( '../training_data/samples_mu06_period01_angle5_even.dat' )
-data_file_list.append( '../training_data/samples_mu06_period01_angle5_odd.dat' )
+data_file_list.append( '../training_data/samples_mu05_period01_angle0_even.dat' )
+data_file_list.append( '../training_data/samples_mu05_period01_angle0_odd.dat' )
+data_file_list.append( '../training_data/samples_mu05_period01_angle+1_even.dat' )
+data_file_list.append( '../training_data/samples_mu05_period01_angle-1_odd.dat' )
+data_file_list.append( '../training_data/samples_mu05_period01_angle+2_even.dat' )
+data_file_list.append( '../training_data/samples_mu05_period01_angle-2_odd.dat' )
 
 
 state_1 = [ 'Steering angle', 'Roll angle', 'Pitch Angle', 'Boggie angle' ]
@@ -41,8 +39,8 @@ df.reset_index( drop=True, inplace=True )
 
 
 # Symmetrize the state and actions around the steering angle:
-variables_to_flip = [ 'Direction', 'Steering angle', 'Roll angle', 'Boggie angle' ] + state_2[1::2] + actions
-df.loc[ df[ 'Steering angle' ] < 0, variables_to_flip ] *= -1
+#variables_to_flip = [ 'Direction', 'Steering angle', 'Roll angle', 'Boggie angle' ] + state_2[1::2] + actions
+#df.loc[ df[ 'Steering angle' ] < 0, variables_to_flip ] *= -1
 
 # Drop the dimension that are highly correlated:
 df = df.drop( [ 'Rear $f_x$', 'Rear $f_y$', 'Rear $f_z$' ], axis=1 )
@@ -53,7 +51,7 @@ X_data = df.iloc[:,:-2]
 Y_data = df.iloc[:,-2:]
 
 steering_rate_max = 15
-boggie_torque_max = 20
+boggie_torque_max = 25
 
 
 
