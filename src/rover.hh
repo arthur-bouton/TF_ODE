@@ -99,12 +99,16 @@ class Rover_1 : public Robot
 	double front_length;
 	double front_height;
 	double front_width;
+	double front_x_offset;
+	double front_y_offset;
 	Eigen::Vector3d front_pos;
 
 	double rear_mass;
 	double rear_length;
 	double rear_height;
 	double rear_width;
+	double rear_x_offset;
+	double rear_y_offset;
 	Eigen::Vector3d rear_pos;
 
 	Eigen::Vector3d hinge_pos;

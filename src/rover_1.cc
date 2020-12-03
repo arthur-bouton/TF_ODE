@@ -62,18 +62,22 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 
 	belly_elev = 0.33;
 
-	//front_mass = 4.55 + 2.2; // Body + battery
-	front_mass = 4.55; // Body without battery
+	//front_mass = 5.25 + 2.2; // Body + battery
+	front_mass = 5.25; // Body without battery
 	front_length = 0.345;
 	front_height = 0.225;
 	front_width = 0.200;
-	front_pos = Vector3d( front_length/2, 0, belly_elev + front_height/2 );
+	front_x_offset = -0.063;
+	front_y_offset = 0.023;
+	front_pos = Vector3d( front_length/2 + front_x_offset, front_y_offset, belly_elev + front_height/2 );
 
-	rear_mass = 5;
+	rear_mass = 3.67;
 	rear_length = 0.312;
 	rear_height = 0.177;
 	rear_width = 0.126;
-	rear_pos = Vector3d( -rear_length/2, 0, belly_elev + rear_height/2 );
+	rear_x_offset = 0.046;
+	rear_y_offset = -0.040;
+	rear_pos = Vector3d( -rear_length/2 + rear_x_offset, rear_y_offset, belly_elev + rear_height/2 );
 
 	hinge_pos = Vector3d( 0, 0, ( front_pos[2] + rear_pos[2] )/2 );
 	steering_angle_max = 45;
