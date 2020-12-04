@@ -26,15 +26,16 @@
 #include "renderer/osg_text.hh"
 #include <boost/python.hpp>
 #include <random>
+#include <csignal>
 
 
-#define DEFAULT_PATH_TO_TF_MODEL "../training_data/Rdxyt05_egreedy0907/selected/rover_training_1_0004"
+#define DEFAULT_PATH_TO_MODEL_DIR "../training_data/Rdxyt05/actor"
 
 
 namespace p = boost::python;
 
 
-p::list simulation( const char* option = "", const char* path_to_tf_model = DEFAULT_PATH_TO_TF_MODEL, int argc = 0, char* argv[] = nullptr )
+p::list simulation( const char* option = "", const char* path_to_model_dir = DEFAULT_PATH_TO_MODEL_DIR, int argc = 0, char* argv[] = nullptr )
 {
 	// Uniform random generator:
 	std::random_device rd;
@@ -51,7 +52,7 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 
 	// [ Robot ]
 
-	robot::Rover_1_tf robot( env, Eigen::Vector3d( 0, 0, 0 ), path_to_tf_model );
+	robot::Rover_1_tf robot( env, Eigen::Vector3d( 0, 0, 0 ), path_to_model_dir );
 	robot.SetCrawlingMode( true );
 	robot.SetCmdPeriod( 0.2 );
 //#ifdef EXE
@@ -66,20 +67,20 @@ p::list simulation( const char* option = "", const char* path_to_tf_model = DEFA
 
 	// Orientation angle of the step:
 	double orientation;
-	if ( strncmp( option, "eval", 5 ) == 0 )
+	if ( strncmp( option, "eval", 5 ) == 0 || strncmp( option, "display", 8 ) == 0 )
 		orientation = 0;
-	else if ( argc > 3 )
-	{
-		char* endptr;
-		orientation = strtod( argv[3], &endptr );
-		if ( *endptr != '\0' )
-			throw std::runtime_error( std::string( "Invalide argument " ) + std::string( argv[3] ) );
-	}
 	else
 	{
 		// Maximum angle to be chosen randomly when not specified:
 		float max_rot( 5 );
 		orientation = max_rot*uniform( gen );
+	}
+	if ( argc > 3 )
+	{
+		char* endptr;
+		orientation = strtod( argv[3], &endptr );
+		if ( *endptr != '\0' )
+			throw std::runtime_error( std::string( "Invalide argument " ) + std::string( argv[3] ) );
 	}
 	float step_height( 0.105*2 );
 	ode::Box step( env, Eigen::Vector3d( -1, 0, step_height/2 ), 1, 1, 3, step_height, false );
@@ -217,31 +218,29 @@ int main( int argc, char* argv[] )
 	Py_Initialize();
 	signal( SIGINT, SIG_DFL );
 
-	const char* path_to_tf_model = DEFAULT_PATH_TO_TF_MODEL;
+	const char* path_to_model_dir = DEFAULT_PATH_TO_MODEL_DIR;
 	if ( argc > 2 && strncmp( argv[2], "--", 3 ) != 0 )
-		path_to_tf_model = argv[2];
+		path_to_model_dir = argv[2];
 
-	simulation( argc > 1 ? argv[1] : "display", path_to_tf_model, argc, argv );
+	simulation( argc > 1 ? argv[1] : "display", path_to_model_dir, argc, argv );
 
 	return 0;
 }
 
 
-p::list trial( const char* path_to_tf_model )
+p::list trial( const char* path_to_model_dir )
 {
-	return simulation( "trial", path_to_tf_model );
+	return simulation( "trial", path_to_model_dir );
 }
 
 
-void eval( const char* path_to_tf_model )
+void eval( const char* path_to_model_dir )
 {
-	simulation( "eval", path_to_tf_model );
+	simulation( "eval", path_to_model_dir );
 }
 
 
-//BOOST_PYTHON_MODULE( rover_training_1_module )
-//BOOST_PYTHON_MODULE( rover_training_1_module_Rdxy05t05_gauss01 )
-BOOST_PYTHON_MODULE( rover_training_1_module_Rdxy05t05_egreedy0907 )
+BOOST_PYTHON_MODULE( rover_training_1_module )
 {
     p::def( "trial", trial );
     p::def( "eval", eval );

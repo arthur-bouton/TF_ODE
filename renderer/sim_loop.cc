@@ -98,7 +98,7 @@ void Sim_loop::_do_print_time()
 	if ( _time*_timestep > _nsec + 1 )
 	{
 		_nsec++;
-		fprintf( stderr, "> Simulation time: %lds\r", _nsec );
+		fprintf( stderr, "> Simulation time: %lds   \r", _nsec );
 		fflush( stderr );
 	}
 }

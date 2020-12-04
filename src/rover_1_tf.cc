@@ -1,12 +1,9 @@
 #include "rover_tf.hh"
-#include <tensorflow/core/protobuf/meta_graph.pb.h>
-#include "tensorflow/cc/framework/ops.h"
 #include <random>
 
 
 using namespace ode;
 using namespace Eigen;
-using namespace tensorflow;
 namespace p = boost::python;
 
 
@@ -14,7 +11,7 @@ namespace robot
 {
 
 
-Rover_1_tf::Rover_1_tf( Environment& env, const Vector3d& pose, const char* path_to_tf_model, const int seed ) :
+Rover_1_tf::Rover_1_tf( Environment& env, const Vector3d& pose, const char* path_to_actor_model_dir, const int seed ) :
                         Rover_1( env, pose ),
 						_total_reward( 0 ),
 						_exploration( false )
@@ -22,22 +19,8 @@ Rover_1_tf::Rover_1_tf( Environment& env, const Vector3d& pose, const char* path
 	_last_pos = GetPosition();
 
 
-	// Creation of the TensorFlow session:
-	_tf_session_ptr = NewSession( SessionOptions() );
-	if ( _tf_session_ptr == nullptr )
-		throw std::runtime_error( "Could not create the TensorFlow session." );
-
-	// Read in the protobuf graph:
-	MetaGraphDef graph_def;
-	TF_CHECK_OK( ReadBinaryProto( Env::Default(), std::string( path_to_tf_model ) += ".meta", &graph_def ) );
-
-	// Add the graph to the session:
-	TF_CHECK_OK( _tf_session_ptr->Create( graph_def.graph_def() ) );
-
-	// Read weights from the saved checkpoint:
-	tensorflow::Tensor checkpointPathTensor( DT_STRING, TensorShape() );
-	checkpointPathTensor.scalar<std::string>()() = path_to_tf_model;
-	TF_CHECK_OK( _tf_session_ptr->Run( {{graph_def.saver_def().filename_tensor_name(), checkpointPathTensor}}, {}, {graph_def.saver_def().restore_op_name()}, nullptr ) );
+	// Import the actor model:
+	_actor_model_ptr = TF_model<float>::ptr_t( new TF_model<float>( path_to_actor_model_dir, { 17 }, { 2, 2 } ) );
 	
 
 	// Initialization of the random number engine:
@@ -48,9 +31,7 @@ Rover_1_tf::Rover_1_tf( Environment& env, const Vector3d& pose, const char* path
 	}
 	else
 		_rd_gen = std::mt19937( seed );
-    _expl_dist = std::uniform_real_distribution<double>( 0., 1. );
-    _ctrl_dist_uniform = std::uniform_real_distribution<double>( -1., 1. );
-    _ctrl_dist_normal = std::normal_distribution<double>( 0., 1. );
+    _normal_distribution = std::normal_distribution<double>( 0., 1. );
 }
 
 
@@ -71,32 +52,6 @@ p::list Rover_1_tf::GetState() const
 		//state.append( _torque_output[i] );
 
 	return state;
-}
-
-
-void Rover_1_tf::InferAction( const p::list& state, double& steering_rate, double& boggie_torque ) const
-{
-	// Setup the inputs and outputs:
-	tensorflow::Tensor state_tensor( tensorflow::DT_FLOAT, tensorflow::TensorShape( { 1, p::len( state ) } ) );
-	for ( int i = 0 ; i < p::len( state ) ; i++ )
-		state_tensor.flat<float>()( i ) = float( p::extract<float>( state[i] ) );
-
-	std::vector<std::pair<string, tensorflow::Tensor>> inputs = { { "States", state_tensor } };
-	std::vector<tensorflow::Tensor> outputs;
-
-	// Run the session:
-	TF_CHECK_OK( _tf_session_ptr->Run( inputs, { "Actor_Output" }, {}, &outputs ) );
-
-	// Extract the outputs:
-	steering_rate = outputs[0].flat<float>()( 0 );
-	boggie_torque = outputs[0].flat<float>()( 1 );
-
-#ifdef PRINT_STATE_AND_ACTIONS
-	for ( int i = 0 ; i < p::len( state ) ; i++ )
-		printf( "%f ", state_tensor.flat<float>()( i ) );
-	printf( "%f %f\n", _steering_rate, _boggie_torque );
-	fflush( stdout );
-#endif
 }
 
 
@@ -129,9 +84,6 @@ void Rover_1_tf::_InternalControl( double delta_t )
 	// Get the reward obtained since last call:
 	double reward = _ComputeReward( delta_t );
 	_total_reward += reward;
-//#ifdef PRINT_EXPLO
-		//printf( "reward: %f\n", reward );
-//#endif
 
 	// Get the current state of the robot:
 	p::list current_state = GetState();
@@ -139,6 +91,7 @@ void Rover_1_tf::_InternalControl( double delta_t )
 	// Store the latest experience:
 	if ( p::len( _last_state ) > 0 )
 		_experience.append( p::make_tuple( _last_state, p::make_tuple( _steering_rate, _boggie_torque ), reward, false, current_state ) );
+
 
 #ifdef PRINT_TRANSITIONS
 	if ( p::len( _last_state ) > 0 )
@@ -154,57 +107,41 @@ void Rover_1_tf::_InternalControl( double delta_t )
 #endif
 
 
-	// Choose the next action:
+	// Determine the next action:
 
-	static bool explore;
+	// Setup the inputs:
+	std::vector<float> input_vector;
+	for ( int i = 0 ; i < p::len( current_state ) ; i++ )
+		input_vector.push_back( float( p::extract<float>( current_state[i] ) ) );
 
-	double draw = _expl_dist( _rd_gen );
-	if ( _exploration && ( ! explore && draw > 0.9 || explore && draw > 0.7 ) )
+	// Run the model:
+	std::vector<std::vector<float>> output_vectors = _actor_model_ptr->infer( { input_vector } );
+
+	// Extract the unbounded mean values of the action:
+	double unbounded_steering_rate = output_vectors[0][0];
+	double unbounded_boggie_torque = output_vectors[0][1];
+
+	// Add exploration noise:
+	if ( _exploration )
 	{
-		explore = ! explore;
-		if ( explore )
-		{
-			_steering_rate = _ctrl_dist_uniform( _rd_gen )*steering_max_vel;
-			_boggie_torque = _ctrl_dist_uniform( _rd_gen )*boggie_max_torque;
-#ifdef PRINT_EXPLO
-			printf( "EXPLO: %f %f\n", _steering_rate, _boggie_torque );
-#endif
-		}
-	}
-#ifdef PRINT_EXPLO
-	else if ( explore )
-		printf( "EXPLO: %f %f (continue)\n", _steering_rate, _boggie_torque );
-#endif
-	if ( !_exploration || ! explore )
-	{
-		InferAction( current_state, _steering_rate, _boggie_torque );
-#ifdef PRINT_EXPLO
-		printf( "INFER: %f %f\n", _steering_rate, _boggie_torque );
-#endif
+		unbounded_steering_rate += _normal_distribution( _rd_gen )*output_vectors[1][0];
+		unbounded_boggie_torque += _normal_distribution( _rd_gen )*output_vectors[1][1];
 	}
 
-#ifdef PRINT_EXPLO
+	// Squash and assign the next action:
+	_steering_rate =  steering_max_vel*tanh( unbounded_steering_rate );
+	_boggie_torque = boggie_max_torque*tanh( unbounded_boggie_torque );
+
+
+#ifdef PRINT_STATE_AND_ACTIONS
+	for ( int i = 0 ; i < p::len( current_state ) ; i++ )
+		printf( "%f ", float( p::extract<float>( current_state[i] ) ) );
+	printf( "%f %f\n", _steering_rate, _boggie_torque );
 	fflush( stdout );
 #endif
 
 
-	//InferAction( current_state, _steering_rate, _boggie_torque );
-
-	//if ( _exploration )
-	//{
-		//_steering_rate += _ctrl_dist_normal( _rd_gen )*0.1*steering_max_vel;
-		//_boggie_torque += _ctrl_dist_normal( _rd_gen )*0.1*boggie_max_torque;
-	//}
-
-
 	_last_state = current_state;
-}
-
-
-Rover_1_tf::~Rover_1_tf()
-{
-	_tf_session_ptr->Close();
-	delete _tf_session_ptr;
 }
 
 

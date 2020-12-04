@@ -2,7 +2,7 @@
 #define ROVER_MT_HH 
 
 #include "rover.hh"
-#include "../scripts/ModelTree/cpp/model_tree.hh" // https://github.com/Bouty92/ModelTree
+#include "model_tree.hh" // https://github.com/Bouty92/ModelTree
 
 
 namespace robot
