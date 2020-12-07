@@ -37,7 +37,7 @@ To avoid any conflict with the shared library *libtensorflow_framework.so* used 
 `$ bazel build --config=monolithic //tensorflow:libtensorflow.so`
 
 Install the headers via a symbolic link:  
-`$ sudo ln -s $(pwd)/tensorflow /usr/local/include`
+`$ sudo ln -s $(realpath tensorflow) /usr/local/include`
 
 Install the shared library (`shopt -s extglob` enabled):  
 `$ sudo cp -P bazel-bin/tensorflow/libtensorflow.so!(*params) /usr/local/lib`  
@@ -53,19 +53,23 @@ Install the shared library (`shopt -s extglob` enabled):
 
 ## Start a training:
 
-Set the identifier directory name for the training data in both [rover_training_1.py](scripts/rover_training_1.py) and [eval_and_extract_policies.sh](scripts/eval_and_extract_policies.sh). For example:  
-- `session_id = 'run_1'` in [rover_training_1.py](scripts/rover_training_1.py).
-- `session_id=run_1` in [eval_and_extract_policies.sh](scripts/eval_and_extract_policies.sh).
+To benefit from the autocomplete and automatically set the environment variables `TRAINING_DATA_DIR` and `BUILD_DIR`, source the setup script:  
+`$ cd scripts`  
+`$ source setup.sh`  
+To avoid doing it manually each time you open a new terminal, add it to your bashrc:  
+`$ echo -e "\nsource $(realpath setup.sh)" >> ~/.bashrc`
 
-If the directory doesn't exist yet, create it so that *tee* can start writing in it:  
-`$ mkdir -p ../training_data/run_1`
+To start a training with the identification name *run_1* for example, execute:  
+`$ ./train.sh rover_training_1.py run_1`
 
-Then, start the training with:  
-`$ ./rover_training_1.py | tee -i ../training_data/run_1/training.log`
+The training can be stopped with Ctrl-C and resumed with:  
+`$ ./train.sh rover_training_1.py run_1 resume`
 
-In order to monitor the progress, run in another terminal:  
-`$ ./eval_and_extract_policies.sh`  
-The first argument for this script can be either the number of model updates to skip between two evaluations or `-d, --display-only` in order to avoid recording the stats and backing up models.
+In order to monitor the progress and backup well-performing policies, run in another terminal:  
+`$ ./eval_and_extract_policies.sh rover_training_1_exe run_1`  
+Check [eval_and_extract_policies.sh](scripts/eval_and_extract_policies.sh) for all the available options.
 
-To evaluate the current policy, simply run:  
-`$ ./rover_training_1.py eval`
+To evaluate the current policy, use:  
+`$ ./eval_policy.sh rover_training_1_exe run_1`  
+To evaluate the picked policies by their number:  
+`$ ./eval_policy.sh rover_training_1_exe run_1 -p 01`

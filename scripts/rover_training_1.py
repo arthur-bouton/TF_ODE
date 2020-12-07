@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
+import sys
+
+if len( sys.argv ) < 2 :
+	print( 'Please specify the identification name of the training.', file=sys.stderr )
+	exit( -1 )
+
 import numpy as np
 import random
-import sys
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -9,7 +14,7 @@ sys.path.insert( 1, 'MachineLearning' )
 from looptools import Loop_handler
 from SAC import SAC
 
-sys.path.insert( 1, '../build' )
+sys.path.insert( 1, os.environ['BUILD_DIR'] )
 import rover_training_1_module
 
 
@@ -50,13 +55,6 @@ def critic( s_dim, a_dim ) :
 
 
 
-# Identifier name for the training data:
-session_id = 'Rdxyt05'
-
-
-# Path to the directory where to store the training data:
-session_dir = '../training_data/' + session_id
-
 # Parameters for the training:
 EP_MAX = 100000 # Maximal number of episodes for the training
 ITER_PER_EP = 500 # Number of training iterations between each episode
@@ -80,67 +78,64 @@ hyper_params['seed'] = None # Random seed for the initialization of all random g
 sac = SAC( **hyper_params )
 
 
-if len( sys.argv ) == 1 or sys.argv[1] != 'eval' :
 
-	if len( sys.argv ) > 1 and sys.argv[1] == 'load' :
-		if len( sys.argv ) > 2 :
-			session_dir = sys.argv[2]
-		sac.load( session_dir )
-		if not sac.load_replay_buffer( session_dir + '/replay_buffer.pkl' ) :
-			print( 'Could not find %s: starting with an empty replay buffer.' % ( session_dir + '/replay_buffer.pkl' ) )
-	else :
+# Path to the directory in which to store the training data:
+session_dir = os.environ['TRAINING_DATA_DIR'] + sys.argv[1]
+
+
+if len( sys.argv ) > 2 and sys.argv[2] == 'resume' :
+	sac.load( session_dir )
+	print( 'Training is resumed where it was left off.' )
+	if not sac.load_replay_buffer( session_dir + '/replay_buffer.pkl' ) :
+		print( 'Could not find %s: starting with an empty replay buffer.' % ( session_dir + '/replay_buffer.pkl' ) )
+	sys.stdout.flush()
+else :
+	sac.actor.save( session_dir + '/actor' )
+
+
+np.random.seed( hyper_params['seed'] )
+
+n_ep = 0
+LQ = 0
+
+import time
+start = time.time()
+
+with Loop_handler() as interruption :
+
+	while not interruption() and n_ep < EP_MAX :
+
+
+		# Do one trial:
+		trial_experience = rover_training_1_module.trial( session_dir + '/actor' )
+
+		if interruption() :
+			break
+
+		# Store the experience:
+		sac.replay_buffer.extend( trial_experience )
+
+		n_ep += 1
+
+
+		# Train the networks:
+		LQ = sac.train( ITER_PER_EP )
+
 		sac.actor.save( session_dir + '/actor' )
 
-
-	np.random.seed( hyper_params['seed'] )
-
-	n_ep = 0
-	LQ = 0
-
-	import time
-	start = time.time()
-
-	with Loop_handler() as interruption :
-
-		while not interruption() and n_ep < EP_MAX :
+		print( 'It %i | Ep %i | Bs %i | LQ %+7.4f | temp %5.3f' %
+			   ( sac.n_iter(), n_ep, len( sac.replay_buffer ), LQ, float( sac.get_alpha() ) ),
+			   flush=True )
 
 
-			# Do one trial:
-			trial_experience = rover_training_1_module.trial( session_dir + '/actor' )
+end = time.time()
+print( 'Elapsed time: %.3fs  ' % ( end - start ) )
 
-			if interruption() :
-				break
+sac.save( session_dir )
 
-			# Store the experience:
-			sac.replay_buffer.extend( trial_experience )
-
-			n_ep += 1
-
-
-			# Train the networks:
-			LQ = sac.train( ITER_PER_EP )
-
-			sac.actor.save( session_dir + '/actor' )
-
-			print( 'It %i | Ep %i | Bs %i | LQ %+7.4f | temp %5.3f' %
-			       ( sac.n_iter(), n_ep, len( sac.replay_buffer ), LQ, float( sac.get_alpha() ) ),
-			       flush=True )
-
-
-	end = time.time()
-	print( 'Elapsed time: %.3fs  ' % ( end - start ), file=sys.stderr )
-
-	sac.save( session_dir )
-
-	answer = input( '\nSave the replay buffer as ' + session_dir + '/replay_buffer.pkl? (y) ' )
-	if answer.strip() == 'y' :
-		sac.save_replay_buffer( session_dir + '/replay_buffer.pkl' )
-		print( 'Replay buffer saved.' )
-	else :
-		print( 'Experience discarded.' )
-
+answer = input( '\nSave the replay buffer as ' + session_dir + '/replay_buffer.pkl? (y) ' )
+if answer.strip() == 'y' :
+	sac.save_replay_buffer( session_dir + '/replay_buffer.pkl' )
+	print( 'Replay buffer saved.' )
 else :
-
-	os.chdir( '../build' )
-	import subprocess
-	subprocess.call( [ './rover_training_1_exe', 'display', session_dir + '/actor' ] )
+	print( 'Experience discarded.' )
