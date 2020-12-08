@@ -155,6 +155,8 @@ extract_data()
 	echo "$file_number -- ${log[*]} => ${result[*]}" >> $extraction_dir/index.log
 }
 
+cd $BUILD_DIR
+
 # Wait for file updates:
 while inotifywait -qqe modify $watched_file; do
 

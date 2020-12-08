@@ -10,7 +10,7 @@ import random
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-sys.path.insert( 1, 'MachineLearning' )
+sys.path.insert( 1, os.environ['TRAINING_SCRIPTS_DIR'] + 'MachineLearning' )
 from looptools import Loop_handler
 from SAC import SAC
 
@@ -80,7 +80,7 @@ sac = SAC( **hyper_params )
 
 
 # Path to the directory in which to store the training data:
-session_dir = os.environ['TRAINING_DATA_DIR'] + sys.argv[1]
+session_dir = sys.argv[1]
 
 
 if len( sys.argv ) > 2 and sys.argv[2] == 'resume' :

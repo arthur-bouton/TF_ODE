@@ -19,6 +19,9 @@ For the reinforcement learning scripts, you will need the following packages for
 To compile the simulations, you will need to install the following libraries for C++:  
 `$ sudo apt-get install libode-dev libopenscenegraph-dev libeigen3-dev libboost-dev libboost-python-dev libyaml-cpp-dev`
 
+To monitor files during a training, you will also need the program `inotifywait`, which can be found in the following package:  
+`$ sudo apt-get install inotify-tools`
+
 ### Build the TensorFlow shared library for C:
 
 To build TensorFlow, you will need [Bazel](https://www.bazel.build). You can download a binary of Bazelisk [here](https://github.com/bazelbuild/bazelisk/releases), which is a wrapper for Bazel that will automatically pick a good version of Bazel given your current working directory. For convenience, you can put it in your `PATH` while renaming it `bazel`:  
@@ -53,23 +56,26 @@ Install the shared library (`shopt -s extglob` enabled):
 
 ## Start a training:
 
-To benefit from the autocomplete and automatically set the environment variables `TRAINING_DATA_DIR` and `BUILD_DIR`, source the setup script:  
-`$ cd scripts`  
-`$ source setup.sh`  
+To set up the environment, source the setup script:  
+`$ source scripts/setup.sh`  
 To avoid doing it manually each time you open a new terminal, add it to your bashrc:  
-`$ echo -e "\nsource $(realpath setup.sh)" >> ~/.bashrc`
+`$ echo -e "\nsource $(realpath -s scripts/setup.sh)" >> ~/.bashrc`  
+The setup.sh script gives you access to the commands `train`, `monitor-policies` and `eval-policy` from anywhere, together with the autocomplete. It also sets the following environment variables:
+- `TRAINING_SCRIPTS_DIR`: Directory containing the training scripts.
+- `TRAINING_DATA_DIR`: Directory in which to store the training data.
+- `BUILD_DIR`: Directory where to find the compiled simulations.
 
 To start a training with the identification name *run_1* for example, execute:  
-`$ ./train.sh rover_training_1.py run_1`
+`$ train rover_training_1.py run_1`
 
 The training can be stopped with Ctrl-C and resumed with:  
-`$ ./train.sh rover_training_1.py run_1 resume`
+`$ train rover_training_1.py run_1 resume`
 
 In order to monitor the progress and backup well-performing policies, run in another terminal:  
-`$ ./eval_and_extract_policies.sh rover_training_1_exe run_1`  
-Check [eval_and_extract_policies.sh](scripts/eval_and_extract_policies.sh) for all the available options.
+`$ monitor-policies rover_training_1_exe run_1`  
+Check the script [monitor-policies](scripts/bin/monitor-policies) for all the available options.
 
 To evaluate the current policy, use:  
-`$ ./eval_policy.sh rover_training_1_exe run_1`  
+`$ eval-policy rover_training_1_exe run_1`  
 To evaluate the picked policies by their number:  
-`$ ./eval_policy.sh rover_training_1_exe run_1 -p 01`
+`$ eval-policy rover_training_1_exe run_1 -p 01`

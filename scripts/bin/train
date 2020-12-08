@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ -z $TRAINING_DATA_DIR && -z $BUILD_DIR ]]; then
+if [[ -z $TRAINING_DATA_DIR && -z $BUILD_DIR && -z $TRAINING_SCRIPTS_DIR ]]; then
 	>&2 echo The environment variables has not been set. You might need to source setup.sh.
 	exit 1
 fi
@@ -10,7 +10,7 @@ if [[ $# -lt 1 ]]; then
 	>&2 echo Please specify the training script.
 	exit 1
 fi
-training_script=$1
+training_script=$TRAINING_SCRIPTS_DIR$1
 shift
 
 if [[ $# -lt 1 ]]; then
@@ -23,4 +23,4 @@ shift
 
 mkdir -p $session_dir
 
-python $training_script $session_dir $* | tee -i $session_dir/training.log
+python3 $training_script $session_dir $* | tee -i $session_dir/training.log

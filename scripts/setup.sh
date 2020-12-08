@@ -1,14 +1,25 @@
 # Bash script providing the auto completion for the scripts
-# train.sh, eval_and_extract_policies.sh and eval_policy.sh.
+# train, monitor-policies and eval-policy.
+
+# Absolute path to the root directory of the project:
+_root_dir=$( realpath -s ${BASH_SOURCE[0]} | sed -e 's:/[^/]*/[^/]*$::' )
+
+# Environment variable specifying the directory containing the training scripts
+# (include a final slash at the end):
+export TRAINING_SCRIPTS_DIR=$_root_dir/scripts/
 
 # Environment variable specifying the directory in which to store the training data
 # (include a final slash at the end):
-export TRAINING_DATA_DIR=../training_data/
+export TRAINING_DATA_DIR=$_root_dir/training_data/
 
 # Environment variable specifying the directory where to find the compiled simulations
 # (include a final slash at the end):
-export BUILD_DIR=../build/
+export BUILD_DIR=$_root_dir/build/
 
+# Add the service scripts to the PATH:
+export PATH=$PATH:$_root_dir/scripts/bin
+
+unset _root_dir
 
 
 _train()
@@ -19,7 +30,7 @@ _train()
 
 	1)
 		# List the Python scripts in the current directory and keep only their base name:
-		choice=$( ( find . -maxdepth 1 -type f -name '*.py' | xargs basename -a ) 2>/dev/null )
+		choice=$( ( find $TRAINING_SCRIPTS_DIR -maxdepth 1 -type f -name '*training*.py' | xargs basename -a ) 2>/dev/null )
 		;;
 
 	2)
@@ -35,10 +46,10 @@ _train()
 	COMPREPLY=( $(compgen -W '$choice' -- ${COMP_WORDS[COMP_CWORD]}) )
 }
 
-complete -F _train './train.sh'
+complete -F _train train
 
 
-_eval_and_extract_policies()
+_monitor_policies()
 {
 	local choice
 
@@ -46,7 +57,7 @@ _eval_and_extract_policies()
 
 	1)
 		# List the executable files in BUILD_DIR and keep only their base name:
-		choice=$( ( find $BUILD_DIR -maxdepth 1 -type f -executable | xargs basename -a ) 2>/dev/null )
+		choice=$( ( find $BUILD_DIR -maxdepth 1 -type f -executable -name '*_exe' | xargs basename -a ) 2>/dev/null )
 		;;
 
 	2)
@@ -62,7 +73,7 @@ _eval_and_extract_policies()
 	COMPREPLY=( $(compgen -W '$choice' -- ${COMP_WORDS[COMP_CWORD]}) )
 }
 
-complete -F _eval_and_extract_policies './eval_and_extract_policies.sh'
+complete -F _monitor_policies monitor-policies
 
 
 _eval_policy()
@@ -73,7 +84,7 @@ _eval_policy()
 
 	1)
 		# List the executable files in BUILD_DIR and keep only their base name:
-		choice=$( ( find $BUILD_DIR -maxdepth 1 -type f -executable | xargs basename -a ) 2>/dev/null )
+		choice=$( ( find $BUILD_DIR -maxdepth 1 -type f -executable -name '*_exe' | xargs basename -a ) 2>/dev/null )
 		;;
 
 	2)
@@ -98,4 +109,4 @@ _eval_policy()
 	COMPREPLY=( $(compgen -W '$choice' -- ${COMP_WORDS[COMP_CWORD]}) )
 }
 
-complete -F _eval_policy './eval_policy.sh'
+complete -F _eval_policy eval-policy

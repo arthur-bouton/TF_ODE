@@ -33,4 +33,6 @@ else
 fi
 
 
+cd $BUILD_DIR
+
 $eval_exe_file display $path_to_model_dir $*
