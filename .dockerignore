@@ -1,0 +1,5 @@
+build
+**/training_data
+Dockerfile
+.dockerignore
+tf_ode.tar

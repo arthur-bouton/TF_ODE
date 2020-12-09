@@ -43,7 +43,7 @@ Install the headers via a symbolic link:
 `$ sudo ln -s $(realpath tensorflow) /usr/local/include`
 
 Install the shared library (`shopt -s extglob` enabled):  
-`$ sudo cp -P bazel-bin/tensorflow/libtensorflow.so!(*params) /usr/local/lib`  
+`$ sudo cp --no-dereference bazel-bin/tensorflow/libtensorflow.so!(*params) /usr/local/lib`  
 `$ sudo ldconfig`
 
 ### Build the simulations:
@@ -51,7 +51,6 @@ Install the shared library (`shopt -s extglob` enabled):
 `$ mkdir build && cd build`  
 `$ cmake ..`  
 `$ make`
-
 
 
 ## Start a training:
@@ -79,3 +78,21 @@ To evaluate the current policy, use:
 `$ eval-policy rover_training_1_exe run_1`  
 To evaluate the picked policies by their number:  
 `$ eval-policy rover_training_1_exe run_1 -p 01`
+
+
+## Build a Docker image:
+
+Copy the files of the TensorFlow library into the Docker context:  
+`$ mkdir tensorflow_lib`  
+`$ cp -r --dereference /usr/local/include/tensorflow tensorflow_lib`  
+`$ cp --no-dereference /usr/local/lib/libtensorflow.so* tensorflow_lib`
+
+Build the Docker image:  
+`$ sudo docker build . -t tf_ode`
+
+Save the image as a tar archive:  
+`$ sudo docker save tf_ode --output tf_ode.tar`
+
+Load the image from the tar archive:  
+`$ sudo docker load --input tf_ode.tar`  
+`$ sudo docker run -it --name training tf_ode`
