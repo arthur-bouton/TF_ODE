@@ -17,6 +17,8 @@ from SAC import SAC
 sys.path.insert( 1, os.environ['BUILD_DIR'] )
 import rover_training_1_module
 
+import threading
+
 
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -105,17 +107,33 @@ with Loop_handler() as interruption :
 
 	while not interruption() and n_ep < EP_MAX :
 
+		n_workers = 2
 
-		# Do one trial:
-		trial_experience = rover_training_1_module.trial( session_dir + '/actor' )
+		def worker( worker_id ) :
+			# Do a trial:
+			trial_experience = rover_training_1_module.trial( session_dir + '/actor' )
+			with replay_buffer_mutex :
+				# Store the experience in the replay buffer:
+				sac.replay_buffer.extend( trial_experience )
+
+		# Create a mutex to protect the replay buffer when it is filled by worker threads:
+		replay_buffer_mutex = threading.Lock()
+
+		# Start the worker threads:
+		threads = []
+		for worker_id in range( 1, n_workers + 1 ) :
+			t = threading.Thread( target=worker, args=( worker_id, ) )
+			t.start()
+			threads.append( t )
+
+		# Wait for every thread to end:
+		for t in threads :
+			t.join()
 
 		if interruption() :
 			break
 
-		# Store the experience:
-		sac.replay_buffer.extend( trial_experience )
-
-		n_ep += 1
+		n_ep += 2
 
 
 		# Train the networks:
