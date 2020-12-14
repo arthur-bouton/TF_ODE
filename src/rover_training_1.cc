@@ -29,7 +29,7 @@
 #include <csignal>
 
 
-#define DEFAULT_PATH_TO_MODEL_DIR "../training_data/Rdxyt05/actor"
+#define DEFAULT_PATH_TO_MODEL_DIR "../training_data/Rt05/actor"
 
 
 namespace p = boost::python;
@@ -102,7 +102,7 @@ p::list simulation( const char* option = "", const char* path_to_model_dir = DEF
 	// Duration before starting the internal control:
 	float IC_start( 1 );
 	if ( strncmp( option, "trial", 6 ) == 0 )
-		IC_start += 0.25*uniform( gen );
+		IC_start += 0.1*uniform( gen );
 	// Timeout of the simulation:
 	float timeout( 60 );
 	// Maximum distance to travel ahead:
@@ -242,6 +242,8 @@ void eval( const char* path_to_model_dir )
 
 BOOST_PYTHON_MODULE( rover_training_1_module )
 {
+	signal( SIGINT, SIG_DFL );
+
     p::def( "trial", trial );
     p::def( "eval", eval );
 }

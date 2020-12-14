@@ -2,4 +2,5 @@ build
 **/training_data
 Dockerfile
 .dockerignore
+tensorflow
 tf_ode.tar

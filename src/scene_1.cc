@@ -41,12 +41,12 @@ int main( int argc, char* argv[] )
 			throw std::runtime_error( std::string( "Invalide orientation: " ) + std::string( argv[2] ) );
 	}
 	float step_height( 0.105*2 );
-	ode::Box step( env, Eigen::Vector3d( -1.5, 0, step_height/2 ), 1, 1, 3, step_height, false );
+	ode::Box step( env, Eigen::Vector3d( -1, 0, step_height/2 ), 1, 1, 3, step_height, false );
 	step.set_rotation( 0, 0, orientation*M_PI/180 );
 	step.fix();
 	step.set_collision_group( "ground" );
 
-	ode::Box step_c( env, Eigen::Vector3d( -2.5, 0, step_height/2 ), 1, 2, 3, step_height, false );
+	ode::Box step_c( env, Eigen::Vector3d( -2, 0, step_height/2 ), 1, 2, 3, step_height, false );
 	step_c.fix();
 	step_c.set_collision_group( "ground" );
 

@@ -32,6 +32,16 @@ Rover_1_tf::Rover_1_tf( Environment& env, const Vector3d& pose, const char* path
 	else
 		_rd_gen = std::mt19937( seed );
     _normal_distribution = std::normal_distribution<double>( 0., 1. );
+
+	// State scaling before feeding the neural network:
+	_state_scaling = { 90, 45, 25, 25, 45 };
+	for ( int i = 0 ; i < 2 ; i++ )
+	{
+		for ( int i = 0 ; i < 3 ; i++ )
+			_state_scaling.push_back( 100 );
+		for ( int i = 0 ; i < 3 ; i++ )
+			_state_scaling.push_back( 30 );
+	}
 }
 
 
@@ -112,7 +122,7 @@ void Rover_1_tf::_InternalControl( double delta_t )
 	// Setup the inputs:
 	std::vector<float> input_vector;
 	for ( int i = 0 ; i < p::len( current_state ) ; i++ )
-		input_vector.push_back( float( p::extract<float>( current_state[i] ) ) );
+		input_vector.push_back( float( p::extract<float>( current_state[i] ) )/_state_scaling[i] );
 
 	// Run the model:
 	std::vector<std::vector<float>> output_vectors = _actor_model_ptr->infer( { input_vector } );

@@ -57,7 +57,7 @@ _monitor_policies()
 
 	1)
 		# List the executable files in BUILD_DIR and keep only their base name:
-		choice=$( ( find $BUILD_DIR -maxdepth 1 -type f -executable -name '*_exe' | xargs basename -a ) 2>/dev/null )
+		choice=$( ( find $BUILD_DIR -maxdepth 1 -type f -executable -name '*_exe*' | xargs basename -a ) 2>/dev/null )
 		;;
 
 	2)
