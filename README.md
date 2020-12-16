@@ -63,6 +63,8 @@ The setup.sh script gives you access to the commands `train`, `monitor-policies`
 - `TRAINING_SCRIPTS_DIR`: Directory containing the training scripts.
 - `TRAINING_DATA_DIR`: Directory in which to store the training data.
 - `BUILD_DIR`: Directory where to find the compiled simulations.
+- `TRAINING_SCRIPTS_FILTER`: Filter pattern for the training scripts.
+- `EXE_FILTER`: Filter pattern for the executable files.
 
 To start a training with the identification name *run_1* for example, execute:  
 `$ train rover_training_1.py run_1`

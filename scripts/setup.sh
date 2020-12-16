@@ -16,6 +16,14 @@ export TRAINING_DATA_DIR=$_root_dir/training_data/
 # (include a final slash at the end):
 export BUILD_DIR=$_root_dir/build/
 
+# Environment variable specifying the filter to apply when looking for the training scripts
+# in TRAINING_SCRIPTS_DIR:
+export TRAINING_SCRIPTS_FILTER=*training*.py
+
+# Environment variable specifying the filter to apply when looking for the executable files
+# in BUILD_DIR:
+export EXE_FILTER=*_exe*
+
 # Add the service scripts to the PATH:
 export PATH=$PATH:$_root_dir/scripts/bin
 
@@ -30,7 +38,7 @@ _train()
 
 	1)
 		# List the Python scripts in the current directory and keep only their base name:
-		choice=$( ( find $TRAINING_SCRIPTS_DIR -maxdepth 1 -type f -name '*training*.py' | xargs basename -a ) 2>/dev/null )
+		choice=$( ( find $TRAINING_SCRIPTS_DIR -maxdepth 1 -type f -name "$TRAINING_SCRIPTS_FILTER" | xargs basename -a ) 2>/dev/null )
 		;;
 
 	2)
@@ -57,7 +65,7 @@ _monitor_policies()
 
 	1)
 		# List the executable files in BUILD_DIR and keep only their base name:
-		choice=$( ( find $BUILD_DIR -maxdepth 1 -type f -executable -name '*_exe*' | xargs basename -a ) 2>/dev/null )
+		choice=$( ( find $BUILD_DIR -maxdepth 1 -type f -executable -name "$EXE_FILTER" | xargs basename -a ) 2>/dev/null )
 		;;
 
 	2)
@@ -84,7 +92,7 @@ _eval_policy()
 
 	1)
 		# List the executable files in BUILD_DIR and keep only their base name:
-		choice=$( ( find $BUILD_DIR -maxdepth 1 -type f -executable -name '*_exe' | xargs basename -a ) 2>/dev/null )
+		choice=$( ( find $BUILD_DIR -maxdepth 1 -type f -executable -name "$EXE_FILTER" | xargs basename -a ) 2>/dev/null )
 		;;
 
 	2)
