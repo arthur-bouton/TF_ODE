@@ -101,15 +101,22 @@ _eval_policy()
 		;;
 
 	3)
-		choice='--picked-policy'
+		_session_id=${COMP_WORDS[COMP_CWORD-1]}
+		# List the directories in the picked directory of the desired session which names begin with 'actor_':
+		_picked_actors=$( find $TRAINING_DATA_DIR$_session_id/picked -maxdepth 1 -type d -name actor_* 2>/dev/null )
+		if [[ ! -z $_picked_actors ]]; then
+			choice='--picked-policy'
+		fi
+		unset _session_id _picked_actors
 		;;
 
 	4)
 		prev_arg=${COMP_WORDS[COMP_CWORD-1]}
 		if [[ $prev_arg == -p || $prev_arg == --picked-policy ]]; then
-			session_id=${COMP_WORDS[COMP_CWORD-2]}
+			_session_id=${COMP_WORDS[COMP_CWORD-2]}
 			# List the directories in the picked directory of the desired session which names begin with 'actor_' and keep only the suffixes:
-			choice=$( ( find $TRAINING_DATA_DIR$session_id/picked -maxdepth 1 -type d -name actor_* | xargs basename -a | sed -e 's:actor_::' ) 2>/dev/null )
+			choice=$( ( find $TRAINING_DATA_DIR$_session_id/picked -maxdepth 1 -type d -name actor_* | xargs basename -a | sed -e 's:actor_::' ) 2>/dev/null )
+			unset _session_id
 		fi
 
 	esac
