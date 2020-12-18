@@ -54,7 +54,7 @@ p::list simulation( const char* option = "", const char* path_to_model_dir = DEF
 
 	robot::Rover_1_tf robot( env, Eigen::Vector3d( 0, 0, 0 ), path_to_model_dir );
 	robot.SetCrawlingMode( true );
-	robot.SetCmdPeriod( 0.2 );
+	robot.SetCmdPeriod( 0.5 );
 //#ifdef EXE
 	//robot.SetCmdPeriod( 0.1 );
 //#endif
@@ -102,7 +102,7 @@ p::list simulation( const char* option = "", const char* path_to_model_dir = DEF
 	// Duration before starting the internal control:
 	float IC_start( 1 );
 	if ( strncmp( option, "trial", 6 ) == 0 )
-		IC_start += 0.1*uniform( gen );
+		IC_start += 0.25*uniform( gen );
 	// Timeout of the simulation:
 	float timeout( 60 );
 	// Maximum distance to travel ahead:

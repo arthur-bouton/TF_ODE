@@ -27,13 +27,13 @@ def actor( s_dim, a_dim ) :
 
 	states = keras.Input( shape=s_dim )
 
-	x = layers.Dense( 400, activation='relu' )( states )
-	x = layers.Dense( 400, activation='relu' )( x )
+	x = layers.Dense( 512, activation='relu' )( states )
+	x = layers.Dense( 512, activation='relu' )( x )
 
 	mu = layers.Dense( a_dim, activation='linear' )( x )
 
-	x = layers.Dense( 400, activation='relu' )( states )
-	x = layers.Dense( 400, activation='relu' )( x )
+	x = layers.Dense( 512, activation='relu' )( states )
+	x = layers.Dense( 512, activation='relu' )( x )
 
 	sigma = layers.Dense( a_dim, activation='softplus' )( x )
 
@@ -47,8 +47,8 @@ def critic( s_dim, a_dim ) :
 	actions = keras.Input( shape=a_dim )
 
 	x = layers.Concatenate()( [ states, actions ] )
-	x = layers.Dense( 400, activation='relu' )( x )
-	x = layers.Dense( 400, activation='relu' )( x )
+	x = layers.Dense( 512, activation='relu' )( x )
+	x = layers.Dense( 512, activation='relu' )( x )
 	Q_value = layers.Dense( 1, activation='linear' )( x )
 
 	return keras.Model( [ states, actions ], Q_value )
@@ -64,15 +64,15 @@ hyper_params['a_dim'] = 2 # Dimension of the action space
 hyper_params['state_scale'] = [ 90, 45, 25, 25, 45 ] + ( [ 100 ]*3 + [ 30 ]*3 )*2 # A scalar or a vector to normalize the state
 hyper_params['action_scale'] = [ 15, 25 ] # A scalar or a vector to scale the actions
 hyper_params['gamma'] = 0.99 # Discount factor applied to the reward
-#hyper_params['target_entropy'] = -17 # Desired target entropy of the policy
+#hyper_params['target_entropy'] = -2 # Desired target entropy of the policy
 #hyper_params['tau'] = 5e-3 # Soft target update factor
-hyper_params['buffer_size'] = 1e5 # Maximal size of the replay buffer
+hyper_params['buffer_size'] = 1e6 # Maximal size of the replay buffer
 hyper_params['minibatch_size'] = 256 # Size of each minibatch
-#hyper_params['learning_rate'] = 3e-4 # Default learning rate used for all the networks
-hyper_params['actor_lr'] = 1e-4 # Learning rate of the actor network
-hyper_params['critic_lr'] = 2e-4 # Learning rate of the critic network
-hyper_params['alpha_lr'] = 1e-3 # Learning rate of the critic network
-hyper_params['alpha0'] = 0.1 # Initial value of the entropy temperature
+hyper_params['learning_rate'] = 1e-4 # Default learning rate used for all the networks
+#hyper_params['actor_lr'] = 1e-4 # Learning rate of the actor network
+#hyper_params['critic_lr'] = 2e-4 # Learning rate of the critic network
+#hyper_params['alpha_lr'] = 1e-3 # Learning rate of the critic network
+#hyper_params['alpha0'] = 0.1 # Initial value of the entropy temperature
 hyper_params['seed'] = None # Random seed for the initialization of all random generators
 
 sac = SAC( **hyper_params )

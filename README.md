@@ -84,7 +84,7 @@ To evaluate the picked policies by their number:
 
 ## Build a Docker image:
 
-Copy the files of the TensorFlow library into the Docker context:  
+To avoid compiling TensorFlow at building time, copy the files of the library into the Docker context:  
 `$ mkdir tensorflow_lib`  
 `$ cp -r --dereference /usr/local/include/tensorflow tensorflow_lib`  
 `$ cp --no-dereference /usr/local/lib/libtensorflow.so* tensorflow_lib`
@@ -95,6 +95,6 @@ Build the Docker image:
 Save the image as a tar archive:  
 `$ sudo docker save tf_ode --output tf_ode.tar`
 
-Load the image from the tar archive:  
+Load the image from the tar archive and start the container:  
 `$ sudo docker load --input tf_ode.tar`  
 `$ sudo docker run -it --name training tf_ode`

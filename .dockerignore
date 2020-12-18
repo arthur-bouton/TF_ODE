@@ -1,4 +1,4 @@
 build
 **/training_data
 tensorflow
-tf_ode.tar
+*.tar
