@@ -3,7 +3,7 @@ FROM ubuntu:18.04
 WORKDIR /root/TF_ODE
 
 RUN apt-get update -qq
-RUN apt-get install -y python3-pip cmake libode-dev libopenscenegraph-dev libeigen3-dev libboost-dev libboost-python-dev libyaml-cpp-dev inotify-tools
+RUN apt-get install -y python3-pip cmake libode-dev libopenscenegraph-dev libeigen3-dev libboost-dev libboost-python-dev libyaml-cpp-dev inotify-tools bc
 
 COPY requirements.txt .
 

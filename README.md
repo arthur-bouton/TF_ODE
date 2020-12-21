@@ -10,6 +10,8 @@ The framework mixes dynamic simulations in C++ and scripts in Python and Bash.
 
 ## Dependencies and compilation:
 
+The following procedure works for Ubuntu 16.04 and 18.04. Minor adaptations are required to port it to Ubuntu >= 20.04.
+
 This repository depends on several git submodules. To download them, clone this repository with the option `git clone --recursive` or run in the root directory:  
 `$ git submodule update --init`
 
@@ -19,8 +21,8 @@ For the reinforcement learning scripts, you will need the following packages for
 To compile the simulations, you will need to install the following libraries for C++:  
 `$ sudo apt-get install libode-dev libopenscenegraph-dev libeigen3-dev libboost-dev libboost-python-dev libyaml-cpp-dev`
 
-To monitor files during a training, you will also need the program `inotifywait`, which can be found in the following package:  
-`$ sudo apt-get install inotify-tools`
+To monitor files during a training, you will also need the programs `inotifywait` and `bc`, which can be found in the following packages:  
+`$ sudo apt-get install inotify-tools bc`
 
 ### Build the TensorFlow shared library for C:
 
