@@ -299,6 +299,33 @@ void Object::set_all_contact_type( contact_type type )
 	}
 }
 
+void Object::set_collision_callback( std::function<void(collision_feature*)> callback, int index )
+{
+	if ( ! _geoms.empty() )
+	{
+		collision_feature* feature = ( collision_feature* ) dGeomGetData( index < 0 ? _geoms.back() : _geoms[index] );
+		if ( feature != NULL )
+			feature->callback = callback;
+		else
+			dGeomSetData( ( index < 0 ? _geoms.back() : _geoms[index] ), new collision_feature( callback ) );
+	}
+}
+
+void Object::set_all_collision_callback( std::function<void(collision_feature*)> callback )
+{
+	if ( ! _geoms.empty() )
+	{
+		for ( dGeomID g : _geoms )
+		{
+			collision_feature* feature = ( collision_feature* ) dGeomGetData( g );
+			if ( feature != NULL )
+				feature->callback = callback;
+			else
+				dGeomSetData( g, new collision_feature( callback ) );
+		}
+	}
+}
+
 
 void Object::disable_shadow_casting() { _casts_shadow = false; }
 

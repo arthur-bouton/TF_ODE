@@ -42,8 +42,10 @@ namespace ode
 	{
 		const char* group;
 		contact_type type;
+		std::function<void(collision_feature*)> callback;
 		collision_feature( const char* arg ) : group( arg ) {}
 		collision_feature( contact_type arg ) : group( "\0" ), type( arg ) {}
+		collision_feature( std::function<void(collision_feature*)> arg ) : group( "\0" ), callback( arg ) {}
 	} collision_feature;
 
 

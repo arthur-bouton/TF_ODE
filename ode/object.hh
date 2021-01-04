@@ -110,6 +110,9 @@ class Object
 	void set_all_contact_type( contact_type type );
 	void set_contact_type( contact_type type, int index = -1 );
 
+	void set_all_collision_callback( std::function<void(collision_feature*)> callback );
+	void set_collision_callback( std::function<void(collision_feature*)> callback, int index = -1 );
+
 	bool casts_shadow() const;
 	void disable_shadow_casting();
 

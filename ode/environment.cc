@@ -60,6 +60,13 @@ namespace ode
 	collision_feature* o1_collision_feature = (collision_feature*) dGeomGetData( o1 );
 	collision_feature* o2_collision_feature = (collision_feature*) dGeomGetData( o2 );
 
+	if ( o1_collision_feature != NULL && o1_collision_feature->callback )
+		o1_collision_feature->callback( o2_collision_feature );
+
+	if ( o2_collision_feature != NULL && o2_collision_feature->callback )
+		o2_collision_feature->callback( o1_collision_feature );
+
+
 	if ( o1_collision_feature == NULL && o2_collision_feature == NULL )
 		return;
 	else if ( o1_collision_feature != NULL && o2_collision_feature != NULL )

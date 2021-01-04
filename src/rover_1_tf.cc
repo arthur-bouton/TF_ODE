@@ -14,7 +14,8 @@ namespace robot
 Rover_1_tf::Rover_1_tf( Environment& env, const Vector3d& pose, const char* path_to_actor_model_dir, const int seed ) :
                         Rover_1( env, pose ),
 						_total_reward( 0 ),
-						_exploration( false )
+						_exploration( false ),
+						_collision( false )
 {
 	_last_pos = GetPosition();
 
@@ -42,6 +43,16 @@ Rover_1_tf::Rover_1_tf( Environment& env, const Vector3d& pose, const char* path
 		for ( int i = 0 ; i < 3 ; i++ )
 			_state_scaling.push_back( 30 );
 	}
+
+
+	// Assign a callback to detect if the motor bulks touch an obstacle:
+	std::function<void(collision_feature*)> collision_callback = [&]( collision_feature* collided_object )
+	{
+		if ( collided_object != nullptr && strcmp( collided_object->group, "ground" ) == 0 )
+			_collision = true;
+	};
+	_front_fork->set_all_collision_callback( collision_callback );
+	_rear_fork->set_all_collision_callback( collision_callback );
 }
 
 
@@ -83,6 +94,13 @@ double Rover_1_tf::_ComputeReward( double delta_t )
 
 	// Penalise the use of boggie torque:
 	reward -= fabs( _boggie_torque )/boggie_max_torque*0.5;
+
+	// Add a penalty if a motor bulk touches an obstacle:
+	if ( _collision )
+	{
+		reward -= 1;
+		_collision = false;
+	}
 
 	_last_pos = new_pos;
 	return reward;
