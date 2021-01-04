@@ -114,11 +114,22 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 	// [ Definition of the chassis ]
 
 	_main_body = Object::ptr_t( new Box( env,
-							             pose + front_pos,
-							             front_mass,
-							             front_length, front_width, front_height ) );
+										 pose + front_pos,
+										 front_mass,
+										 front_length, front_width, front_height ) );
 	_main_body->set_mesh( "../meshes/front.obj" );
 	_bodies.push_back( _main_body );
+
+	ode::Object::ptr_t battery = Object::ptr_t( new Box( env,
+														 pose + Vector3d( 0.285, 0, belly_elev + 0.155 ),
+														 2.7,
+														 0.0975, 0.151, 0.065 ) );
+	_bodies.push_back( battery );
+	dJointID battery_clamp = dJointCreateSlider( env.get_world(), 0 );
+	dJointAttach( battery_clamp, battery->get_body(), _main_body->get_body() );
+	dJointSetSliderAxis( battery_clamp, 0, 1, 0 );
+	dJointSetSliderParam( battery_clamp, dParamLoStop, 0 );
+	dJointSetSliderParam( battery_clamp, dParamHiStop, 0 );
 
 
 	ode::Object::ptr_t rear_body( new Box( env,

@@ -106,7 +106,7 @@ p::list simulation( const char* option = "", const char* path_to_model_dir = DEF
 	// Timeout of the simulation:
 	float timeout( 60 );
 	// Maximum distance to travel ahead:
-	float x_goal( -1.5 );
+	float x_goal( 1.5 );
 	// Maximum lateral deviation permitted:
 	float y_max( 0.6 );
 
@@ -127,7 +127,7 @@ p::list simulation( const char* option = "", const char* path_to_model_dir = DEF
 		robot.next_step( timestep );
 
 		// If the robot has reached the goal, is out of track or has tipped over, end the simulation:
-		if ( time >= timeout || fabs( robot.GetPosition().y() ) >= y_max || robot.GetPosition().x() <= x_goal || robot.IsUpsideDown() )
+		if ( time >= timeout || fabs( robot.GetPosition().y() ) >= y_max || fabs( robot.GetPosition().x() ) >= x_goal || robot.IsUpsideDown() )
 			return true;
 
 		return false;
@@ -191,7 +191,7 @@ p::list simulation( const char* option = "", const char* path_to_model_dir = DEF
 	if ( strncmp( option, "trial", 6 ) != 0 )
 	{
 		printf( "%s t %6.3f | x %5.3f | y %+6.3f | Rmoy %7.3f\n",
-		( robot.GetPosition().x() <= x_goal ? "\033[1;32m[Success]\033[0;39m" : "\033[1;31m[Failure]\033[0;39m" ),
+		( fabs( robot.GetPosition().x() ) >= x_goal ? "\033[1;32m[Success]\033[0;39m" : "\033[1;31m[Failure]\033[0;39m" ),
 		sim.get_time(), robot.GetPosition().x(), robot.GetPosition().y(), robot.GetTotalReward()/sim.get_time() );
 		fflush( stdout );
 	}
