@@ -39,6 +39,7 @@ class Rover_1_tf : public Rover_1
 	bool _exploration;
     std::mt19937 _rd_gen;
     std::normal_distribution<double> _normal_distribution;
+    std::uniform_real_distribution<double> _uniform_distribution;
 	std::vector<float> _state_scaling;
 	bool _collision;
 };

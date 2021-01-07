@@ -33,6 +33,7 @@ Rover_1_tf::Rover_1_tf( Environment& env, const Vector3d& pose, const char* path
 	else
 		_rd_gen = std::mt19937( seed );
     _normal_distribution = std::normal_distribution<double>( 0., 1. );
+    _uniform_distribution = std::uniform_real_distribution<double>( -1., 1. );
 
 	// State scaling before feeding the neural network:
 	_state_scaling = { 90, 45, 25, 25, 45 };
@@ -142,23 +143,48 @@ void Rover_1_tf::_InternalControl( double delta_t )
 	for ( int i = 0 ; i < p::len( current_state ) ; i++ )
 		input_vector.push_back( float( p::extract<float>( current_state[i] ) )/_state_scaling[i] );
 
-	// Run the model:
-	std::vector<std::vector<float>> output_vectors = _actor_model_ptr->infer( { input_vector } );
 
-	// Extract the unscaled mean values of the action:
-	double unscaled_steering_rate = output_vectors[0][0];
-	double unscaled_boggie_torque = output_vectors[0][1];
 
-	// Add exploration noise:
-	if ( _exploration )
+	// Gaussian exploration:
+
+	//std::vector<std::vector<float>> output_vectors = _actor_model_ptr->infer( { input_vector } );
+
+	//double unscaled_steering_rate = output_vectors[0][0];
+	//double unscaled_boggie_torque = output_vectors[0][1];
+
+	//if ( _exploration )
+	//{
+		//unscaled_steering_rate += _normal_distribution( _rd_gen )*0.1;
+		//unscaled_boggie_torque += _normal_distribution( _rd_gen )*0.1;
+	//}
+
+	//_steering_rate = steering_max_vel*unscaled_steering_rate;
+	//_boggie_torque = boggie_max_torque*unscaled_boggie_torque;
+
+
+
+	// E-greedy exploration:
+
+	static bool explore;
+
+	double draw = ( _uniform_distribution( _rd_gen ) + 1 )/2;
+	if ( _exploration && ( ! explore && draw > 0.9 || explore && draw > 0.7 ) )
 	{
-		unscaled_steering_rate += _normal_distribution( _rd_gen )*0.1;
-		unscaled_boggie_torque += _normal_distribution( _rd_gen )*0.1;
+		explore = ! explore;
+		if ( explore )
+		{
+			_steering_rate = _uniform_distribution( _rd_gen )*steering_max_vel;
+			_boggie_torque = _uniform_distribution( _rd_gen )*boggie_max_torque;
+		}
+	}
+	if ( !_exploration || ! explore )
+	{
+		std::vector<std::vector<float>> output_vectors = _actor_model_ptr->infer( { input_vector } );
+
+		_steering_rate = output_vectors[0][0]*steering_max_vel;
+		_boggie_torque = output_vectors[0][1]*boggie_max_torque;
 	}
 
-	// Scale and assign the next action:
-	_steering_rate = steering_max_vel*unscaled_steering_rate;
-	_boggie_torque = boggie_max_torque*unscaled_boggie_torque;
 
 
 #ifdef PRINT_STATE_AND_ACTIONS
