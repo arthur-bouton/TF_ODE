@@ -21,7 +21,7 @@ Rover_1_tf::Rover_1_tf( Environment& env, const Vector3d& pose, const char* path
 
 
 	// Import the actor model:
-	_actor_model_ptr = TF_model<float>::ptr_t( new TF_model<float>( path_to_actor_model_dir, { 17 }, { 2, 2 } ) );
+	_actor_model_ptr = TF_model<float>::ptr_t( new TF_model<float>( path_to_actor_model_dir, { 17 }, { 2 } ) );
 	
 
 	// Initialization of the random number engine:
@@ -96,11 +96,11 @@ double Rover_1_tf::_ComputeReward( double delta_t )
 	reward -= fabs( _boggie_torque )/boggie_max_torque*0.5;
 
 	// Add a penalty if a motor bulk touches an obstacle:
-	if ( _collision )
-	{
-		reward -= 1;
-		_collision = false;
-	}
+	//if ( _collision )
+	//{
+		//reward -= 1;
+		//_collision = false;
+	//}
 
 	_last_pos = new_pos;
 	return reward;
@@ -145,20 +145,20 @@ void Rover_1_tf::_InternalControl( double delta_t )
 	// Run the model:
 	std::vector<std::vector<float>> output_vectors = _actor_model_ptr->infer( { input_vector } );
 
-	// Extract the unbounded mean values of the action:
-	double unbounded_steering_rate = output_vectors[0][0];
-	double unbounded_boggie_torque = output_vectors[0][1];
+	// Extract the unscaled mean values of the action:
+	double unscaled_steering_rate = output_vectors[0][0];
+	double unscaled_boggie_torque = output_vectors[0][1];
 
 	// Add exploration noise:
 	if ( _exploration )
 	{
-		unbounded_steering_rate += _normal_distribution( _rd_gen )*output_vectors[1][0];
-		unbounded_boggie_torque += _normal_distribution( _rd_gen )*output_vectors[1][1];
+		unscaled_steering_rate += _normal_distribution( _rd_gen )*0.1;
+		unscaled_boggie_torque += _normal_distribution( _rd_gen )*0.1;
 	}
 
-	// Squash and assign the next action:
-	_steering_rate =  steering_max_vel*tanh( unbounded_steering_rate );
-	_boggie_torque = boggie_max_torque*tanh( unbounded_boggie_torque );
+	// Scale and assign the next action:
+	_steering_rate = steering_max_vel*unscaled_steering_rate;
+	_boggie_torque = boggie_max_torque*unscaled_boggie_torque;
 
 
 #ifdef PRINT_STATE_AND_ACTIONS
