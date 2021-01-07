@@ -57,7 +57,7 @@ def critic( s_dim, a_dim ) :
 
 # Parameters for the training:
 EP_MAX = 100000 # Maximal number of episodes for the training
-ITER_PER_EP = 500 # Number of training iterations between each episode
+ITER_PER_EP = 200 # Number of training iterations between each episode
 hyper_params = {}
 hyper_params['s_dim'] = 17 # Dimension of the state space
 hyper_params['a_dim'] = 2 # Dimension of the action space
@@ -124,7 +124,7 @@ with Loop_handler() as interruption :
 		sac.actor.save( session_dir + '/actor' )
 
 		print( 'It %i | Ep %i | Bs %i | LQ %+7.4f | temp %5.3f' %
-			   ( sac.n_iter(), n_ep, len( sac.replay_buffer ), LQ, float( sac.get_alpha() ) ),
+			   ( sac.n_iter, n_ep, len( sac.replay_buffer ), LQ, float( sac.alpha ) ),
 			   flush=True )
 
 
