@@ -65,6 +65,8 @@ p::list simulation( const char* option = "", const char* path_to_model_dir = DEF
 
 	// [ Terrain ]
 
+	int direction = 1;
+
 	// Orientation angle of the step:
 	double orientation;
 	if ( strncmp( option, "eval", 5 ) == 0 || strncmp( option, "display", 8 ) == 0 )
@@ -83,12 +85,12 @@ p::list simulation( const char* option = "", const char* path_to_model_dir = DEF
 			throw std::runtime_error( std::string( "Invalide argument " ) + std::string( argv[3] ) );
 	}
 	float step_height( 0.105*2 );
-	ode::Box step( env, Eigen::Vector3d( -1, 0, step_height/2 ), 1, 1, 3, step_height, false );
+	ode::Box step( env, Eigen::Vector3d( direction*1, 0, step_height/2 ), 1, 1, 3, step_height, false );
 	step.set_rotation( 0, 0, orientation*M_PI/180 );
 	step.fix();
 	step.set_collision_group( "ground" );
 
-	ode::Box step_c( env, Eigen::Vector3d( -2, 0, step_height/2 ), 1, 2, 3, step_height, false );
+	ode::Box step_c( env, Eigen::Vector3d( direction*2, 0, step_height/2 ), 1, 2, 3, step_height, false );
 	step_c.fix();
 	step_c.set_collision_group( "ground" );
 
@@ -96,7 +98,7 @@ p::list simulation( const char* option = "", const char* path_to_model_dir = DEF
 	// [ Simulation rules ]
 
 	// Cruise speed of the robot:
-	float speedf( -0.04 );
+	float speedf( direction*0.04 );
 	// Time to reach cruise speed:
 	float term( 0.5 );
 	// Duration before starting the internal control:
