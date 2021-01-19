@@ -84,8 +84,8 @@ double Rover_1_tf::_ComputeReward( double delta_t )
 
 	// Reward the forward advance:
 	//double reward = pos_diff[0]*fabs( pos_diff[0] ) + pos_diff[2]*fmax( 0., pos_diff[2] );
-	//double reward = -pos_diff[0]*fabs( pos_diff[0] );
-	double reward = -pos_diff[0];
+	//double reward = pos_diff[0]*fabs( pos_diff[0] );
+	double reward = pos_diff[0];
 	// Scaling:
 	//reward *= 100./( delta_t*delta_t );
 	reward *= 25./delta_t;
