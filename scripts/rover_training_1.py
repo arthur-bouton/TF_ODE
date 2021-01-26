@@ -61,10 +61,10 @@ hyper_params['action_scale'] = [ 15, 25 ] # A scalar or a vector to scale the ac
 hyper_params['gamma'] = 0.99 # Discount factor applied to the reward
 #hyper_params['tau'] = 5e-3 # Soft target update factor
 hyper_params['policy_update_delay'] = 2 # Number of critic updates for one policy update
-hyper_params['policy_reg_sigma'] = 0.2 # Standard deviation of the target policy regularization noise
-hyper_params['policy_reg_bound'] = 0.5 # Bounds of the target policy regularization noise
+hyper_params['policy_reg_sigma'] = 0.05 # Standard deviation of the target policy regularization noise
+hyper_params['policy_reg_bound'] = 0.2 # Bounds of the target policy regularization noise
 hyper_params['buffer_size'] = 1e6 # Maximal size of the replay buffer
-hyper_params['minibatch_size'] = 256 # Size of each minibatch
+hyper_params['minibatch_size'] = 128 # Size of each minibatch
 hyper_params['learning_rate'] = 1e-4 # Default learning rate used for all the networks
 hyper_params['seed'] = None # Random seed for the initialization of all random generators
 

@@ -91,17 +91,17 @@ double Rover_1_tf::_ComputeReward( double delta_t )
 	reward *= 25./delta_t;
 
 	// Penalise side deviation:
-	reward -= fabs( new_pos[1] )*0.5;
+	//reward -= fabs( new_pos[1] )*0.5;
 
 	// Penalise the use of boggie torque:
 	reward -= fabs( _boggie_torque )/boggie_max_torque*0.5;
 
 	// Add a penalty if a motor bulk touches an obstacle:
-	//if ( _collision )
-	//{
-		//reward -= 1;
-		//_collision = false;
-	//}
+	if ( _collision )
+	{
+		reward -= 1;
+		_collision = false;
+	}
 
 	_last_pos = new_pos;
 	return reward;
@@ -168,7 +168,7 @@ void Rover_1_tf::_InternalControl( double delta_t )
 	static bool explore;
 
 	double draw = ( _uniform_distribution( _rd_gen ) + 1 )/2;
-	if ( _exploration && ( ! explore && draw > 0.9 || explore && draw > 0.7 ) )
+	if ( _exploration && ( ! explore && draw > 0.8 || explore && draw > 0.7 ) )
 	{
 		explore = ! explore;
 		if ( explore )
