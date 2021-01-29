@@ -143,3 +143,30 @@ add_executable( data_collection_tf ${SRC_DIR}/data_collection_tf.cc
 							       ${SRC_DIR}/rover_1.cc )
 target_link_libraries( data_collection_tf ${ROVER_TRAINING_1_LIBRARIES} )
 target_compile_definitions( data_collection_tf PRIVATE PRINT_TRANSITIONS )
+
+
+
+######################
+# quadruped_training #
+######################
+
+set( QUADRUPED_TRAINING_SOURCES ${SRC_DIR}/quadruped_training.cc
+								${SRC_DIR}/quadruped.cc )
+
+set( QUADRUPED_TRAINING_LIBRARIES robdyn
+								  ${ODE_LIBRARIES}
+								  ${OSGV_LIBRARIES}
+								  ${OSGS_LIBRARIES}
+								  tensorflow_binding
+								  ${Boost_LIBRARIES}
+								  ${PYTHON_LIBRARIES} )
+
+add_executable( quadruped_training_exe ${QUADRUPED_TRAINING_SOURCES} )
+target_link_libraries( quadruped_training_exe ${QUADRUPED_TRAINING_LIBRARIES} )
+target_compile_definitions( quadruped_training_exe PRIVATE EXE )
+#set_target_properties( quadruped_training_exe PROPERTIES COMPILE_FLAGS "-g" )
+
+add_library( quadruped_training_module SHARED ${QUADRUPED_TRAINING_SOURCES} )
+target_link_libraries( quadruped_training_module ${QUADRUPED_TRAINING_LIBRARIES} )
+set_target_properties( quadruped_training_module PROPERTIES PREFIX "" )
+set_target_properties( quadruped_training_module PROPERTIES LINK_FLAGS "-Wl,--no-undefined" )
