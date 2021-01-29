@@ -312,13 +312,13 @@ void Rover_1::SetRobotSpeed( double speed )
 
 void Rover_1::SetSteeringAngle( double angle )
 {
-	servos()[0]->set_angle( angle*DEG_TO_RAD )*RAD_TO_DEG;
+	servos()[0]->set_desired_angle( angle*DEG_TO_RAD )*RAD_TO_DEG;
 }
 
 
 double Rover_1::GetSteeringTrueAngle() const
 {
-	return servos()[0]->get_real_angle()*RAD_TO_DEG;
+	return servos()[0]->get_true_angle()*RAD_TO_DEG;
 }
 
 
@@ -330,7 +330,7 @@ void Rover_1::SetSteeringRate( double rate )
 
 double Rover_1::GetSteeringTrueRate() const
 {
-	return servos()[0]->get_real_vel()*RAD_TO_DEG;
+	return servos()[0]->get_true_vel()*RAD_TO_DEG;
 }
 
 
@@ -344,8 +344,8 @@ void Rover_1::SetBoggieTorque( double torque )
 
 void Rover_1::_UpdateWheelControl()
 {
-	double gamma = servos()[0]->get_real_angle();
-	double dgamma_dt = servos()[0]->get_real_vel();
+	double gamma = servos()[0]->get_true_angle();
+	double dgamma_dt = servos()[0]->get_true_vel();
 
 	double diff[NBWHEELS];
 	double trans[NBWHEELS];
@@ -401,9 +401,9 @@ void Rover_1::_ApplyWheelControl()
 
 void Rover_1::_ApplySteeringControl()
 {
-	//_steering_rate = std::min( std::max( -steering_max_vel, _steering_rate ), steering_max_vel ); // Redundant with Servo::set_vel
-	//_steering_rate = servos()[0]->set_vel( _steering_rate*DEG_TO_RAD )*RAD_TO_DEG;
-	servos()[0]->set_vel( _steering_rate*DEG_TO_RAD );
+	//_steering_rate = std::min( std::max( -steering_max_vel, _steering_rate ), steering_max_vel ); // Redundant with Servo::set_desired_vel
+	//_steering_rate = servos()[0]->set_desired_vel( _steering_rate*DEG_TO_RAD )*RAD_TO_DEG;
+	servos()[0]->set_desired_vel( _steering_rate*DEG_TO_RAD );
 }
 
 
