@@ -82,6 +82,10 @@ if len( sys.argv ) > 2 and sys.argv[2] == 'resume' :
 	if not td3.load_replay_buffer( session_dir + '/replay_buffer.pkl' ) :
 		print( 'Could not find %s: starting with an empty replay buffer.' % ( session_dir + '/replay_buffer.pkl' ) )
 	sys.stdout.flush()
+elif len( sys.argv ) > 2 and sys.argv[2] == 'load_actor_only' :
+	td3.actor = keras.models.load_model( session_dir + '/actor', compile=False )
+	for target_params, params in zip( td3.actor_target_network.trainable_variables, td3.actor.trainable_variables ) :
+		target_params.assign( params )
 else :
 	td3.actor.save( session_dir + '/actor' )
 

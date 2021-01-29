@@ -49,7 +49,7 @@ _train()
 	3)
 		# Check if the session directory already exists:
 		if [[ -d $TRAINING_DATA_DIR/${COMP_WORDS[COMP_CWORD-1]} ]]; then
-			choice='resume'
+			choice='resume load_actor_only'
 		fi
 
 	esac
