@@ -57,7 +57,7 @@ Servo::Servo( const Servo& s, Environment& env, Object& o1, Object& o2 ) :
 			  _passive( s.is_passive() ),
 			  _Kp( s.get_Kp() ),
 			  _vel_max( s.get_vel_max() ),
-			  _angle( s.get_angle() )
+			  _angle( s.get_desired_angle() )
 {
 	_build();
 }
@@ -108,8 +108,8 @@ void Servo::set_torque_max( double max )
 }
 
 
-double Servo::get_angle() const { return _angle; }
-double Servo::set_angle( double angle )
+double Servo::get_desired_angle() const { return _angle; }
+double Servo::set_desired_angle( double angle )
 {
 	angle = std::max( _min, angle );
 	angle = std::min( angle, _max );
@@ -119,8 +119,8 @@ double Servo::set_angle( double angle )
 }
 
 
-double Servo::get_vel() const { return _vel; }
-double Servo::set_vel( double vel )
+double Servo::get_desired_vel() const { return _vel; }
+double Servo::set_desired_vel( double vel )
 {
 	vel = std::max( -_vel_max, vel );
 	vel = std::min( vel, _vel_max );
@@ -167,13 +167,13 @@ void Servo::next_step( double dt )
 }
 
 
-double Servo::get_real_angle() const
+double Servo::get_true_angle() const
 {
 	return dJointGetHingeAngle( _joint );
 }
 
 
-double Servo::get_real_vel() const
+double Servo::get_true_vel() const
 {
 	return dJointGetHingeAngleRate( _joint );
 }

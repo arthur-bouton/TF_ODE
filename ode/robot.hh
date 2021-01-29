@@ -22,11 +22,11 @@ class Robot
 
 	Robot() {}
 
-	const std::vector<ode::Object::ptr_t>& bodies() const { return _bodies; }
-	std::vector<ode::Object::ptr_t>& bodies() { return _bodies; }
+	inline const std::vector<ode::Object::ptr_t>& bodies() const { return _bodies; }
+	inline std::vector<ode::Object::ptr_t>& bodies() { return _bodies; }
 
-	const std::vector<ode::Servo::ptr_t>& servos() const { return _servos; }
-	std::vector<ode::Servo::ptr_t>& servos() { return _servos; }
+	inline const std::vector<ode::Servo::ptr_t>& servos() const { return _servos; }
+	inline std::vector<ode::Servo::ptr_t>& servos() { return _servos; }
 
 	Eigen::Vector3d get_pos() const { return _main_body->get_pos(); }
 	Eigen::Vector3d get_rot() const { return _main_body->get_rot(); }

@@ -47,11 +47,11 @@ class Servo
 	void set_active();
 	void set_torque_max( double max );
 
-	double get_angle() const;
-	double set_angle( double angle );
+	double get_desired_angle() const;
+	double set_desired_angle( double angle );
 
-	double get_vel() const;
-	double set_vel( double vel );
+	double get_desired_vel() const;
+	double set_desired_vel( double vel );
 
 	inline servo_mode_t get_mode() const { return _mode; }
 
@@ -63,8 +63,8 @@ class Servo
 
 	void next_step( double dt );
 
-	double get_real_angle() const;
-	double get_real_vel() const;
+	double get_true_angle() const;
+	double get_true_vel() const;
 
 	~Servo();
 
