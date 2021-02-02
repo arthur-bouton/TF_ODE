@@ -2,15 +2,16 @@
 import pandas as pd
 import numpy as np
 from ModelTree.model_tree import Model_tree
+import sys
 
 
-data_file_list = []
-data_file_list.append( '../training_data/samples_mu05_period01_angle0_even.dat' )
-data_file_list.append( '../training_data/samples_mu05_period01_angle0_odd.dat' )
-data_file_list.append( '../training_data/samples_mu05_period01_angle+1_even.dat' )
-data_file_list.append( '../training_data/samples_mu05_period01_angle-1_odd.dat' )
-data_file_list.append( '../training_data/samples_mu05_period01_angle+2_even.dat' )
-data_file_list.append( '../training_data/samples_mu05_period01_angle-2_odd.dat' )
+if len( sys.argv ) > 2 and sys.argv[1] == 'plot' :
+	data_file_list = sys.argv[2:]
+elif len( sys.argv ) > 4 :
+	data_file_list = sys.argv[4:]
+else :
+	print( 'USAGE: %s plot [sample_files...] OR %s {options} tree_params prev_tree_params|- [sample_files...]' % ( sys.argv[0], sys.argv[0] ), file=sys.stderr )
+	exit( -1 )
 
 
 state_1 = [ 'Steering angle', 'Roll angle', 'Pitch Angle', 'Boggie angle' ]
@@ -65,7 +66,6 @@ L1 = 1
 grid = 20
 param_file = 'tree_params_'
 
-import sys
 if len( sys.argv ) > 1 and sys.argv[1][0] == '{' :
 	import yaml
 	args = yaml.safe_load( sys.argv[1] )
@@ -82,6 +82,8 @@ model_tree_1 = Model_tree( oblique=oblique, max_depth=max_depth_1, node_min_samp
 if len( sys.argv ) > 1 and sys.argv[1] == 'plot' :
 	model_tree_1.load_tree_params( param_file + '1' )
 else :
+	if len( sys.argv ) > 3 and sys.argv[3] != '-' :
+		model_tree_1.load_tree_params( sys.argv[3] + '1' )
 	print( '-- Training Model Tree 1 --' )
 	model_tree_1.fit( X_data.to_numpy(), Y_data.iloc[:,0].to_numpy(), verbose=2 )
 	model_tree_1.save_tree_params( param_file + '1' )
@@ -92,6 +94,8 @@ model_tree_2 = Model_tree( oblique=oblique, max_depth=max_depth_2, node_min_samp
 if len( sys.argv ) > 1 and sys.argv[1] == 'plot' :
 	model_tree_2.load_tree_params( param_file + '2' )
 else :
+	if len( sys.argv ) > 3 and sys.argv[3] != '-' :
+		model_tree_2.load_tree_params( sys.argv[3] + '2' )
 	print( '\n-- Training Model Tree 2 --' )
 	model_tree_2.fit( X_data.to_numpy(), Y_data.iloc[:,1].to_numpy(), verbose=2 )
 	model_tree_2.save_tree_params( param_file + '2' )
@@ -109,7 +113,7 @@ print( '\nAbsolute errors: %.2f | %.2f -- Quadratic errors: %.2f | %.2f -- Param
 % ( abs_errors[0], abs_errors[1], quad_errors[0], quad_errors[1], *n_params_1, *n_params_2 ) )
 
 if len( sys.argv ) < 2 or sys.argv[1] != 'plot' :
-	print( 'CSV entry: oblique, max_depth_1, max_depth_2, min_samples, loss_tol, L1, abs_err_1, abs_err_2, quad_err_1, quad_err_2, nz_params_1, t_params_1, nz_params_2, t_params_2' )
+	print( 'oblique, max_depth_1, max_depth_2, min_samples, loss_tol, L1, abs_err_1, abs_err_2, quad_err_1, quad_err_2, nz_params_1, t_params_1, nz_params_2, t_params_2' )
 	print( '%s,%i,%i,%i,%f,%f,%f,%f,%f,%f,%i,%i,%i,%i'
 	% ( oblique, max_depth_1, max_depth_2, min_samples, loss_tol, L1, abs_errors[0], abs_errors[1], quad_errors[0], quad_errors[1], *n_params_1, *n_params_2  ) )
 

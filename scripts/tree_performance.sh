@@ -10,14 +10,16 @@ fi
 csv_file=performance.csv
 
 angle_list=$( seq -1 1 1 )
-offset_list=$( seq 0 0.01 0.09 )
+offset_list=$( seq -0.25 0.01 0.24 )
 
-exec_file=../build/scene_1_mt
-#exec_file=../build/scene_1_mt_inter
+exe_file=../build/scene_1_mt
+#exe_file=../build/scene_1_mt_inter
 
 # Position of the trial duration in the string returned from the evaluation:
 duration_pos=2
 
+
+echo max_depth_1,max_depth_2,L1,success_percentage,average_time >> $data_dir/$csv_file
 
 trap 'echo;exit' INT
 for tree_dir in $data_dir/* ; do
@@ -32,7 +34,7 @@ for tree_dir in $data_dir/* ; do
 	average_time=0
 	for angle in $angle_list ; do
 		for offset in $offset_list ; do
-			result=($( $exec_file nodisplay $angle $tree_dir/params_ $offset 2> /dev/null ))
+			result=($( $exe_file nodisplay $angle $tree_dir/params_ $offset 2> /dev/null ))
 			echo ${result[*]}
 
 			ntrials=$(( ntrials + 1 ))

@@ -16,9 +16,7 @@ int main( int argc, char* argv[] )
 
 	dInitODE();
 	ode::Environment env( 0.5 );
-	//ode::Environment env( 0.7 );
 	//ode::Environment env( false, 0.5 );
-	//ode::Environment env( false, 0.7 );
 
 
 	// [ Robot ]
@@ -38,6 +36,8 @@ int main( int argc, char* argv[] )
 
 	// [ Terrain ]
 
+	int direction = 1;
+
 	double orientation( 0 );
 	if ( argc > 2 )
 	{
@@ -47,12 +47,12 @@ int main( int argc, char* argv[] )
 			throw std::runtime_error( std::string( "Invalide orientation: " ) + std::string( argv[2] ) );
 	}
 	float step_height( 0.105*2 );
-	ode::Box step( env, Eigen::Vector3d( -1, 0, step_height/2 ), 1, 1, 3, step_height, false );
+	ode::Box step( env, Eigen::Vector3d( direction*1, 0, step_height/2 ), 1, 1, 3, step_height, false );
 	step.set_rotation( 0, 0, orientation*M_PI/180 );
 	step.fix();
 	step.set_collision_group( "ground" );
 
-	ode::Box step_c( env, Eigen::Vector3d( -2, 0, step_height/2 ), 1, 2, 3, step_height, false );
+	ode::Box step_c( env, Eigen::Vector3d( direction*2, 0, step_height/2 ), 1, 2, 3, step_height, false );
 	step_c.fix();
 	step_c.set_collision_group( "ground" );
 
@@ -70,7 +70,7 @@ int main( int argc, char* argv[] )
 	// [ Simulation rules ]
 
 	// Cruise speed of the robot:
-	float speedf( -0.04 );
+	float speedf( direction*0.04 );
 	// Time to reach cruise speed:
 	float term( 0.5 );
 	// Duration before starting the internal control:
@@ -80,12 +80,12 @@ int main( int argc, char* argv[] )
 		char* endptr;
 		IC_start += strtod( argv[4], &endptr );
 		if ( *endptr != '\0' )
-			throw std::runtime_error( std::string( "Invalide argument " ) + std::string( argv[4] ) );
+			throw std::runtime_error( std::string( "Invalide starting offset: " ) + std::string( argv[4] ) );
 	}
 	// Timeout of the simulation:
 	float timeout( 60 );
 	// Maximum distance to travel ahead:
-	float x_goal( -1.5 );
+	float x_goal( 1. );
 	// Maximum lateral deviation permitted:
 	float y_max( 0.6 );
 
@@ -125,7 +125,7 @@ int main( int argc, char* argv[] )
 			//prev_state = current_state;
 		//}
 
-		if ( time >= timeout || fabs( robot.GetPosition().y() ) >= y_max || robot.GetPosition().x() <= x_goal || robot.IsUpsideDown() )
+		if ( time >= timeout || fabs( robot.GetPosition().y() ) >= y_max || fabs( robot.GetPosition().x() ) >= x_goal || robot.IsUpsideDown() )
 			return true;
 
 		return false;
@@ -189,7 +189,7 @@ int main( int argc, char* argv[] )
 
 
 	printf( "%s t %6.3f | x %5.3f | y %+6.3f\n",
-	( robot.GetPosition().x() <= x_goal ? "\033[1;32m[Success]\033[0;39m" : "\033[1;31m[Failure]\033[0;39m" ),
+	( fabs( robot.GetPosition().x() ) >= x_goal ? "\033[1;32m[Success]\033[0;39m" : "\033[1;31m[Failure]\033[0;39m" ),
 	sim.get_time(), robot.GetPosition().x(), robot.GetPosition().y() );
 	fflush( stdout );
 
