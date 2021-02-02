@@ -27,13 +27,13 @@ def actor( s_dim, a_dim ) :
 
 	states = keras.Input( shape=s_dim )
 
-	x = layers.Dense( 512, activation='relu' )( states )
-	x = layers.Dense( 512, activation='relu' )( x )
+	x = layers.Dense( 256, activation='relu' )( states )
+	x = layers.Dense( 256, activation='relu' )( x )
 
 	mu = layers.Dense( a_dim, activation='linear' )( x )
 
-	x = layers.Dense( 512, activation='relu' )( states )
-	x = layers.Dense( 512, activation='relu' )( x )
+	x = layers.Dense( 256, activation='relu' )( states )
+	x = layers.Dense( 256, activation='relu' )( x )
 
 	sigma = layers.Dense( a_dim, activation='softplus' )( x )
 
@@ -47,8 +47,8 @@ def critic( s_dim, a_dim ) :
 	actions = keras.Input( shape=a_dim )
 
 	x = layers.Concatenate()( [ states, actions ] )
-	x = layers.Dense( 512, activation='relu' )( x )
-	x = layers.Dense( 512, activation='relu' )( x )
+	x = layers.Dense( 256, activation='relu' )( x )
+	x = layers.Dense( 256, activation='relu' )( x )
 	Q_value = layers.Dense( 1, activation='linear' )( x )
 
 	return keras.Model( [ states, actions ], Q_value )
@@ -105,17 +105,18 @@ with Loop_handler() as interruption :
 
 	while not interruption() and n_ep < EP_MAX :
 
+		for _ in range( 3 ) :
 
-		# Do one trial:
-		trial_experience = quadruped_training_module.trial( session_dir + '/actor' )
+			# Do one trial:
+			trial_experience = quadruped_training_module.trial( session_dir + '/actor' )
 
-		if interruption() :
-			break
+			if interruption() :
+				break
 
-		# Store the experience:
-		sac.replay_buffer.extend( trial_experience )
+			# Store the experience:
+			sac.replay_buffer.extend( trial_experience )
 
-		n_ep += 1
+			n_ep += 1
 
 
 		# Train the networks:

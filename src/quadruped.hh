@@ -31,10 +31,11 @@ class Quadruped : public Robot
 
 	Eigen::Vector3d GetPosition() const;
 	double GetDirection() const;
-	bool IsUpsideDown() const;
 	double GetRollAngle() const;
 	double GetPitchAngle() const;
 	void GetTiltRates( double& roll_rate, double& pitch_rate ) const;
+	bool IsUpsideDown() const;
+	inline bool Collided() const { return _collision; }
 
 	virtual void next_step( double dt = ode::Environment::time_step );
 

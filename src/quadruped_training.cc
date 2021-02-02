@@ -68,7 +68,8 @@ p::list simulation( const char* option = "", const char* path_to_model_dir = DEF
 		robot.next_step( timestep );
 
 		// If the robot has reached the goal, is out of track or has tipped over, end the simulation:
-		if ( time >= timeout || fabs( robot.GetPosition().y() ) >= y_max || fabs( robot.GetPosition().x() ) >= x_goal || robot.IsUpsideDown() )
+		if ( time >= timeout || fabs( robot.GetPosition().y() ) >= y_max || fabs( robot.GetPosition().x() ) >= x_goal
+							 || robot.Collided() || robot.IsUpsideDown() )
 			return true;
 
 		return false;
@@ -138,7 +139,7 @@ p::list simulation( const char* option = "", const char* path_to_model_dir = DEF
 	p::list experience = robot.GetExperience();
 
 	// Penalise if the robot has tipped over:
-	if ( robot.IsUpsideDown() )
+	if ( robot.Collided() || robot.IsUpsideDown() )
 		experience[-1] = p::make_tuple( experience[-1][0], experience[-1][1], -1, true, experience[-1][4] );
 	// Penalise if the robot has gone too far sideway:
 	//else if ( fabs( robot.GetPosition().y() ) >= y_max )

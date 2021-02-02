@@ -127,19 +127,6 @@ Quadruped::Quadruped( Environment& env, const Vector3d& pose, const char* path_t
 	}
 
 
-	//servos()[0]->set_desired_vel( 90*DEG_TO_RAD );
-	//servos()[1]->set_desired_vel( -90*DEG_TO_RAD );
-	//servos()[2]->set_desired_vel( -90*DEG_TO_RAD );
-
-	//servos()[3]->set_desired_vel( 90*DEG_TO_RAD );
-	//servos()[5]->set_desired_vel( 90*DEG_TO_RAD );
-
-
-
-
-	_last_pos = GetPosition();
-
-
 	// Import the actor model:
 	_actor_model_ptr = TF_model<float>::ptr_t( new TF_model<float>( path_to_actor_model_dir, { 17 }, { 12, 12 } ) );
 	
@@ -174,6 +161,9 @@ Quadruped::Quadruped( Environment& env, const Vector3d& pose, const char* path_t
 	// Initialize the actions:
 	for ( int i = 0 ; i < _servos.size() ; i++ )
 		_actions.append( 0 );
+
+
+	_last_pos = GetPosition();
 }
 
 
@@ -262,11 +252,11 @@ double Quadruped::_ComputeReward( double delta_t )
 	reward -= fabs( new_pos[1] )*2;
 
 	// Add a penalty if a motor bulk touches an obstacle:
-	if ( _collision )
-	{
-		reward -= 1;
-		_collision = false;
-	}
+	//if ( _collision )
+	//{
+		//reward -= 1;
+		//_collision = false;
+	//}
 
 	//printf( "dx: %f y: %f reward: %f\n", pos_diff[0], fabs( new_pos[1] ), reward );
 	_last_pos = new_pos;
