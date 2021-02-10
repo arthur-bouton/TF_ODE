@@ -156,9 +156,9 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 							              fork_mass,
 							              fork_length, fork_width, fork_height, true, false ) );
 	_front_fork->add_cylinder_geom( motor_radius, motor_length )->set_geom_rot( M_PI/2, 0, 0 );
-	_front_fork->set_geom_abs_pos( Vector3d( wheelbase/2, ( wheeltrack - wheel_width - motor_length )/2, wheel_radius[0] ) );
+	_front_fork->set_geom_abs_pos( pose + Vector3d( wheelbase/2, ( wheeltrack - wheel_width - motor_length )/2, wheel_radius[0] ) );
 	_front_fork->add_cylinder_geom( motor_radius, motor_length )->set_geom_rot( M_PI/2, 0, 0 );
-	_front_fork->set_geom_abs_pos( Vector3d( wheelbase/2, -( wheeltrack - wheel_width - motor_length )/2, wheel_radius[1] ) );
+	_front_fork->set_geom_abs_pos( pose + Vector3d( wheelbase/2, -( wheeltrack - wheel_width - motor_length )/2, wheel_radius[1] ) );
 	_front_fork->set_mesh( "../meshes/front_fork.obj" );
 	_bodies.push_back( _front_fork );
 
@@ -169,9 +169,9 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 							             fork_mass,
 							             fork_length, fork_width, fork_height, true, false ) );
 	_rear_fork->add_cylinder_geom( motor_radius, motor_length )->set_geom_rot( M_PI/2, 0, 0 );
-	_rear_fork->set_geom_abs_pos( Vector3d( -wheelbase/2, ( wheeltrack - wheel_width - motor_length )/2, wheel_radius[2] ) );
+	_rear_fork->set_geom_abs_pos( pose + Vector3d( -wheelbase/2, ( wheeltrack - wheel_width - motor_length )/2, wheel_radius[2] ) );
 	_rear_fork->add_cylinder_geom( motor_radius, motor_length )->set_geom_rot( M_PI/2, 0, 0 );
-	_rear_fork->set_geom_abs_pos( Vector3d( -wheelbase/2, -( wheeltrack - wheel_width - motor_length )/2, wheel_radius[3] ) );
+	_rear_fork->set_geom_abs_pos( pose + Vector3d( -wheelbase/2, -( wheeltrack - wheel_width - motor_length )/2, wheel_radius[3] ) );
 	_rear_fork->set_mesh( "../meshes/rear_fork.obj" );
 	_bodies.push_back( _rear_fork );
 
@@ -180,7 +180,7 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 
 	Servo::ptr_t centre_hinge_servo( new Servo( env,
 					                            *rear_body, *_main_body,
-					                            hinge_pos,
+					                            pose + hinge_pos,
 					                            Vector3d( 0, 0, 1 ),
 					                            STEERING_SERVOS_K,
 					                            steering_max_vel*DEG_TO_RAD,
@@ -194,7 +194,8 @@ Rover_1::Rover_1( Environment& env, const Vector3d& pose ) :
 	_boggie_hinge = dJointCreateHinge( env.get_world(), 0 );
 	dJointAttach( _boggie_hinge, boggie->get_body(), rear_body->get_body() );
 	dJointSetHingeAxis( _boggie_hinge, 1, 0, 0 );
-	dJointSetHingeAnchor( _boggie_hinge, sea_pos.x(), sea_pos.y(), sea_pos.z() );
+	Vector3d sea_joint_pos = pose + sea_pos;
+	dJointSetHingeAnchor( _boggie_hinge, sea_joint_pos.x(), sea_joint_pos.y(), sea_joint_pos.z() );
 	dJointSetHingeParam( _boggie_hinge, dParamLoStop, -boggie_angle_max*DEG_TO_RAD );
 	dJointSetHingeParam( _boggie_hinge, dParamHiStop, boggie_angle_max*DEG_TO_RAD );
 
