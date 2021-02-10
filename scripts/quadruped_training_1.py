@@ -56,7 +56,7 @@ def critic( s_dim, a_dim ) :
 
 
 # Parameters for the training:
-EP_MAX = 100000 # Maximal number of episodes for the training
+EP_MAX = 10000000 # Maximal number of episodes for the training
 ITER_PER_EP = 200 # Number of training iterations between each episode
 hyper_params = {}
 hyper_params['s_dim'] = 17 # Dimension of the state space
@@ -108,15 +108,20 @@ with Loop_handler() as interruption :
 		for _ in range( 3 ) :
 
 			# Do one trial:
-			trial_experience = quadruped_training_module.trial( session_dir + '/actor' )
+			try :
 
-			if interruption() :
-				break
+				trial_experience = quadruped_training_module.trial( session_dir + '/actor' )
 
-			# Store the experience:
-			sac.replay_buffer.extend( trial_experience )
+				if interruption() :
+					break
 
-			n_ep += 1
+				# Store the experience:
+				sac.replay_buffer.extend( trial_experience )
+
+				n_ep += 1
+
+			except IndexError :
+				pass
 
 
 		# Train the networks:
