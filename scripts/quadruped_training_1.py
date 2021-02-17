@@ -12,7 +12,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 sys.path.insert( 1, os.environ['TRAINING_SCRIPTS_DIR'] + 'MachineLearning' )
 from looptools import Loop_handler
-from SAC import SAC
+from TD3 import TD3
 
 sys.path.insert( 1, os.environ['BUILD_DIR'] )
 import quadruped_training_module
@@ -30,14 +30,9 @@ def actor( s_dim, a_dim ) :
 	x = layers.Dense( 256, activation='relu' )( states )
 	x = layers.Dense( 256, activation='relu' )( x )
 
-	mu = layers.Dense( a_dim, activation='linear' )( x )
+	actions = layers.Dense( a_dim, activation='tanh' )( x )
 
-	x = layers.Dense( 256, activation='relu' )( states )
-	x = layers.Dense( 256, activation='relu' )( x )
-
-	sigma = layers.Dense( a_dim, activation='softplus' )( x )
-
-	return keras.Model( states, [ mu, sigma ] )
+	return keras.Model( states, actions )
 
 
 # Critic network:
@@ -64,18 +59,16 @@ hyper_params['a_dim'] = 12 # Dimension of the action space
 hyper_params['state_scale'] = [ 90 ]*5 + [ 30 ]*12 # A scalar or a vector to normalize the state
 hyper_params['action_scale'] = [ 90 ]*12 # A scalar or a vector to scale the actions
 hyper_params['gamma'] = 0.99 # Discount factor applied to the reward
-#hyper_params['target_entropy'] = -12 # Desired target entropy of the policy
 #hyper_params['tau'] = 5e-3 # Soft target update factor
+hyper_params['policy_update_delay'] = 2 # Number of critic updates for one policy update
+hyper_params['policy_reg_sigma'] = 0.05 # Standard deviation of the target policy regularization noise
+hyper_params['policy_reg_bound'] = 0.2 # Bounds of the target policy regularization noise
 hyper_params['buffer_size'] = 1e6 # Maximal size of the replay buffer
 hyper_params['minibatch_size'] = 128 # Size of each minibatch
-hyper_params['learning_rate'] = 1e-6 # Default learning rate used for all the networks
-#hyper_params['actor_lr'] = 1e-4 # Learning rate of the actor network
-#hyper_params['critic_lr'] = 2e-4 # Learning rate of the critic network
-hyper_params['alpha_lr'] = 1e-4 # Learning rate of the critic network
-#hyper_params['alpha0'] = 0.1 # Initial value of the entropy temperature
+hyper_params['learning_rate'] = 1e-8 # Default learning rate used for all the networks
 hyper_params['seed'] = None # Random seed for the initialization of all random generators
 
-sac = SAC( **hyper_params )
+td3 = TD3( **hyper_params )
 
 
 
@@ -84,13 +77,17 @@ session_dir = sys.argv[1]
 
 
 if len( sys.argv ) > 2 and sys.argv[2] == 'resume' :
-	sac.load( session_dir )
+	td3.load( session_dir )
 	print( 'Training is resumed where it was left off.' )
-	if not sac.load_replay_buffer( session_dir + '/replay_buffer.pkl' ) :
+	if not td3.load_replay_buffer( session_dir + '/replay_buffer.pkl' ) :
 		print( 'Could not find %s: starting with an empty replay buffer.' % ( session_dir + '/replay_buffer.pkl' ) )
 	sys.stdout.flush()
+elif len( sys.argv ) > 2 and sys.argv[2] == 'load_actor_only' :
+	td3.actor = keras.models.load_model( session_dir + '/actor', compile=False )
+	for target_params, params in zip( td3.actor_target_network.trainable_variables, td3.actor.trainable_variables ) :
+		target_params.assign( params )
 else :
-	sac.actor.save( session_dir + '/actor' )
+	td3.actor.save( session_dir + '/actor' )
 
 
 np.random.seed( hyper_params['seed'] )
@@ -116,7 +113,7 @@ with Loop_handler() as interruption :
 					break
 
 				# Store the experience:
-				sac.replay_buffer.extend( trial_experience )
+				td3.replay_buffer.extend( trial_experience )
 
 				n_ep += 1
 
@@ -125,23 +122,22 @@ with Loop_handler() as interruption :
 
 
 		# Train the networks:
-		LQ = sac.train( ITER_PER_EP )
+		LQ = td3.train( ITER_PER_EP )
 
-		sac.actor.save( session_dir + '/actor' )
+		td3.actor.save( session_dir + '/actor' )
 
-		print( 'It %i | Ep %i | Bs %i | LQ %+7.4f | temp %5.3f' %
-			   ( sac.n_iter, n_ep, len( sac.replay_buffer ), LQ, float( sac.alpha ) ),
-			   flush=True )
+		print( 'It %i | Ep %i | Bs %i | LQ %+7.4f' %
+			   ( td3.n_iter, n_ep, len( td3.replay_buffer ), LQ ), flush=True )
 
 
 end = time.time()
 print( 'Elapsed time: %.3fs  ' % ( end - start ) )
 
-sac.save( session_dir )
+td3.save( session_dir )
 
 answer = input( '\nSave the replay buffer as ' + session_dir + '/replay_buffer.pkl? (y) ' )
 if answer.strip() == 'y' :
-	sac.save_replay_buffer( session_dir + '/replay_buffer.pkl' )
+	td3.save_replay_buffer( session_dir + '/replay_buffer.pkl' )
 	print( 'Replay buffer saved.' )
 else :
 	print( 'Experience discarded.' )

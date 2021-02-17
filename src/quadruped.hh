@@ -66,6 +66,7 @@ class Quadruped : public Robot
 	bool _exploration;
     std::mt19937 _rd_gen;
     std::normal_distribution<double> _normal_distribution;
+	std::uniform_real_distribution<double> _uniform_distribution;
 	std::vector<float> _state_scaling;
 	std::vector<float> _action_scaling;
 	bool _collision;

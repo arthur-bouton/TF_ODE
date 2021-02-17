@@ -128,7 +128,7 @@ Quadruped::Quadruped( Environment& env, const Vector3d& pose, const char* path_t
 
 
 	// Import the actor model:
-	_actor_model_ptr = TF_model<float>::ptr_t( new TF_model<float>( path_to_actor_model_dir, { 17 }, { 12, 12 } ) );
+	_actor_model_ptr = TF_model<float>::ptr_t( new TF_model<float>( path_to_actor_model_dir, { 17 }, { 12 } ) );
 	
 
 	// Initialization of the random number engine:
@@ -140,6 +140,7 @@ Quadruped::Quadruped( Environment& env, const Vector3d& pose, const char* path_t
 	else
 		_rd_gen = std::mt19937( seed );
     _normal_distribution = std::normal_distribution<double>( 0., 1. );
+	_uniform_distribution = std::uniform_real_distribution<double>( -1., 1. );
 
 	// State scaling before feeding the neural network:
 	_state_scaling = { 90, 90, 90, 90, 90 };
@@ -290,15 +291,21 @@ void Quadruped::_InternalControl( double delta_t )
 
 	for ( int i = 0 ; i < _servos.size() ; i++ )
 	{
-		// Extract the unbounded mean values of the action:
-		double unbounded_speed = output_vectors[0][i];
+		// Extract the unscaled action:
+		double unscaled_speed = output_vectors[0][i];
 
 		// Add exploration noise:
 		if ( _exploration )
-			unbounded_speed += _normal_distribution( _rd_gen )*output_vectors[1][i];
+		{
+			unscaled_speed += _normal_distribution( _rd_gen )*0.05;
+			unscaled_speed = std::max( -1., std::min( unscaled_speed, 1. ) );
+		}
+		//double draw = ( _uniform_distribution( _rd_gen ) + 1 )/2;
+		//if ( _exploration && draw > 0.95 )
+			//unscaled_speed = _uniform_distribution( _rd_gen );
 
-		// Squash and scale the action:
-		double desired_speed = _action_scaling[i]*tanh( unbounded_speed );
+		// Scale the action:
+		double desired_speed = _action_scaling[i]*unscaled_speed;
 
 		// Apply the control:
 		_servos[i]->set_desired_vel( desired_speed*DEG_TO_RAD );
