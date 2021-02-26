@@ -91,7 +91,7 @@ double Rover_1_tf::_ComputeReward( double delta_t )
 	reward *= 25./delta_t;
 
 	// Penalise side deviation:
-	//reward -= fabs( new_pos[1] )*0.5;
+	reward -= fabs( new_pos[1] )*0.5;
 
 	// Penalise the use of boggie torque:
 	reward -= fabs( _boggie_torque )/boggie_max_torque*0.5;

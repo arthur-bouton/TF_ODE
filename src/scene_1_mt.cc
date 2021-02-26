@@ -140,8 +140,11 @@ int main( int argc, char* argv[] )
 		display_ptr = nullptr;
 	else
 	{
-		int x( 200 ), y( 200 ), width( 1024 ), height( 768 );
-		display_ptr = new renderer::OsgVisitor( 0, width, height, x, y, 20, 20, osg::Vec3( -0.7, -2, 0.6 ), osg::Vec3( 0, 0, -0.1 ) );
+		//int x( 200 ), y( 200 ), width( 1024 ), height( 768 );
+		int x( 200 ), y( 200 ), width( 1280 ), height( 720 );
+		//int x( 0 ), y( 0 ), width( 1920 ), height( 1080 );
+		display_ptr = new renderer::OsgVisitor( 0, width, height, x, y, 20, 20, osg::Vec3( -0.8, 2.1, 1.1 ), osg::Vec3( 1, 0, 0.1 ),
+		                                        renderer::OsgVisitor::FIXED, true, osg::Vec3( -1, 2, 3 ) );
 		//display_ptr = new renderer::OsgVisitor( 0, width, height, x, y, 0, 0, osg::Vec3( -0.7, -2, 0.6 ), osg::Vec3( 0, 0, -0.1 ) );
 		//display_ptr->set_ground_texture( "../env_data/mars_checker.tga" );
 		//display_ptr->set_background_color( 179, 71, 0 );
