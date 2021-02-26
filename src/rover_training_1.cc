@@ -71,31 +71,48 @@ p::list simulation( const char* option = "", const char* path_to_model_dir = DEF
 	int direction = 1;
 
 	// Orientation angle of the step:
-	double orientation;
-	if ( argc > 3 )
-	{
-		char* endptr;
-		orientation = strtod( argv[3], &endptr );
-		if ( *endptr != '\0' )
-			throw std::runtime_error( std::string( "Invalide orientation: " ) + std::string( argv[3] ) );
-	}
+	//double orientation;
+	//if ( argc > 3 )
+	//{
+		//char* endptr;
+		//orientation = strtod( argv[3], &endptr );
+		//if ( *endptr != '\0' )
+			//throw std::runtime_error( std::string( "Invalide orientation: " ) + std::string( argv[3] ) );
+	//}
+	//else if ( strncmp( option, "eval", 5 ) == 0 || strncmp( option, "display", 8 ) == 0 )
+		//orientation = 0;
+	//else
+	//{
+		// Maximum angle to be chosen randomly when not specified:
+		//float max_rot( 5 );
+		//orientation = max_rot*uniform( gen );
+	//}
+	//float step_height( 0.105*2 );
+	//ode::Box step( env, Eigen::Vector3d( direction*1, 0, step_height/2 ), 1, 1, 3, step_height, false );
+	//step.set_rotation( 0, 0, orientation*M_PI/180 );
+	//step.fix();
+	//step.set_collision_group( "ground" );
+
+	//ode::Box step_c( env, Eigen::Vector3d( direction*2, 0, step_height/2 ), 1, 2, 3, step_height, false );
+	//step_c.fix();
+	//step_c.set_collision_group( "ground" );
+
+
+	// Unilateral obstacle:
+	int side;
+	if ( argc > 3 && strncmp( argv[3], "-", 2 ) == 0 )
+		side = -1;
 	else if ( strncmp( option, "eval", 5 ) == 0 || strncmp( option, "display", 8 ) == 0 )
-		orientation = 0;
+		side = 1;
 	else
 	{
 		// Maximum angle to be chosen randomly when not specified:
-		float max_rot( 5 );
-		orientation = max_rot*uniform( gen );
+		side = uniform( gen ) >= 0 ? 1 : -1;
 	}
-	float step_height( 0.105*2 );
-	ode::Box step( env, Eigen::Vector3d( direction*1, 0, step_height/2 ), 1, 1, 3, step_height, false );
-	step.set_rotation( 0, 0, orientation*M_PI/180 );
-	step.fix();
-	step.set_collision_group( "ground" );
-
-	ode::Box step_c( env, Eigen::Vector3d( direction*2, 0, step_height/2 ), 1, 2, 3, step_height, false );
-	step_c.fix();
-	step_c.set_collision_group( "ground" );
+	float obstacle_height( 0.105*2 );
+	ode::Box side_obstacle( env, Eigen::Vector3d( direction*0.6, -side*0.61/2, obstacle_height/2 ), 1, 0.2, 0.5, obstacle_height, false );
+	side_obstacle.fix();
+	side_obstacle.set_collision_group( "ground" );
 
 
 	// [ Simulation rules ]
@@ -120,7 +137,7 @@ p::list simulation( const char* option = "", const char* path_to_model_dir = DEF
 	// Maximum distance to travel ahead:
 	float x_goal( 1.5 );
 	// Maximum lateral deviation permitted:
-	float y_max( 0.6 );
+	float y_max( 0.3 );
 
 	float speed = 0;
 
@@ -164,8 +181,9 @@ p::list simulation( const char* option = "", const char* path_to_model_dir = DEF
 		display_ptr->get_keh()->set_pause();
 
 		robot.accept( *display_ptr );
-		step.accept( *display_ptr );
-		step_c.accept( *display_ptr );
+		//step.accept( *display_ptr );
+		//step_c.accept( *display_ptr );
+		side_obstacle.accept( *display_ptr );
 
 		robot::RoverControl* keycontrol = new robot::RoverControl( &robot, display_ptr->get_viewer() );
 

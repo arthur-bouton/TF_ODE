@@ -168,17 +168,18 @@ while inotifywait -qqe modify $watched_file; do
 		# Copy the actor model in the temporary directory and run its evaluation:
 		cp -r $session_dir/$model_dir $tmp_storage_dir
 		echo -ne "> Evaluating ${log[*]::2}...\r"
-		result=( $( $eval_exe_file eval $tmp_storage_dir/$model_dir 2> /dev/null ) )
-		stats="${log[*]} => ${result[*]}"
+		result_l=( $( $eval_exe_file eval $tmp_storage_dir/$model_dir - 2> /dev/null ) )
+		result_r=( $( $eval_exe_file eval $tmp_storage_dir/$model_dir   2> /dev/null ) )
+		stats="${log[*]} => LEFT: ${result_l[*]} RIGHT: ${result_r[*]}"
 
 		# Log the result of the evaluation:
 		echo $stats | tee -a $session_dir/stats.log
 
 		if [[ $no_extraction != true ]]; then
-			if [[ ${result[*]} == *'[Success]'* ]]; then
-				if (( $( echo "${result[$duration_pos]} <= $target_duration" | bc -l ) )); then
+			if [[ ${result_l[*]} == *'[Success]'* ]] && [[ ${result_r[*]} == *'[Success]'* ]]; then
+				if (( $( echo "${result_l[$duration_pos]} <= $target_duration" | bc -l ) )) && (( $( echo "${result_r[$duration_pos]} <= $target_duration" | bc -l ) )); then
 					extract_data
-					echo "Dataset $file_number extracted (time: ${result[$duration_pos]})"
+					echo "Dataset $file_number extracted (times: ${result_l[$duration_pos]}, ${result_r[$duration_pos]})"
 				fi
 			fi
 		fi
