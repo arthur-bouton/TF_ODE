@@ -153,9 +153,11 @@ p::list simulation( const char* option = "", const char* path_to_model_dir = DEF
 	if ( strncmp( option, "display", 8 ) == 0 || strncmp( option, "capture", 8 ) == 0 || strncmp( option, "explore", 8 ) == 0 )
 	{
 		// Parameters of the window:
-		int x( 200 ), y( 200 ), width( 1024 ), height( 768 );
+		//int x( 200 ), y( 200 ), width( 1024 ), height( 768 );
+		int x( 200 ), y( 200 ), width( 1280 ), height( 720 );
 		//int x( 0 ), y( 0 ), width( 1920 ), height( 1080 );
-		display_ptr = new renderer::OsgVisitor( 0, width, height, x, y, 20, 20, osg::Vec3( -0.7, -2, 0.6 ), osg::Vec3( 0, 0, -0.1 ) );
+		display_ptr = new renderer::OsgVisitor( 0, width, height, x, y, 20, 20, osg::Vec3( -0.8, 2.1, 1.1 ), osg::Vec3( 1, 0, 0.1 ),
+		                                        renderer::OsgVisitor::FIXED, true, osg::Vec3( -1, 2, 3 ) );
 
 		display_ptr->set_window_name( "Rover training 1" );
 		//display_ptr->disable_shadows();
