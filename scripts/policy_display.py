@@ -2,21 +2,26 @@
 import pandas as pd
 import seaborn as sns
 from matplotlib.pyplot import *
+import glob
 
 #rcParams['text.usetex']=True
 #rcParams['text.latex.unicode']=True
+#rc( 'text', usetex=True )
 
 
-data_file = '../training_data/step_06_PER_1_no_sym.dat'
+data_file_list = glob.glob( "../training_data/samples/samples_Ry05t05c_eg87_end_ga001_lr1e-8_*.dat" )
 
-state_1 = [ 'Steering angle', 'Roll angle', 'Pitch Angle', 'Boggie angle' ]
+state_1 = [ 'Steering angle', 'Roll angle', 'Pitch Angle', 'Bogie angle' ]
 state_2 = [ 'Front $f_x$', 'Front $f_y$', 'Front $f_z$', 'Front $\\tau_x$', 'Front $\\tau_y$', 'Front $\\tau_z$',
              'Rear $f_x$', 'Rear $f_y$', 'Rear $f_z$', 'Rear $\\tau_x$', 'Rear $\\tau_y$', 'Rear $\\tau_z$' ]
-actions = [ 'Steering rate', 'Boggie torque' ]
+actions = [ 'Steering rate', 'Bogie torque' ]
 columns = [ 'Direction' ] + state_1 + state_2 + actions
 
 
-df = pd.read_csv( data_file, sep=' ', header=None, names=columns )
+df_list = []
+for f in data_file_list :
+	df_list.append( pd.read_csv( f, sep=' ', header=None, names=columns ) )
+df = pd.concat( df_list )
 
 # Convert every field to np.float64 and replace strings by np.nan:
 df = df.apply( pd.to_numeric, errors='coerce' )
@@ -70,17 +75,19 @@ mask[np.triu_indices_from( mask )] = True
 
 f, ax = subplots( figsize=( 12, 12 ) )
 ax = sns.heatmap(
-	corr, 
+	corr,
 	mask=mask,
-	cbar_kws = { 'ticks': [ -1, -0.5, 0, 0.5, 1 ], 'shrink': 0.8 },
+	cbar_kws = { 'ticks': [ -1, -0.5, 0, 0.5, 1 ], 'shrink': 18/19, 'use_gridspec': False, 'anchor': ( -0.7, 0 ) },
 	annot=True,
 	annot_kws = { 'size': 8 },
 	vmin=-1, vmax=1, center=0,
 	cmap=sns.diverging_palette(20, 220, n=200),
 	square=True
 )
-ax.set_xticklabels( ax.get_xticklabels()[:-1], rotation=45, horizontalalignment='right' )
+ax.set_xticklabels( ax.get_xticklabels()[:-1] + [''], rotation=45, horizontalalignment='right' )
 ax.set_yticklabels( [''] + ax.get_yticklabels()[1:], rotation=0 )
+ax.xaxis.set_ticks_position( 'none' )
+ax.yaxis.set_ticks_position( 'none' )
 
 
 # Print the variance of each feature:
