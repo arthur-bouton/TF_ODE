@@ -40,7 +40,7 @@ tensorflow-estimator==2.3.0
 tensorflow-probability==0.11.1
 termcolor==1.1.0
 tqdm==4.54.1
-urllib3==1.26.2
+urllib3==1.26.4
 Werkzeug==1.0.1
 wrapt==1.12.1
 zipp==3.4.0
