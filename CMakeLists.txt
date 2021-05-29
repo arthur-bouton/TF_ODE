@@ -65,6 +65,18 @@ target_link_libraries( scene_1 robdyn
 							   ${OSGS_LIBRARIES} )
 
 
+
+#######
+# arm #
+#######
+
+add_executable( arm ${SRC_DIR}/arm.cc )
+target_link_libraries( arm robdyn
+						   ${ODE_LIBRARIES}
+						   ${OSGV_LIBRARIES}
+						   ${OSGS_LIBRARIES} )
+
+
 ########
 # ramp #
 ########
