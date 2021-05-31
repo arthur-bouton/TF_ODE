@@ -6,6 +6,7 @@
 #include "ode/cylinder.hh"
 #include "ode/sphere.hh"
 #include "ode/capped_cyl.hh"
+#include <deque>
 
 
 #define RAD_TO_DEG 57.29577951308232
@@ -32,12 +33,12 @@ class Arm : public Robot
 		segment new_segment;
 
 		new_segment.direction = Vector3d( 0, 0, 1 );
-		new_segment.axis = Vector3d( 0, 1, 0 );
+		new_segment.axis = Vector3d( 0, 0, 1 );
 		new_segment.radius = 0.1;
 		new_segment.length = 0;
 		new_segment.mass = 2;
 		new_segment.Kp = 20;
-		new_segment.Kd = 0.1;
+		new_segment.Kd = 1;
 		_segments.push_back( new_segment );
 
 		new_segment.direction = Vector3d( -1, 0, 1 );
@@ -46,7 +47,7 @@ class Arm : public Robot
 		new_segment.length = 0.5;
 		new_segment.mass = 2;
 		new_segment.Kp = 20;
-		new_segment.Kd = 0.1;
+		new_segment.Kd = 1;
 		_segments.push_back( new_segment );
 
 		new_segment.direction = Vector3d( 1, 0, 1 );
@@ -55,7 +56,7 @@ class Arm : public Robot
 		new_segment.length = 0.5;
 		new_segment.mass = 1;
 		new_segment.Kp = 20;
-		new_segment.Kd = 0.2;
+		new_segment.Kd = 1;
 		_segments.push_back( new_segment );
 
 		new_segment.direction = Vector3d( 1, 0, -1 );
@@ -63,8 +64,8 @@ class Arm : public Robot
 		new_segment.radius = 0.02;
 		new_segment.length = 0.4;
 		new_segment.mass = 1;
-		new_segment.Kp = 10;
-		new_segment.Kd = 0.01;
+		new_segment.Kp = 20;
+		new_segment.Kd = 1;
 		_segments.push_back( new_segment );
 
 		new_segment.direction = Vector3d( 1, 0, -1 );
@@ -103,7 +104,7 @@ class Arm : public Robot
 
 			seg.axis.normalize();
 			seg.jointID = dJointCreateHinge( env.get_world(), 0 );
-			dJointAttach( seg.jointID, prev_body->get_body(), new_body->get_body() );
+			dJointAttach( seg.jointID, new_body->get_body(), prev_body->get_body() );
 			dJointSetHingeAxis( seg.jointID, seg.axis[0], seg.axis[1], seg.axis[2] );
 			dJointSetHingeAnchor( seg.jointID, prev_end_pos.x(), prev_end_pos.y(), prev_end_pos.z() );
 			dJointSetHingeParam( seg.jointID, dParamLoStop, -seg.angle_max*DEG_TO_RAD );
@@ -115,7 +116,7 @@ class Arm : public Robot
 	}
 
 
-	Vector3d get_effector_pos()
+	Vector3d get_effector_pos( bool real = false ) const
 	{
 		Vector3d pos = _base_pos;
 
@@ -123,7 +124,8 @@ class Arm : public Robot
 
 		for ( segment seg : _segments )
 		{
-			rot = AngleAxisd( get_axis_angle( seg ), seg.axis ).toRotationMatrix()*rot;
+			double angle = ( real ? _get_axis_angle( seg ) : seg.angle_setpoint );
+			rot = AngleAxisd( angle*DEG_TO_RAD, rot*seg.axis ).toRotationMatrix()*rot;
 			pos += rot*seg.direction*seg.length;
 		}
 
@@ -131,8 +133,24 @@ class Arm : public Robot
 	}
 
 
-	void set_new_target( Vector3d target, float velocity = 0.01 )
+	void set_new_target( Vector3d target, float velocity = 0.01, bool add = true )
 	{
+		Vector3d start;
+		if ( add && !_effector_trajectory.empty() )
+			start = _effector_trajectory.back();
+		else
+		{
+			start = get_effector_pos( true );
+			_effector_trajectory.clear();
+			_effector_trajectory.push_back( start );
+		}
+
+		Vector3d step_vector = ( target - start ).normalized()*velocity*_control_period;
+		int n_timesteps = ( target - start ).norm()/( velocity*_control_period );
+
+		for ( int i = 0 ; i < n_timesteps ; ++i )
+			_effector_trajectory.push_back( _effector_trajectory.back() + step_vector );
+		_effector_trajectory.push_back( target );
 	}
 
 
@@ -144,19 +162,21 @@ class Arm : public Robot
 		_clock += dt;
 		if ( _clock >= _control_period )
 		{
-			update_control( _clock );
+			_update_control( _clock );
 
 			_clock = 0;
 		}
 
 		for ( segment seg : _segments )
 		{
-			double angle = get_axis_angle( seg );
-			double rate = get_axis_rate( seg );
+			double angle = _get_axis_angle( seg );
+			double rate = _get_axis_rate( seg );
 			double correction = -seg.Kp*( angle - seg.angle_setpoint ) - seg.Kd*rate;
-			set_axis_torque( seg, correction );
+			_set_axis_torque( seg, correction );
 		}
 	}
+
+	inline std::deque<Vector3d> get_trajectory() const { return _effector_trajectory; }
 
 
 	protected:
@@ -177,26 +197,58 @@ class Arm : public Robot
 	std::vector<segment> _segments;
 
 
-	inline double get_axis_angle( segment seg ) { return dJointGetHingeAngle( seg.jointID )*RAD_TO_DEG; }
+	inline double _get_axis_angle( segment seg ) const { return dJointGetHingeAngle( seg.jointID )*RAD_TO_DEG; }
 
-	inline double get_axis_rate( segment seg ) { return dJointGetHingeAngleRate( seg.jointID )*RAD_TO_DEG; }
+	inline double _get_axis_rate( segment seg ) const { return dJointGetHingeAngleRate( seg.jointID )*RAD_TO_DEG; }
 
-	inline void set_axis_torque( segment seg, double torque ) { dJointAddHingeTorque( seg.jointID, torque ); }
+	inline void _set_axis_torque( segment seg, double torque ) { dJointAddHingeTorque( seg.jointID, torque ); }
 
 
-	void update_control( double delta_t )
+	Eigen::MatrixXd _get_jacobian() const
 	{
-		//_effector_trajectory.back()
+		std::vector<Vector3d> joint_pos, joint_axes;
+		joint_pos.push_back( Vector3d::Zero() );
+
+		Matrix3d rot = Eigen::Matrix3d::Identity();
+
+		for ( segment seg : _segments )
+		{
+			joint_axes.push_back( rot*seg.axis );
+			rot = AngleAxisd( _get_axis_angle( seg )*DEG_TO_RAD, joint_axes.back() ).toRotationMatrix()*rot;
+			joint_pos.push_back( joint_pos.back() + rot*seg.direction*seg.length );
+		}
+
+		MatrixXd jacobian( 3, _segments.size() );
+		for ( Eigen::Index i = 0 ; i < jacobian.cols() ; ++i )
+			jacobian.col( i ) = joint_axes[i].cross( joint_pos.back() - joint_pos[i] )*DEG_TO_RAD;
+
+		return jacobian;
+	}
+
+
+	void _update_control( double delta_t )
+	{
+		if ( _effector_trajectory.empty() )
+			return;
+
+		Vector3d step_vector = _effector_trajectory.front() - get_effector_pos( true );
+
+		VectorXd dq = _get_jacobian().bdcSvd( ComputeThinU | ComputeThinV ).solve( step_vector );
+		//VectorXd dq = _get_jacobian().colPivHouseholderQr().solve( step_vector );
+		//VectorXd dq = _get_jacobian().fullPivHouseholderQr().solve( step_vector );
+
+		for ( size_t i = 0 ; i < _segments.size() ; ++i )
+			_segments[i].angle_setpoint = _get_axis_angle( _segments[i] ) + dq[i];
 
 		if ( _effector_trajectory.size() > 1 )
-			_effector_trajectory.pop_back();
+			_effector_trajectory.pop_front();
 	}
 
 
 	double _clock = 0;
 	double _control_period = 0.1;
 
-	std::vector<Vector3d> _effector_trajectory;
+	std::deque<Vector3d> _effector_trajectory;
 };
 
 
@@ -211,32 +263,34 @@ int main( int argc, char* argv[] )
 	// [ Robot ]
 
 	Arm arm( env );
-	arm.set_control_period( 0.1 );
+	arm.set_control_period( 0.01 );
 
-	Vector3d target( 0.5, -0.2, 0.4 );
-	arm.set_new_target( target, 0.01 );
+	Vector3d target_0 = arm.get_effector_pos( true );
+	Vector3d target_1( 0.5, -0.2, 0.4 );
+	Vector3d target_2( 0.7, 0.2, 0.7 );
+
+	arm.set_new_target( target_1, 0.2 );
+	arm.set_new_target( target_2, 0.2 );
+	arm.set_new_target( target_0, 0.2 );
+	arm.set_new_target( target_1, 0.2 );
+	arm.set_new_target( target_2, 0.2 );
+	arm.set_new_target( target_0, 0.2 );
 
 
-	Sphere start( env, arm.get_effector_pos(), 1, 0.05 );
+	Sphere start( env, target_0, 1, 0.05 );
 	start.fix();
 	start.set_color( 1, 0, 0 );
 	start.set_alpha( 0.3 );
 
-	Sphere goal( env, target, 1, 0.05 );
-	goal.fix();
-	goal.set_color( 1, 0, 0 );
-	goal.set_alpha( 0.3 );
+	Sphere goal_1( env, target_1, 1, 0.05 );
+	goal_1.fix();
+	goal_1.set_color( 1, 0, 0 );
+	goal_1.set_alpha( 0.3 );
 
-
-	// [ Simulation rules ]
-
-	std::function<bool(float,double)> step_function = [&]( float timestep, double time )
-	{
-		env.next_step( timestep );
-		arm.next_step( timestep );
-
-		return false;
-	};
+	Sphere goal_2( env, target_2, 1, 0.05 );
+	goal_2.fix();
+	goal_2.set_color( 1, 0, 0 );
+	goal_2.set_alpha( 0.3 );
 
 
 	// [ Display ]
@@ -250,8 +304,17 @@ int main( int argc, char* argv[] )
 
 	arm.accept( *display_ptr );
 	start.accept( *display_ptr );
-	goal.accept( *display_ptr );
+	goal_1.accept( *display_ptr );
+	goal_2.accept( *display_ptr );
 
+	//for ( Vector3d wp : arm.get_trajectory() )
+	//{
+		//Sphere* pos = new Sphere( env, wp, 1, 0.02 );
+		//pos->fix();
+		//pos->set_color( 0, 1, 0 );
+		//pos->set_alpha( 0.3 );
+		//pos->accept( *display_ptr );
+	//}
 
 	//std::function<bool(renderer::OsgText*)> update_text = [&arm]( renderer::OsgText* text )
 	//{
@@ -267,6 +330,17 @@ int main( int argc, char* argv[] )
 	//text->set_size( 3.5 );
 	//text->add_background();
 	//text->set_callback( update_text );
+
+
+	// [ Simulation rules ]
+
+	std::function<bool(float,double)> step_function = [&]( float timestep, double time )
+	{
+		env.next_step( timestep );
+		arm.next_step( timestep );
+
+		return false;
+	};
 
 	
 	// [ Simulation loop ]
