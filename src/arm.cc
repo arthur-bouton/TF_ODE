@@ -19,97 +19,120 @@ using namespace Eigen;
 
 class Arm : public Robot
 {
-	#define N_JOINTS 4
-
 	public:
 
-	Arm( ode::Environment& env, const Vector3d& pose )
+	Arm( ode::Environment& env, const Vector3d& pose = Vector3d( 0, 0, 0 ) )
 	{
 		_main_body = Object::ptr_t( new Cylinder( env, pose + Vector3d( 0, 0, 0.1 ), 1, 0.11, 0.2 ) );
 		_main_body->fix();
 		_bodies.push_back( _main_body );
-
-		Object::ptr_t base( new Sphere( env, pose + Vector3d( 0, 0, 0.2 ), 1, 0.1 ) );
-		_bodies.push_back( base );
-
-		ode::Object::ptr_t segment_1( new CappedCyl( env, pose + Vector3d( 0, 0, 0.2 + l1/2 ), m1, 0.04, l1 ) );
-		_bodies.push_back( segment_1 );
-
-		ode::Object::ptr_t segment_2( new CappedCyl( env, pose + Vector3d( 0, l2/2, 0.2 + l1 ), m2, 0.03, l2 ) );
-		segment_2->set_rotation( M_PI/2, 0, 0 );
-		_bodies.push_back( segment_2 );
-
-		ode::Object::ptr_t segment_3( new CappedCyl( env, pose + Vector3d( l3/2, l2, 0.2 + l1 ), m3, 0.02, l3 ) );
-		segment_3->set_rotation( 0, M_PI/2, 0 );
-		_bodies.push_back( segment_3 );
+		_base_pos = pose + Vector3d( 0, 0, 0.2 );
 
 
-		Vector3d axis_pos;
+		segment new_segment;
 
-		_axes[0] = dJointCreateHinge( env.get_world(), 0 );
-		dJointAttach( _axes[0], _main_body->get_body(), base->get_body() );
-		dJointSetHingeAxis( _axes[0], 0, 0, 1 );
-		axis_pos = base->get_pos();
-		dJointSetHingeAnchor( _axes[0], axis_pos.x(), axis_pos.y(), axis_pos.z() );
-		dJointSetHingeParam( _axes[0], dParamLoStop, -angle_max*DEG_TO_RAD );
-		dJointSetHingeParam( _axes[0], dParamHiStop, angle_max*DEG_TO_RAD );
+		new_segment.direction = Vector3d( 0, 0, 1 );
+		new_segment.axis = Vector3d( 0, 1, 0 );
+		new_segment.radius = 0.1;
+		new_segment.length = 0;
+		new_segment.mass = 2;
+		new_segment.Kp = 20;
+		new_segment.Kd = 0.1;
+		_segments.push_back( new_segment );
 
-		_axes[1] = dJointCreateHinge( env.get_world(), 0 );
-		dJointAttach( _axes[1], base->get_body(), segment_1->get_body() );
-		dJointSetHingeAxis( _axes[1], 0, 1, 0 );
-		axis_pos = base->get_pos();
-		dJointSetHingeAnchor( _axes[1], axis_pos.x(), axis_pos.y(), axis_pos.z() );
-		dJointSetHingeParam( _axes[1], dParamLoStop, -angle_max*DEG_TO_RAD );
-		dJointSetHingeParam( _axes[1], dParamHiStop, angle_max*DEG_TO_RAD );
+		new_segment.direction = Vector3d( -1, 0, 1 );
+		new_segment.axis = Vector3d( 0, 1, 0 );
+		new_segment.radius = 0.04;
+		new_segment.length = 0.5;
+		new_segment.mass = 2;
+		new_segment.Kp = 20;
+		new_segment.Kd = 0.1;
+		_segments.push_back( new_segment );
 
-		_axes[2] = dJointCreateHinge( env.get_world(), 0 );
-		dJointAttach( _axes[2], segment_1->get_body(), segment_2->get_body() );
-		dJointSetHingeAxis( _axes[2], 1, 0, 0 );
-		axis_pos = segment_1->get_pos() + Vector3d( 0, 0, l1/2 );
-		dJointSetHingeAnchor( _axes[2], axis_pos.x(), axis_pos.y(), axis_pos.z() );
-		dJointSetHingeParam( _axes[2], dParamLoStop, -angle_max*DEG_TO_RAD );
-		dJointSetHingeParam( _axes[2], dParamHiStop, angle_max*DEG_TO_RAD );
+		new_segment.direction = Vector3d( 1, 0, 1 );
+		new_segment.axis = Vector3d( 0, 1, 0 );
+		new_segment.radius = 0.03;
+		new_segment.length = 0.5;
+		new_segment.mass = 1;
+		new_segment.Kp = 20;
+		new_segment.Kd = 0.2;
+		_segments.push_back( new_segment );
 
-		_axes[3] = dJointCreateHinge( env.get_world(), 0 );
-		dJointAttach( _axes[3], segment_2->get_body(), segment_3->get_body() );
-		dJointSetHingeAxis( _axes[3], 0, 0, 1 );
-		axis_pos = segment_2->get_pos() + Vector3d( 0, l2/2, 0 );
-		dJointSetHingeAnchor( _axes[3], axis_pos.x(), axis_pos.y(), axis_pos.z() );
-		dJointSetHingeParam( _axes[3], dParamLoStop, -angle_max*DEG_TO_RAD );
-		dJointSetHingeParam( _axes[3], dParamHiStop, angle_max*DEG_TO_RAD );
+		new_segment.direction = Vector3d( 1, 0, -1 );
+		new_segment.axis = Vector3d( 0, 1, 0 );
+		new_segment.radius = 0.02;
+		new_segment.length = 0.4;
+		new_segment.mass = 1;
+		new_segment.Kp = 10;
+		new_segment.Kd = 0.01;
+		_segments.push_back( new_segment );
+
+		new_segment.direction = Vector3d( 1, 0, -1 );
+		new_segment.axis = Vector3d( 1, 0, -1 );
+		new_segment.radius = 0.025;
+		new_segment.length = 0.05;
+		new_segment.mass = 0.5;
+		new_segment.Kp = 10;
+		new_segment.Kd = 0.01;
+		_segments.push_back( new_segment );
+
+		new_segment.direction = Vector3d( 1, 0, 0 );
+		new_segment.axis = Vector3d( 0, 1, 0 );
+		new_segment.radius = 0.01;
+		new_segment.length = 0.15;
+		new_segment.mass = 0.5;
+		new_segment.Kp = 10;
+		new_segment.Kd = 0.01;
+		_segments.push_back( new_segment );
+
+
+		Object::ptr_t prev_body = _main_body;
+		Vector3d prev_end_pos = _base_pos;
+
+		for ( segment& seg : _segments )
+		{
+			seg.direction.normalize();
+			Object::ptr_t new_body( new CappedCyl( env, pose + prev_end_pos + seg.direction*seg.length/2,
+			                                       seg.mass, seg.radius, seg.length ) );
+			Vector3d y = Vector3d( 0, 0, 1 ).cross( seg.direction );
+			if ( y == Vector3d::Zero() ) y = Vector3d( 0, 1, 0 );
+			Vector3d x = y.cross( seg.direction );
+			if ( x == Vector3d::Zero() ) x = Vector3d( 1, 0, 0 );
+			new_body->set_rotation( x, y );
+			_bodies.push_back( new_body );
+
+			seg.axis.normalize();
+			seg.jointID = dJointCreateHinge( env.get_world(), 0 );
+			dJointAttach( seg.jointID, prev_body->get_body(), new_body->get_body() );
+			dJointSetHingeAxis( seg.jointID, seg.axis[0], seg.axis[1], seg.axis[2] );
+			dJointSetHingeAnchor( seg.jointID, prev_end_pos.x(), prev_end_pos.y(), prev_end_pos.z() );
+			dJointSetHingeParam( seg.jointID, dParamLoStop, -seg.angle_max*DEG_TO_RAD );
+			dJointSetHingeParam( seg.jointID, dParamHiStop, seg.angle_max*DEG_TO_RAD );
+
+			prev_body = new_body;
+			prev_end_pos = prev_end_pos + seg.direction*seg.length;
+		}
 	}
-
-
-	inline double get_axis_angle( dJointID axis ) { return dJointGetHingeAngle( axis )*RAD_TO_DEG; }
-
-
-	inline double get_axis_rate( dJointID axis ) { return dJointGetHingeAngleRate( axis )*RAD_TO_DEG; }
-
-
-	inline void set_axis_torque( dJointID axis, double torque ) { dJointAddHingeTorque( axis, torque ); }
 
 
 	Vector3d get_effector_pos()
 	{
-		dVector3 pos;
-		dBodyGetRelPointPos( _bodies.back()->get_body(), 0, 0, -l3/2, pos );
-		Vector3d last_segment_pos( pos[0], pos[1], pos[2] );
+		Vector3d pos = _base_pos;
 
-		return last_segment_pos;
+		Matrix3d rot = Eigen::Matrix3d::Identity();
+
+		for ( segment seg : _segments )
+		{
+			rot = AngleAxisd( get_axis_angle( seg ), seg.axis ).toRotationMatrix()*rot;
+			pos += rot*seg.direction*seg.length;
+		}
+
+		return pos;
 	}
 
 
 	void set_new_target( Vector3d target, float velocity = 0.01 )
 	{
-	}
-
-
-	void update_control( double delta_t )
-	{
-		//effector_trajectory.back()
-
-		if ( effector_trajectory.size() > 1 )
-			effector_trajectory.pop_back();
 	}
 
 
@@ -126,39 +149,54 @@ class Arm : public Robot
 			_clock = 0;
 		}
 
-		for ( int i = 0 ; i < N_JOINTS ; ++i )
+		for ( segment seg : _segments )
 		{
-			double angle = get_axis_angle( _axes[i] );
-			double rate = get_axis_rate( _axes[i] );
-			double correction = -Kp*( angle - _joint_setpoints[i] ) - Kd*rate;
-			set_axis_torque( _axes[i], correction );
+			double angle = get_axis_angle( seg );
+			double rate = get_axis_rate( seg );
+			double correction = -seg.Kp*( angle - seg.angle_setpoint ) - seg.Kd*rate;
+			set_axis_torque( seg, correction );
 		}
 	}
 
 
-	float Kp = 10;
-	float Kd = 1;
-
-
 	protected:
 
-	float m1 = 5;
-	float m2 = 2;
-	float m3 = 2;
+	Vector3d _base_pos;
 
-	float l1 = 0.6;
-	float l2 = 0.5;
-	float l3 = 0.4;
+	typedef struct segment
+	{
+		float mass, radius, length;
+		Vector3d direction, axis;
+		dJointID jointID;
+		float angle_max = 60;
+		double angle_setpoint = 0;
+		float Kp = 10;
+		float Kd = 0.1;
+	} segment;
 
-	float angle_max = 60;
+	std::vector<segment> _segments;
 
-	dJointID _axes[N_JOINTS];
+
+	inline double get_axis_angle( segment seg ) { return dJointGetHingeAngle( seg.jointID )*RAD_TO_DEG; }
+
+	inline double get_axis_rate( segment seg ) { return dJointGetHingeAngleRate( seg.jointID )*RAD_TO_DEG; }
+
+	inline void set_axis_torque( segment seg, double torque ) { dJointAddHingeTorque( seg.jointID, torque ); }
+
+
+	void update_control( double delta_t )
+	{
+		//_effector_trajectory.back()
+
+		if ( _effector_trajectory.size() > 1 )
+			_effector_trajectory.pop_back();
+	}
+
 
 	double _clock = 0;
 	double _control_period = 0.1;
-	double _joint_setpoints[N_JOINTS] = { 0 };
 
-	std::vector<Vector3d> effector_trajectory;
+	std::vector<Vector3d> _effector_trajectory;
 };
 
 
@@ -172,10 +210,10 @@ int main( int argc, char* argv[] )
 
 	// [ Robot ]
 
-	Arm arm( env, Vector3d( 0, 0, 0 ) );
+	Arm arm( env );
 	arm.set_control_period( 0.1 );
 
-	Vector3d target( 0.5, 0, 0.5 );
+	Vector3d target( 0.5, -0.2, 0.4 );
 	arm.set_new_target( target, 0.01 );
 
 
@@ -204,7 +242,7 @@ int main( int argc, char* argv[] )
 	// [ Display ]
 
 	int x( 200 ), y( 200 ), width( 1024 ), height( 768 );
-	renderer::OsgVisitor* display_ptr = new renderer::OsgVisitor( 0, width, height, x, y, 20, 20, osg::Vec3( 1.2, -2, 0.6 ), osg::Vec3( 0.2, 0, 0.5 ) );
+	renderer::OsgVisitor* display_ptr = new renderer::OsgVisitor( 0, width, height, x, y, 20, 20, osg::Vec3( 2, -2, 0.5 ), osg::Vec3( 0.2, 0, 0.4 ) );
 
 	display_ptr->set_window_name( "Arm" );
 	//display_ptr->disable_shadows();
