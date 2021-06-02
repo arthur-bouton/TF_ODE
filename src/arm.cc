@@ -7,6 +7,7 @@
 #include "ode/sphere.hh"
 #include "ode/capped_cyl.hh"
 #include <deque>
+#include <Eigen/Dense>
 
 
 #define RAD_TO_DEG 57.29577951308232
@@ -298,12 +299,18 @@ class Arm : public Robot
 		step_vector.tail( 3 ) = rot.axis()*rot.angle();
 
 
-		VectorXd dq = _get_jacobian().bdcSvd( ComputeThinU | ComputeThinV ).solve( step_vector );
-		//VectorXd dq = _get_jacobian().colPivHouseholderQr().solve( step_vector );
-		//VectorXd dq = _get_jacobian().fullPivHouseholderQr().solve( step_vector );
+		MatrixXd J = _get_jacobian();
+		MatrixXd Jp = J.transpose()*( J*J.transpose() ).inverse();
+		VectorXd dq = Jp*step_vector;
 
-		for ( size_t i = 0 ; i < _segments.size() ; ++i )
-			_segments[i].angle_setpoint = _segments[i].get_angle() + dq[i];
+		int N = _segments.size();
+		VectorXd current_q( N );
+		for ( size_t i = 0 ; i < N ; ++i )
+			current_q[i] = _segments[i].get_angle();
+		VectorXd dq2 = -( MatrixXd::Identity( N, N ) - Jp*J )*current_q;
+
+		for ( size_t i = 0 ; i < N ; ++i )
+			_segments[i].angle_setpoint = _segments[i].get_angle() + dq[i] + dq2[i];
 
 		if ( _effector_trajectory.size() > 1 )
 			_effector_trajectory.pop_front();
