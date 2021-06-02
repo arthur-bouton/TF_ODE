@@ -22,15 +22,15 @@ class Arm : public Robot
 {
 	public:
 
-	typedef struct waypoint
+	typedef struct pose
 	{
-		Vector3d pos, dir;
-		double angle;
-	} Waypoint;
+		Vector3d position;
+		AngleAxisd orientation;
+	} Pose;
 
-	std::deque<Waypoint> _effector_trajectory;
+	std::deque<Pose> _effector_trajectory;
 
-	inline std::deque<Waypoint> get_trajectory() const { return _effector_trajectory; }
+	inline std::deque<Pose> get_trajectory() const { return _effector_trajectory; }
 
 
 	Arm( ode::Environment& env, const Vector3d& pose = Vector3d( 0, 0, 0 ) )
@@ -136,7 +136,7 @@ class Arm : public Robot
 	}
 
 
-	Waypoint get_effector_state( bool real = false ) const
+	Pose get_effector_pose( bool real = false ) const
 	{
 		Vector3d pos = _base_pos;
 
@@ -144,72 +144,68 @@ class Arm : public Robot
 
 		for ( Segment seg : _segments )
 		{
-			double angle = ( real ? _get_axis_angle( seg ) : seg.angle_setpoint );
-			rot = AngleAxisd( angle*DEG_TO_RAD, rot*seg.axis ).toRotationMatrix()*rot;
+			double angle = ( real ? seg.get_angle() : seg.angle_setpoint );
+			rot = AngleAxisd( angle, rot*seg.axis ).toRotationMatrix()*rot;
 			pos += rot*seg.direction*seg.length;
 		}
 
-		Waypoint state;
-		state.pos = pos;
-		state.dir = rot*_segments.back().direction;
-		// TODO
-		//Matrix3d effector_frame = _get_segment_frame( _segments.back().direction );
-		//effector_frame = rot*effector_frame.transpose();
-		//state.angle = asin( effector_frame.col( 1 ).dot( Vector3d( 0, 0, 1 ) ) );
-		state.angle = 0;
+		Pose pose;
+		pose.position = pos;
+		pose.orientation = AngleAxisd( rot );
 
-		return state;
+		return pose;
 	}
 
 
-	void set_new_target( Vector3d target, float velocity = 0.01, bool add = true, Vector3d direction = Vector3d::Zero(), double angle = 0, float rate = 45 )
+	void set_new_target( Vector3d target, float velocity = 0.01, AngleAxisd orientation = AngleAxisd( 0, Vector3d::Zero() ), float rate_max = 45, bool add = true )
 	{
-		Waypoint start_wp, target_wp;
+		Pose start_wp, target_wp;
 
 		if ( add && !_effector_trajectory.empty() )
 			start_wp = _effector_trajectory.back();
 		else
 		{
-			start_wp = get_effector_state( true );
+			start_wp = get_effector_pose( true );
 			_effector_trajectory.clear();
 			_effector_trajectory.push_back( start_wp );
 		}
 
-		target_wp.pos = target;
-		target_wp.angle = angle;
-		if ( direction == Vector3d::Zero() )
-			target_wp.dir = start_wp.dir;
+		target_wp.position = target;
+		if ( orientation.axis() == Vector3d::Zero() )
+			target_wp.orientation = start_wp.orientation;
 		else
-			target_wp.dir = direction.normalized();
+			target_wp.orientation = orientation;
 
 
-		Vector3d dir_axis = start_wp.dir.cross( target_wp.dir );
-		double dir_angle = asin( dir_axis.norm() )*RAD_TO_DEG;
-		unsigned int n_steps_min = std::max( ( target_wp.angle - start_wp.angle )/( rate*_control_period ) + 1,
-		                                     dir_angle/( rate*_control_period ) + 1 );
-		n_steps_min = std::max( n_steps_min, (unsigned int) 1 );
+		Matrix3d Rs = start_wp.orientation.toRotationMatrix();
+		Matrix3d Rt = target_wp.orientation.toRotationMatrix();
+		AngleAxisd total_rot( Rt*Rs.transpose() );
 
-		unsigned int n_steps = ( target_wp.pos - start_wp.pos ).norm()/( velocity*_control_period ) + 1;
+		unsigned int n_steps_min = total_rot.angle()/( rate_max*DEG_TO_RAD*_control_period ) + 1;
+		if ( n_steps_min < 1 ) n_steps_min = 1;
+
+		unsigned int n_steps = ( target_wp.position - start_wp.position ).norm()/( velocity*_control_period ) + 1;
 		if ( n_steps < n_steps_min )
 		{
 			n_steps = n_steps_min;
-			velocity = ( target_wp.pos - start_wp.pos ).norm()/( n_steps*_control_period );
+			velocity = ( target_wp.position - start_wp.position ).norm()/( n_steps*_control_period );
 		}
 
 
 		Vector3d step_vector = Vector3d::Zero();
-		if ( target_wp.pos != start_wp.pos )
-			step_vector = ( target_wp.pos - start_wp.pos ).normalized()*velocity*_control_period;
-		double step_angle = ( target_wp.angle - start_wp.angle )/n_steps;
-		Matrix3d step_rot = AngleAxisd( dir_angle/n_steps*DEG_TO_RAD, dir_axis ).toRotationMatrix();
+		if ( target_wp.position != start_wp.position )
+			step_vector = ( target_wp.position - start_wp.position ).normalized()*velocity*_control_period;
+
+		Matrix3d step_rot = AngleAxisd( total_rot.angle()/n_steps, total_rot.axis() ).toRotationMatrix();
 
 
+		Matrix3d wp_rot = Rs;
 		for ( int i = 0 ; i < n_steps - 1 ; ++i )
 		{
-			Waypoint wp;
-			wp.pos = _effector_trajectory.back().pos + step_vector;
-			wp.dir = step_rot*_effector_trajectory.back().dir;
-			wp.angle = _effector_trajectory.back().angle + step_angle;
+			Pose wp;
+			wp.position = _effector_trajectory.back().position + step_vector;
+			wp_rot = step_rot*wp_rot;
+			wp.orientation = AngleAxisd( wp_rot );
 			_effector_trajectory.push_back( wp );
 		}
 		_effector_trajectory.push_back( target_wp );
@@ -231,10 +227,10 @@ class Arm : public Robot
 
 		for ( Segment seg : _segments )
 		{
-			double angle = _get_axis_angle( seg );
-			double rate = _get_axis_rate( seg );
-			double correction = -seg.Kp*( angle - seg.angle_setpoint ) - seg.Kd*rate;
-			_set_axis_torque( seg, correction );
+			double angle = seg.get_angle();
+			double rate = seg.get_rate();
+			double correction = -( seg.Kp*( angle - seg.angle_setpoint ) + seg.Kd*rate )*RAD_TO_DEG;
+			seg.set_torque( correction );
 		}
 	}
 
@@ -252,39 +248,18 @@ class Arm : public Robot
 		double angle_setpoint = 0;
 		float Kp = 10;
 		float Kd = 0.1;
+
+		double get_angle() const { return dJointGetHingeAngle( jointID ); }
+		double get_rate() const { return dJointGetHingeAngleRate( jointID ); }
+		void set_torque( double torque ) { dJointAddHingeTorque( jointID, torque ); }
 	} Segment;
 
 	std::vector<Segment> _segments;
 
 
-	inline double _get_axis_angle( Segment seg ) const { return dJointGetHingeAngle( seg.jointID )*RAD_TO_DEG; }
-
-	inline double _get_axis_rate( Segment seg ) const { return dJointGetHingeAngleRate( seg.jointID )*RAD_TO_DEG; }
-
-	inline void _set_axis_torque( Segment seg, double torque ) { dJointAddHingeTorque( seg.jointID, torque ); }
-
-
-	Matrix3d _get_segment_frame( Vector3d direction ) const
-	{
-		Vector3d vy, vz;
-		if ( direction != Vector3d( 0, 0, 1 ) )
-			vy = direction.cross( Vector3d( 0, 0, 1 ) );
-		else
-			vy = Vector3d( 0, 1, 0 );
-		vz = direction.cross( vy );
-
-		Matrix3d frame;
-		frame.row( 0 ) = direction;
-		frame.row( 1 ) = vy;
-		frame.row( 2 ) = vz;
-
-		return frame;
-	}
-
-
 	MatrixXd _get_jacobian() const
 	{
-		std::vector<Vector3d> joint_pos, joint_axes, joint_dir;
+		std::vector<Vector3d> joint_pos, joint_axes;
 		joint_pos.push_back( Vector3d::Zero() );
 
 		Matrix3d rot = Matrix3d::Identity();
@@ -292,18 +267,15 @@ class Arm : public Robot
 		for ( Segment seg : _segments )
 		{
 			joint_axes.push_back( rot*seg.axis );
-			rot = AngleAxisd( _get_axis_angle( seg )*DEG_TO_RAD, joint_axes.back() ).toRotationMatrix()*rot;
-			joint_dir.push_back( rot*seg.direction );
-			joint_pos.push_back( joint_pos.back() + joint_dir.back()*seg.length );
+			rot = AngleAxisd( seg.get_angle(), joint_axes.back() ).toRotationMatrix()*rot;
+			joint_pos.push_back( joint_pos.back() + rot*seg.direction*seg.length );
 		}
-
-		Matrix3d effector_frame = _get_segment_frame( joint_dir.back() );
 
 		MatrixXd jacobian( 6, _segments.size() );
 		for ( Index i = 0 ; i < jacobian.cols() ; ++i )
 		{
-			jacobian.col( i ).head( 3 ) = joint_axes[i].cross( joint_pos.back() - joint_pos[i] )*DEG_TO_RAD;
-			jacobian.col( i ).tail( 3 ) = effector_frame*joint_axes[i]*DEG_TO_RAD;
+			jacobian.col( i ).head( 3 ) = joint_axes[i].cross( joint_pos.back() - joint_pos[i] );
+			jacobian.col( i ).tail( 3 ) = joint_axes[i];
 		}
 
 		return jacobian;
@@ -315,21 +287,15 @@ class Arm : public Robot
 		if ( _effector_trajectory.empty() )
 			return;
 
-		Waypoint current_state = get_effector_state( true );
+		Pose current_pose = get_effector_pose( true );
+
+		Matrix3d Rc = current_pose.orientation.toRotationMatrix();
+		Matrix3d Rd = _effector_trajectory.front().orientation.toRotationMatrix();
+		AngleAxisd rot( Rd*Rc.transpose() );
 
 		VectorXd step_vector( 6 );
-		step_vector.head( 3 ) = _effector_trajectory.front().pos - current_state.pos;
-
-		step_vector( 3 ) = _effector_trajectory.front().angle - current_state.angle;
-
-		Vector3d dir_axis = current_state.dir.cross( _effector_trajectory.front().dir );
-		double dir_angle = asin( dir_axis.norm() );
-		if ( dir_angle != 0 )
-			dir_axis = dir_axis.normalized()*dir_angle;
-		Matrix3d effector_frame = _get_segment_frame( current_state.dir );
-		dir_axis = effector_frame*dir_axis;
-		step_vector( 4 ) = dir_axis( 1 );
-		step_vector( 5 ) = dir_axis( 2 );
+		step_vector.head( 3 ) = _effector_trajectory.front().position - current_pose.position;
+		step_vector.tail( 3 ) = rot.axis()*rot.angle();
 
 
 		VectorXd dq = _get_jacobian().bdcSvd( ComputeThinU | ComputeThinV ).solve( step_vector );
@@ -337,7 +303,7 @@ class Arm : public Robot
 		//VectorXd dq = _get_jacobian().fullPivHouseholderQr().solve( step_vector );
 
 		for ( size_t i = 0 ; i < _segments.size() ; ++i )
-			_segments[i].angle_setpoint = _get_axis_angle( _segments[i] ) + dq[i];
+			_segments[i].angle_setpoint = _segments[i].get_angle() + dq[i];
 
 		if ( _effector_trajectory.size() > 1 )
 			_effector_trajectory.pop_front();
@@ -362,37 +328,17 @@ int main( int argc, char* argv[] )
 	Arm arm( env );
 	arm.set_control_period( 0.1 );
 
-	Vector3d target_0 = arm.get_effector_state( true ).pos;
+	Vector3d target_0 = arm.get_effector_pose( true ).position;
 	Vector3d target_1( 0.5, -0.2, 0.4 );
 	Vector3d target_2( 0.7, 0.2, 0.7 );
 
-	//void set_new_target( Vector3d target, float velocity = 0.01, bool add = true, Vector3d direction = Vector3d::Zero(), double angle = 0, float rate = 45 )
-	arm.set_new_target( target_1, 0.2 );
-	arm.set_new_target( target_2, 0.2 );
-	arm.set_new_target( target_0, 0.2 );
-	arm.set_new_target( target_1, 0.2, true, Vector3d( 0, -1, 0 ) );
-	arm.set_new_target( target_2, 0.2 );
-	arm.set_new_target( target_0, 0.2 );
-
-	//arm.set_new_target( target_1, 0.2, true, Vector3d( 1, 0, -1 ) );
-	//arm.set_new_target( target_0, 0.2, true, Vector3d( 1, 0, -1 ) );
-	//arm.set_new_target( target_0, 0.2, true, Vector3d( 1, 1, 2 ) );
-
-
-	Sphere start( env, target_0, 1, 0.05 );
-	start.fix();
-	start.set_color( 1, 0, 0 );
-	start.set_alpha( 0.3 );
-
-	Sphere goal_1( env, target_1, 1, 0.05 );
-	goal_1.fix();
-	goal_1.set_color( 1, 0, 0 );
-	goal_1.set_alpha( 0.3 );
-
-	Sphere goal_2( env, target_2, 1, 0.05 );
-	goal_2.fix();
-	goal_2.set_color( 1, 0, 0 );
-	goal_2.set_alpha( 0.3 );
+	//arm.set_new_target( target_1, 0.2 );
+	//arm.set_new_target( target_2, 0.2 );
+	//arm.set_new_target( target_0, 0.2 );
+	//arm.set_new_target( target_1, 0.2 );
+	//arm.set_new_target( target_2, 0.2 );
+	//arm.set_new_target( target_0, 0.2 );
+	arm.set_new_target( target_1, 0.2, AngleAxisd( 90*DEG_TO_RAD, Vector3d( 0, 1, 0 ) ) );
 
 
 	// [ Display ]
@@ -405,24 +351,39 @@ int main( int argc, char* argv[] )
 	display_ptr->get_keh()->set_pause();
 
 	arm.accept( *display_ptr );
-	start.accept( *display_ptr );
-	goal_1.accept( *display_ptr );
-	goal_2.accept( *display_ptr );
 
-	//for ( Arm::Waypoint wp : arm.get_trajectory() )
-	//{
-		//Sphere* pos = new Sphere( env, wp.pos, 1, 0.02 );
-		//pos->fix();
-		//pos->set_color( 0, 1, 0 );
-		//pos->set_alpha( 0.3 );
-		//pos->accept( *display_ptr );
+	//Sphere start( env, target_0, 1, 0.05 );
+	//start.fix();
+	//start.set_color( 1, 0, 0 );
+	//start.set_alpha( 0.3 );
+	//start.accept( *display_ptr );
 
-		//Sphere* dir = new Sphere( env, wp.pos + wp.dir*0.05, 1, 0.01 );
-		//dir->fix();
-		//dir->set_color( 0, 0, 1 );
-		//dir->set_alpha( 0.3 );
-		//dir->accept( *display_ptr );
-	//}
+	//Sphere goal_1( env, target_1, 1, 0.05 );
+	//goal_1.fix();
+	//goal_1.set_color( 1, 0, 0 );
+	//goal_1.set_alpha( 0.3 );
+	//goal_1.accept( *display_ptr );
+
+	//Sphere goal_2( env, target_2, 1, 0.05 );
+	//goal_2.fix();
+	//goal_2.set_color( 1, 0, 0 );
+	//goal_2.set_alpha( 0.3 );
+	//goal_2.accept( *display_ptr );
+
+	for ( Arm::Pose wp : arm.get_trajectory() )
+	{
+		Sphere* position = new Sphere( env, wp.position, 1, 0.02 );
+		position->fix();
+		position->set_color( 0, 1, 0 );
+		position->set_alpha( 0.3 );
+		position->accept( *display_ptr );
+
+		Sphere* orientation = new Sphere( env, wp.position + wp.orientation.axis()*wp.orientation.angle()*0.05, 1, 0.01 );
+		orientation->fix();
+		orientation->set_color( 0, 0, 1 );
+		orientation->set_alpha( 0.3 );
+		orientation->accept( *display_ptr );
+	}
 
 	//std::function<bool(renderer::OsgText*)> update_text = [&arm]( renderer::OsgText* text )
 	//{
