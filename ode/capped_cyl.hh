@@ -56,7 +56,7 @@ class CappedCyl : public Object
 				  _radius, _length - _radius * 2);*/
 		dMassSetCapsuleTotal(&_m, _mass,
 				  3, // direction = 3 (along z)
-				  _radius, _length - _radius * 2);
+				  _radius, _length);
 		dBodySetMass(_body, &_m);
 
 		if ( create_geom )

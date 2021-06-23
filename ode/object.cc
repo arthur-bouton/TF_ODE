@@ -445,7 +445,7 @@ Object* Object::add_cylinder_geom( double r, double l )
 
 Object* Object::add_capcyl_geom( double r, double l )
 {
-	dGeomID g = dCreateCCylinder( _env.get_space(), r, l - r*2 );
+	dGeomID g = dCreateCCylinder( _env.get_space(), r, l );
 	dGeomSetBody( g, _body );
 	_geoms.push_back( g );
 	return this;
