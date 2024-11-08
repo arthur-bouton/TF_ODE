@@ -1,12 +1,12 @@
 [submodule "scripts/ModelTree"]
 	path = scripts/ModelTree
-	url = https://github.com/Bouty92/ModelTree
+	url = https://github.com/arthur-bouton/ModelTree
 [submodule "scripts/gmr"]
 	path = scripts/gmr
-	url = https://github.com/Bouty92/gmr
+	url = https://github.com/arthur-bouton/gmr
 [submodule "Filters"]
 	path = Filters
-	url = git://github.com/Bouty92/Filters
+	url = git://github.com/arthur-bouton/Filters
 [submodule "scripts/MachineLearning"]
 	path = scripts/MachineLearning
-	url = git://github.com/Bouty92/MachineLearning.git
+	url = git://github.com/arthur-bouton/MachineLearning.git
