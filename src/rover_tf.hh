@@ -2,7 +2,7 @@
 #define ROVER_TF_HH 
 
 #include "rover.hh"
-#include "tf_cpp_binding.hh" // https://github.com/Bouty92/MachineLearning/tree/master/tf_cpp_binding
+#include "tf_cpp_binding.hh" // https://github.com/arthur-bouton/MachineLearning/tree/master/tf_cpp_binding
 #include <boost/python.hpp>
 #include <random>
 
